@@ -42,7 +42,9 @@ name and a House, then you're in.
   House, the race for the Porcelain Crown).
 - **Today's Dispatches** — a live event feed of rating strikes, Fief flips,
   and confirmations.
-- Light ("day") and dark ("The Long Night") themes; a manual toggle plus
+- A 16/32-bit pixel-RPG visual identity: Press Start 2P / Pixelify Sans /
+  VT323, hand-built "NES dialogue box" panels, flickering CSS torches, and
+  a dungeon-and-gold palette. Torchlit / Moonlit theme toggle plus
   `prefers-color-scheme`.
 
 ## Deliberate MVP simplifications
@@ -75,10 +77,11 @@ the PRD. Known gaps, in the order I'd close them next:
 
 ## Stack
 
-Next.js 16 (App Router, Turbopack) · React 19 · TypeScript · Tailwind CSS 4
-· Leaflet / react-leaflet (OpenStreetMap tiles, no API key required) ·
-h3-js for hexagonal territory · `next/font` (Cinzel / Public Sans / IBM
-Plex Mono) · no backend.
+Next.js 16 (App Router, Turbopack, static export) · React 19 · TypeScript ·
+Tailwind CSS 4 · Leaflet / react-leaflet (OpenStreetMap tiles, no API key
+required) · h3-js for hexagonal territory · `next/font` (Press Start 2P /
+Pixelify Sans / VT323) · no backend. Deployed to GitHub Pages via
+`.github/workflows/deploy-pages.yml` on every push to `main`.
 
 ## Project layout
 
