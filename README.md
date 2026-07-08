@@ -1,5 +1,7 @@
 # Shame of Thrones — MVP
 
+**Live: https://beholdtheiceman.github.io/shame-of-thrones/**
+
 An interactive prototype of the core game loop described in
 [`docs/SHAME_OF_THRONES_PRD.md`](docs/SHAME_OF_THRONES_PRD.md): rate public
 restrooms ("Thrones"), pledge to a House, and conquer real-world territory
