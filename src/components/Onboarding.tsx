@@ -13,20 +13,30 @@ export function Onboarding() {
   const canSubmit = name.trim().length >= 2 && houseId !== null;
 
   return (
-    <div className="fixed inset-0 z-[1002] flex items-end justify-center bg-ink/60 sm:items-center sm:p-6">
-      <div className="w-full max-w-md rounded-t-2xl border border-vellum-line bg-vellum-raised p-6 shadow-2xl sm:rounded-2xl">
-        <p className="font-mono text-[11px] uppercase tracking-widest text-brass-strong">
-          Field Dossier · Onboarding
-        </p>
-        <h1 className="mt-2 font-display text-3xl font-bold tracking-wide text-ink text-balance">
-          Swear the Oath
+    <div className="stone-wall fixed inset-0 z-[1002] flex flex-col items-center overflow-y-auto px-4 py-8">
+      <div className="flex items-center gap-4">
+        <span className="torch" />
+        <h1 className="font-display leading-[1.9] text-brass [text-shadow:3px_3px_0_var(--vellum-line)]">
+          <span className="block text-[26px] tracking-wide">SHAME</span>
+          <span className="block text-center text-[13px] text-ink-soft">of</span>
+          <span className="block text-[26px] tracking-wide">THRONES</span>
         </h1>
-        <p className="mt-2 text-sm text-ink-soft">
+        <span className="torch" />
+      </div>
+      <p className="mt-4 text-center font-mono text-[17px] text-ink-soft">
+        A toilet fantasy RPG
+      </p>
+
+      <div className="pixel-panel mt-7 w-full max-w-md p-5">
+        <p className="font-mono text-[15px] uppercase tracking-widest text-brass">
+          ▸ Character Creation
+        </p>
+        <p className="mt-2 text-[15px] leading-snug text-ink-soft">
           Choose the name the Realm will know you by, then pledge to a House.
           You may switch Houses once per Season.
         </p>
 
-        <label className="mt-5 block text-xs font-semibold uppercase tracking-wide text-ink-faint">
+        <label className="mt-5 block font-mono text-[13px] uppercase tracking-wide text-ink-faint">
           Your name
         </label>
         <input
@@ -34,36 +44,36 @@ export function Onboarding() {
           onChange={(e) => setName(e.target.value)}
           placeholder="ser.yourname"
           maxLength={24}
-          className="mt-1.5 w-full rounded-lg border border-vellum-line bg-vellum px-3 py-2.5 text-sm text-ink outline-none focus:border-brass focus:ring-2 focus:ring-brass/30"
+          className="pixel-panel-flat mt-1.5 w-full px-3 py-2.5 font-mono text-[16px] text-ink outline-none placeholder:text-ink-faint"
         />
 
-        <p className="mt-5 text-xs font-semibold uppercase tracking-wide text-ink-faint">
+        <p className="mt-5 font-mono text-[13px] uppercase tracking-wide text-ink-faint">
           Choose your House
         </p>
-        <div className="mt-2 grid grid-cols-2 gap-2">
+        <div className="mt-2 grid grid-cols-2 gap-2.5">
           {HOUSES.map((h) => (
             <button
               key={h.id}
               type="button"
               onClick={() => setHouseId(h.id)}
-              className={`rounded-lg border p-3 text-left transition ${
-                houseId === h.id
-                  ? "border-brass bg-brass/15"
-                  : "border-vellum-line bg-vellum hover:border-brass/50"
-              }`}
+              className="pixel-chip p-3 text-left transition"
+              style={{
+                background: "var(--vellum)",
+                outline: houseId === h.id ? "3px solid var(--brass)" : "none",
+                outlineOffset: houseId === h.id ? "-3px" : undefined,
+              }}
             >
               <span
                 className="mb-2 block h-3 w-6"
                 style={{
                   background: h.colorVar,
-                  clipPath:
-                    "polygon(0 0,100% 0,100% 70%,50% 100%,0 70%)",
+                  clipPath: "polygon(0 0,100% 0,100% 70%,50% 100%,0 70%)",
                 }}
               />
-              <span className="block font-display text-xs font-bold uppercase tracking-wide text-ink">
+              <span className="block font-display text-[9px] leading-relaxed text-ink">
                 {h.name}
               </span>
-              <span className="mt-0.5 block text-[10.5px] italic text-ink-faint">
+              <span className="mt-1 block text-[13px] italic leading-tight text-ink-faint">
                 &ldquo;{h.words}&rdquo;
               </span>
             </button>
@@ -74,9 +84,9 @@ export function Onboarding() {
           type="button"
           disabled={!canSubmit}
           onClick={() => houseId && setProfile(name.trim(), houseId)}
-          className="mt-6 w-full rounded-lg bg-brass py-3 text-center text-xs font-bold uppercase tracking-widest text-on-brass transition disabled:cursor-not-allowed disabled:opacity-40"
+          className="pixel-btn mt-6 w-full py-3.5 text-center font-display text-[11px] tracking-wider"
         >
-          Enter the Realm
+          ▸ Press Start
         </button>
       </div>
     </div>

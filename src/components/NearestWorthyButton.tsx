@@ -61,17 +61,23 @@ export function NearestWorthyButton({
   }
 
   return (
-    <div className="pointer-events-auto flex flex-col items-center gap-1.5">
+    <div className="pointer-events-auto flex flex-col items-center gap-2">
       <button
         type="button"
         onClick={handleClick}
         disabled={busy}
-        className="rounded-full bg-brass px-5 py-2.5 text-[11px] font-bold uppercase tracking-widest text-on-brass shadow-lg shadow-brass/30 disabled:opacity-60"
+        className="pixel-btn px-5 py-3 font-display text-[10px] tracking-wide"
       >
-        {busy ? "Scouting the Realm…" : "⚔ Nearest Worthy Throne"}
+        {busy ? (
+          "Scouting…"
+        ) : (
+          <>
+            <span style={{ fontFamily: "system-ui" }}>⚔️</span> Nearest Worthy Throne
+          </>
+        )}
       </button>
       {notice && (
-        <p className="max-w-[220px] rounded-md bg-vellum-raised/95 px-2.5 py-1 text-center text-[10px] text-ink-faint shadow">
+        <p className="pixel-chip max-w-[220px] bg-vellum-raised px-2.5 py-1 text-center font-mono text-[13px] text-ink-faint">
           {notice}
         </p>
       )}

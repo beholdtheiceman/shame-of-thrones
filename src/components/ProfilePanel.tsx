@@ -60,44 +60,37 @@ export function ProfilePanel() {
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-5">
-      <p className="font-mono text-[10.5px] uppercase tracking-widest text-brass-strong">
-        Your Standing
+      <p className="font-mono text-[15px] uppercase tracking-widest text-brass">
+        ▸ Your Standing
       </p>
-      <h1 className="mt-1 font-display text-2xl font-bold text-ink">{profile.name}</h1>
+      <h1 className="mt-2 font-display text-[17px] leading-relaxed text-ink">{profile.name}</h1>
 
-      <div className="mt-4 rounded-xl border border-vellum-line bg-vellum-raised p-4">
+      <div className="pixel-panel mt-4 p-4">
         <div className="flex items-baseline justify-between">
-          <span className="font-display text-base font-bold tracking-wide text-ink">
-            {rank.name}
-          </span>
-          <span className="font-mono text-[11px] text-ink-faint">
+          <span className="font-display text-[11px] tracking-wide text-ink">{rank.name}</span>
+          <span className="font-mono text-[14px] text-ink-faint">
             {rank.nextName ?? "Max rank"}
           </span>
         </div>
-        <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-vellum-line">
-          <div
-            className="h-full bg-brass"
-            style={{ width: `${Math.round(rank.progress * 100)}%` }}
-          />
+        <div className="pixel-chip mt-3 h-3 overflow-hidden bg-vellum">
+          <div className="h-full bg-brass" style={{ width: `${Math.round(rank.progress * 100)}%` }} />
         </div>
-        <p className="mt-1.5 text-right font-mono text-[10.5px] text-ink-faint tabular">
+        <p className="mt-1.5 text-right font-mono text-[14px] text-ink-faint tabular">
           {xp} {rank.ceiling ? `/ ${rank.ceiling}` : ""} XP
         </p>
       </div>
 
-      <div className="mt-4 rounded-xl border border-vellum-line bg-vellum-raised p-4">
-        <p className="text-xs font-semibold uppercase tracking-wide text-ink-faint">
-          Sworn to
-        </p>
-        <div className="mt-1.5 flex items-center gap-2">
+      <div className="pixel-panel mt-4 p-4">
+        <p className="font-mono text-[13px] uppercase tracking-wide text-ink-faint">Sworn to</p>
+        <div className="mt-2 flex items-center gap-2.5">
           <span
-            className="h-3 w-6"
+            className="h-4 w-7"
             style={{
               background: house.colorVar,
               clipPath: "polygon(0 0,100% 0,100% 70%,50% 100%,0 70%)",
             }}
           />
-          <span className="font-display text-sm font-bold text-ink">{house.name}</span>
+          <span className="font-display text-[11px] text-ink">{house.name}</span>
         </div>
         <div className="mt-3 grid grid-cols-2 gap-1.5">
           {HOUSES.filter((h) => h.id !== profile.houseId).map((h) => (
@@ -106,32 +99,30 @@ export function ProfilePanel() {
               type="button"
               disabled={!canSwitch}
               onClick={() => switchHouse(h.id)}
-              className="rounded-lg border border-vellum-line px-2.5 py-1.5 text-left text-[11px] text-ink-soft transition hover:border-brass/50 disabled:cursor-not-allowed disabled:opacity-40"
+              className="pixel-chip bg-vellum px-2.5 py-1.5 text-left font-mono text-[13px] text-ink-soft transition disabled:cursor-not-allowed disabled:opacity-40"
             >
               Ride for {h.name}
             </button>
           ))}
         </div>
-        <p className="mt-2 text-[10px] text-ink-faint">
+        <p className="mt-2 font-mono text-[13px] text-ink-faint">
           Houses may be switched once per Season
           {!canSwitch && " — you've already switched recently"}.
         </p>
       </div>
 
       {profile.badges.length > 0 && (
-        <div className="mt-4 rounded-xl border border-vellum-line bg-vellum-raised p-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-ink-faint">
-            Badges
-          </p>
-          <div className="mt-2 space-y-2">
+        <div className="pixel-panel mt-4 p-4">
+          <p className="font-mono text-[13px] uppercase tracking-wide text-ink-faint">Badges</p>
+          <div className="mt-2.5 space-y-2.5">
             {profile.badges.map((b) => (
               <div key={b} className="flex items-center gap-2.5">
-                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-brass text-xs text-on-brass">
+                <span className="pixel-chip flex h-8 w-8 items-center justify-center bg-brass text-sm text-on-brass">
                   {BADGE_META[b].icon}
                 </span>
                 <div>
-                  <p className="text-xs font-semibold text-ink">{BADGE_META[b].title}</p>
-                  <p className="text-[10.5px] text-ink-faint">{BADGE_META[b].desc}</p>
+                  <p className="font-mono text-[14px] text-ink">{BADGE_META[b].title}</p>
+                  <p className="font-mono text-[13px] text-ink-faint">{BADGE_META[b].desc}</p>
                 </div>
               </div>
             ))}
@@ -139,23 +130,23 @@ export function ProfilePanel() {
         </div>
       )}
 
-      <div className="mt-4 rounded-xl border border-vellum-line bg-vellum-raised p-4">
-        <p className="text-xs font-semibold uppercase tracking-wide text-ink-faint">
+      <div className="pixel-panel mt-4 p-4">
+        <p className="font-mono text-[13px] uppercase tracking-wide text-ink-faint">
           Realm Standings — race for the Porcelain Crown
         </p>
-        <div className="mt-2.5 space-y-2.5">
+        <div className="mt-3 space-y-2.5">
           {standings.map((s, i) => (
             <div key={s.house.id} className="flex items-center gap-2.5">
-              <span className="w-3.5 font-mono text-[10.5px] text-ink-faint">{i + 1}</span>
+              <span className="w-4 font-mono text-[14px] text-ink-faint">{i + 1}</span>
               <span
-                className="h-3 w-6 shrink-0"
+                className="h-4 w-7 shrink-0"
                 style={{
                   background: s.house.colorVar,
                   clipPath: "polygon(0 0,100% 0,100% 70%,50% 100%,0 70%)",
                 }}
               />
-              <span className="flex-1 text-xs font-medium text-ink">{s.house.name}</span>
-              <span className="font-mono text-[10.5px] tabular text-ink-soft">
+              <span className="flex-1 font-mono text-[14px] text-ink">{s.house.name}</span>
+              <span className="font-mono text-[13px] tabular text-ink-soft">
                 {s.fiefsHeld} fief{s.fiefsHeld === 1 ? "" : "s"}
               </span>
             </div>

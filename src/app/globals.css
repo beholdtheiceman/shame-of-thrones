@@ -2,77 +2,77 @@
 @import "leaflet/dist/leaflet.css";
 
 :root {
-  --ink: #211b12;
-  --ink-soft: #4a4030;
-  --ink-faint: #7a6d51;
-  --vellum: #e7d9ac;
-  --vellum-raised: #f1e6c4;
-  --vellum-line: #c9b77e;
-  --brass: #8c5e1e;
-  --brass-strong: #6e4a17;
-  --on-brass: #fbf3dd;
-  --crimson: #7a2a28;
-  --emerald: #33593f;
-  --house-flush: #2b4368;
-  --house-bidet: #1b5c56;
-  --house-plunger: #5b4770;
-  --house-porcelain: #8a8168;
+  --ink: #f6e9c8;
+  --ink-soft: #d8c493;
+  --ink-faint: #9c8a63;
+  --vellum: #171b30;
+  --vellum-raised: #262c4a;
+  --vellum-line: #0a0c18;
+  --brass: #e8c14c;
+  --brass-strong: #ffdd75;
+  --on-brass: #241804;
+  --crimson: #e0483f;
+  --emerald: #4cc26a;
+  --house-flush: #3f6fd1;
+  --house-bidet: #2bb5a6;
+  --house-plunger: #9b6fd1;
+  --house-porcelain: #c9c48a;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --ink: #efe4c4;
-    --ink-soft: #c9bb93;
-    --ink-faint: #8c8062;
-    --vellum: #14110b;
-    --vellum-raised: #1d1810;
-    --vellum-line: #38301e;
-    --brass: #d2a24e;
-    --brass-strong: #e9c077;
-    --on-brass: #1a1408;
-    --crimson: #c86a5f;
-    --emerald: #6bae84;
-    --house-flush: #5b7fb0;
-    --house-bidet: #3e9c92;
-    --house-plunger: #9482b8;
-    --house-porcelain: #b4aa88;
+    --ink: #eef1ff;
+    --ink-soft: #b9c0e0;
+    --ink-faint: #7b82a8;
+    --vellum: #0a0c18;
+    --vellum-raised: #141830;
+    --vellum-line: #04050c;
+    --brass: #d9b04a;
+    --brass-strong: #f0c968;
+    --on-brass: #1c1304;
+    --crimson: #d4453d;
+    --emerald: #47b563;
+    --house-flush: #4d76c9;
+    --house-bidet: #2f9e92;
+    --house-plunger: #8a63c2;
+    --house-porcelain: #b3ad82;
   }
 }
 
 :root[data-theme="dark"] {
-  --ink: #efe4c4;
-  --ink-soft: #c9bb93;
-  --ink-faint: #8c8062;
-  --vellum: #14110b;
-  --vellum-raised: #1d1810;
-  --vellum-line: #38301e;
-  --brass: #d2a24e;
-  --brass-strong: #e9c077;
-  --on-brass: #1a1408;
-  --crimson: #c86a5f;
-  --emerald: #6bae84;
-  --house-flush: #5b7fb0;
-  --house-bidet: #3e9c92;
-  --house-plunger: #9482b8;
-  --house-porcelain: #b4aa88;
+  --ink: #eef1ff;
+  --ink-soft: #b9c0e0;
+  --ink-faint: #7b82a8;
+  --vellum: #0a0c18;
+  --vellum-raised: #141830;
+  --vellum-line: #04050c;
+  --brass: #d9b04a;
+  --brass-strong: #f0c968;
+  --on-brass: #1c1304;
+  --crimson: #d4453d;
+  --emerald: #47b563;
+  --house-flush: #4d76c9;
+  --house-bidet: #2f9e92;
+  --house-plunger: #8a63c2;
+  --house-porcelain: #b3ad82;
 }
 
 :root[data-theme="light"] {
-  --ink: #211b12;
-  --ink-soft: #4a4030;
-  --ink-faint: #7a6d51;
-  --vellum: #e7d9ac;
-  --vellum-raised: #f1e6c4;
-  --vellum-line: #c9b77e;
-  --brass: #8c5e1e;
-  --brass-strong: #6e4a17;
-  --on-brass: #fbf3dd;
-  --crimson: #7a2a28;
-  --emerald: #33593f;
-  --house-flush: #2b4368;
-  --house-bidet: #1b5c56;
-  --house-plunger: #5b4770;
-  --house-porcelain: #8a8168;
+  --ink: #f6e9c8;
+  --ink-soft: #d8c493;
+  --ink-faint: #9c8a63;
+  --vellum: #171b30;
+  --vellum-raised: #262c4a;
+  --vellum-line: #0a0c18;
+  --brass: #e8c14c;
+  --brass-strong: #ffdd75;
+  --on-brass: #241804;
+  --crimson: #e0483f;
+  --emerald: #4cc26a;
+  --house-flush: #3f6fd1;
+  --house-bidet: #2bb5a6;
+  --house-plunger: #9b6fd1;
+  --house-porcelain: #c9c48a;
 }
 
 @theme inline {
@@ -91,9 +91,9 @@
   --color-house-bidet: var(--house-bidet);
   --color-house-plunger: var(--house-plunger);
   --color-house-porcelain: var(--house-porcelain);
-  --font-display: var(--font-cinzel);
-  --font-body: var(--font-public-sans);
-  --font-mono: var(--font-plex-mono);
+  --font-display: var(--font-press-start);
+  --font-body: var(--font-pixelify);
+  --font-mono: var(--font-vt323);
 }
 
 html,
@@ -104,7 +104,12 @@ body {
 body {
   background: var(--vellum);
   color: var(--ink);
-  font-family: var(--font-body), -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-family: var(--font-body), "Segoe UI", sans-serif;
+  image-rendering: pixelated;
+}
+
+* {
+  border-radius: 0 !important;
 }
 
 ::selection {
@@ -114,6 +119,115 @@ body {
 
 .tabular {
   font-variant-numeric: tabular-nums;
+}
+
+/* Brick-and-mortar dungeon wall, used behind every screen. */
+.stone-wall {
+  background-color: var(--vellum);
+  background-image:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.35) 0%, transparent 12%, transparent 88%, rgba(0, 0, 0, 0.45) 100%),
+    repeating-linear-gradient(
+      0deg,
+      rgba(0, 0, 0, 0.35) 0 3px,
+      transparent 3px 34px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      rgba(0, 0, 0, 0.22) 0 3px,
+      transparent 3px 68px
+    );
+  background-size: auto, 100% 34px, 68px 34px;
+}
+
+/* Classic NES-dialogue-box border: hard dark outline + gold inner line +
+   a flat, unblurred drop shadow. No border-radius, no blur — that reads
+   as "pixel" far more than any rounding ever could. */
+.pixel-panel {
+  border: 3px solid var(--vellum-line);
+  box-shadow:
+    inset 0 0 0 3px var(--brass),
+    5px 5px 0 0 rgba(0, 0, 0, 0.55);
+  background: var(--vellum-raised);
+}
+
+.pixel-panel-flat {
+  border: 3px solid var(--vellum-line);
+  box-shadow: inset 0 0 0 3px var(--brass);
+  background: var(--vellum-raised);
+}
+
+/* Small bevelled square stud, echoing the corner gems on old cartridge
+   box art / RPG menu frames. */
+.pixel-gem {
+  width: 10px;
+  height: 10px;
+  background: var(--brass-strong);
+  border: 2px solid var(--vellum-line);
+  box-shadow: inset -2px -2px 0 0 var(--brass);
+}
+
+.pixel-btn {
+  border: 3px solid var(--vellum-line);
+  background: var(--brass);
+  color: var(--on-brass);
+  box-shadow:
+    inset -3px -3px 0 0 var(--brass-strong),
+    inset 3px 3px 0 0 rgba(255, 255, 255, 0.35),
+    4px 4px 0 0 rgba(0, 0, 0, 0.55);
+  transition: transform 0.05s ease-out, box-shadow 0.05s ease-out;
+}
+.pixel-btn:active:not(:disabled) {
+  transform: translate(4px, 4px);
+  box-shadow:
+    inset -3px -3px 0 0 var(--brass-strong),
+    inset 3px 3px 0 0 rgba(255, 255, 255, 0.35),
+    0 0 0 0 rgba(0, 0, 0, 0.55);
+}
+.pixel-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.pixel-chip {
+  border: 2px solid var(--vellum-line);
+  box-shadow: 2px 2px 0 0 rgba(0, 0, 0, 0.45);
+}
+
+/* Flickering wall torch, built entirely from gradients — no image asset. */
+.torch {
+  position: relative;
+  width: 14px;
+  height: 20px;
+  flex: none;
+}
+.torch::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, #6b4423, #3a2410);
+  border: 2px solid var(--vellum-line);
+}
+.torch::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 100%;
+  width: 16px;
+  height: 20px;
+  transform: translateX(-50%);
+  background: radial-gradient(circle at 50% 70%, #fff3c0 0%, #ffb347 35%, #ff6a2c 65%, transparent 75%);
+  filter: blur(0.5px);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .torch::after {
+    animation: flicker 1.6s ease-in-out infinite;
+  }
+}
+@keyframes flicker {
+  0%, 100% { opacity: 1; transform: translateX(-50%) scale(1); }
+  30% { opacity: 0.85; transform: translateX(-52%) scale(0.95); }
+  55% { opacity: 1; transform: translateX(-48%) scale(1.05); }
+  80% { opacity: 0.9; transform: translateX(-50%) scale(0.98); }
 }
 
 /* Leaflet ships its own default marker image paths that we never load

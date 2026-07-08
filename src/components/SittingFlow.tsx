@@ -67,34 +67,33 @@ export function SittingFlow({
 
   return (
     <div className="p-5">
-      <div className="mx-auto mb-3 h-1 w-9 rounded-full bg-vellum-line sm:hidden" />
       <div className="flex items-center justify-between">
-        <p className="font-mono text-[10.5px] uppercase tracking-widest text-brass-strong">
-          The Sitting
+        <p className="font-mono text-[15px] uppercase tracking-widest text-brass">
+          ▸ The Sitting
         </p>
         <button
           type="button"
           onClick={onCancel}
-          className="text-xs text-ink-faint hover:text-ink"
+          className="pixel-chip bg-vellum px-2 py-1 font-mono text-[13px] text-ink-faint hover:text-ink"
         >
           Cancel
         </button>
       </div>
-      <h2 className="mt-1 font-display text-lg font-bold text-ink text-balance">
+      <h2 className="mt-2 font-display text-[15px] leading-relaxed text-ink text-balance">
         {throne.name}
       </h2>
-      <p className="mt-1 text-[11px] text-ink-faint">
+      <p className="mt-2 font-mono text-[14px] leading-snug text-ink-faint">
         {proximity === "checking" && "Confirming your location…"}
         {proximity === "verified" && (
           <span className="text-emerald">✓ Verified — you&rsquo;re within 75m</span>
         )}
         {proximity === "hearsay" && (
-          <span className="text-brass-strong">
+          <span className="text-brass">
             Hearsay — you&rsquo;re too far for a Verified sitting (counts for less Influence)
           </span>
         )}
         {proximity === "denied" && (
-          <span className="text-brass-strong">
+          <span className="text-brass">
             Location unavailable — this will be logged as Hearsay
           </span>
         )}
@@ -106,20 +105,19 @@ export function SittingFlow({
             key={v.value}
             type="button"
             onClick={() => setVerdict(v.value)}
-            className="flex w-1/5 flex-col items-center gap-1"
+            className="flex w-1/5 flex-col items-center gap-1.5"
           >
             <span
-              className={`flex h-10 w-10 items-center justify-center rounded-full border-2 text-lg transition ${
-                verdict === v.value
-                  ? "border-brass bg-brass/15"
-                  : "border-transparent bg-vellum"
-              }`}
+              className="pixel-chip flex h-10 w-10 items-center justify-center text-lg transition"
+              style={{
+                background: verdict === v.value ? "var(--brass)" : "var(--vellum)",
+              }}
             >
               {v.glyph}
             </span>
             <span
-              className={`text-center text-[9px] leading-tight ${
-                verdict === v.value ? "font-bold text-brass-strong" : "text-ink-faint"
+              className={`text-center font-mono text-[10.5px] leading-tight ${
+                verdict === v.value ? "text-brass" : "text-ink-faint"
               }`}
             >
               {v.label}
@@ -134,11 +132,11 @@ export function SittingFlow({
             key={tag}
             type="button"
             onClick={() => toggleTag(tag)}
-            className={`rounded-full px-2.5 py-1 text-[11px] transition ${
-              tags.includes(tag)
-                ? "bg-brass font-semibold text-on-brass"
-                : "border border-vellum-line text-ink-soft hover:border-brass/50"
-            }`}
+            className="pixel-chip px-2.5 py-1 font-mono text-[13px] transition"
+            style={{
+              background: tags.includes(tag) ? "var(--brass)" : "var(--vellum)",
+              color: tags.includes(tag) ? "var(--on-brass)" : "var(--ink-soft)",
+            }}
           >
             {tag}
           </button>
@@ -151,9 +149,9 @@ export function SittingFlow({
           onChange={(e) => setTestimony(e.target.value.slice(0, 280))}
           placeholder="Speak, traveler. What horrors or wonders did you find?"
           rows={3}
-          className="w-full resize-none rounded-lg border border-dashed border-vellum-line bg-vellum px-3 py-2 text-[12.5px] italic text-ink-soft outline-none focus:border-brass"
+          className="pixel-panel-flat w-full resize-none px-3 py-2 font-mono text-[15px] italic text-ink-soft outline-none placeholder:text-ink-faint"
         />
-        <p className="mt-1 text-right font-mono text-[10px] text-ink-faint tabular">
+        <p className="mt-1 text-right font-mono text-[13px] text-ink-faint tabular">
           {testimony.length} / 280
         </p>
       </div>
@@ -162,7 +160,7 @@ export function SittingFlow({
         type="button"
         disabled={verdict === null}
         onClick={handleSubmit}
-        className="mt-2 w-full rounded-lg bg-brass py-3 text-center text-xs font-bold uppercase tracking-widest text-on-brass disabled:cursor-not-allowed disabled:opacity-40"
+        className="pixel-btn mt-2 w-full py-3 text-center font-display text-[11px] tracking-wider"
       >
         Strike Your Banner
       </button>

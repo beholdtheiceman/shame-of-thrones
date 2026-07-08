@@ -42,24 +42,20 @@ export default function Home() {
   const house = HOUSE_BY_ID[state.profile.houseId];
 
   return (
-    <div className="flex h-dvh flex-col bg-vellum">
-      <header className="flex items-center justify-between border-b border-vellum-line bg-vellum-raised px-4 py-2.5">
-        <div className="flex items-center gap-2">
-          <span className="h-1.5 w-1.5 rounded-full bg-brass" />
+    <div className="stone-wall flex h-dvh flex-col">
+      <header className="flex items-center justify-between border-b-4 border-vellum-line bg-vellum-raised px-4 py-3">
+        <div className="flex items-center gap-2.5">
+          <span className="pixel-gem" />
           <div>
-            <p className="font-display text-[13px] font-bold leading-tight text-ink">
-              {REALM_NAME}
-            </p>
-            <p className="font-mono text-[10px] leading-tight text-ink-faint">
-              Shame of Thrones
-            </p>
+            <p className="font-display text-[9px] leading-tight text-brass">Shame of Thrones</p>
+            <p className="mt-1 font-mono text-[15px] leading-none text-ink-soft">{REALM_NAME}</p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2.5">
           <ThemeToggle />
           <span
-            className="h-6 w-6 rounded-full border-2"
-            style={{ background: house.colorVar, borderColor: "var(--vellum-raised)" }}
+            className="pixel-chip block h-7 w-7"
+            style={{ background: house.colorVar }}
             title={house.name}
           />
         </div>

@@ -18,13 +18,13 @@ const SCORE_BAND_VAR: Record<string, string> = {
 
 function throneIcon(band: string, selected: boolean, status: Throne["status"]) {
   const color = SCORE_BAND_VAR[band];
-  const size = selected ? 26 : 20;
+  const size = selected ? 22 : 16;
   const dashed = status === "rumored" ? "border-style:dashed;" : "";
   return L.divIcon({
     className: "",
     iconSize: [size, size],
     iconAnchor: [size / 2, size / 2],
-    html: `<span style="display:block;width:${size}px;height:${size}px;border-radius:9999px;background:${color};border:2px solid var(--vellum-raised);${dashed}box-shadow:0 0 0 1px ${color}${selected ? ",0 0 10px 2px " + color : ""};"></span>`,
+    html: `<span style="display:block;width:${size}px;height:${size}px;background:${color};border:2px solid var(--vellum-line);${dashed}box-shadow:2px 2px 0 0 rgba(0,0,0,0.5)${selected ? ",0 0 0 2px var(--brass)" : ""};"></span>`,
   });
 }
 
@@ -75,11 +75,11 @@ function FiefLayer({
             key={fiefId}
             positions={fiefBoundary(fiefId)}
             pathOptions={{
-              color: control.contested ? "var(--crimson)" : color,
-              weight: control.contested ? 2 : 1,
+              color: control.contested ? "var(--crimson)" : "var(--vellum-line)",
+              weight: control.contested ? 3 : 2,
               fillColor: color,
-              fillOpacity: 0.22 + control.leader.share * 0.28,
-              dashArray: control.contested ? "4 4" : undefined,
+              fillOpacity: 0.3 + control.leader.share * 0.3,
+              dashArray: control.contested ? "6 4" : undefined,
             }}
           />
         );

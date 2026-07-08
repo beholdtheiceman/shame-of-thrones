@@ -48,8 +48,8 @@ export function ThroneSheet({
   const amenities = Object.entries(throne.amenities).filter(([, v]) => v);
 
   return (
-    <div className="fixed inset-0 z-[1000] flex items-end justify-center bg-ink/50 sm:items-center sm:p-6">
-      <div className="max-h-[85vh] w-full max-w-md overflow-y-auto rounded-t-2xl border border-vellum-line bg-vellum-raised shadow-2xl sm:rounded-2xl">
+    <div className="fixed inset-0 z-[1000] flex items-end justify-center bg-black/60 sm:items-center sm:p-6">
+      <div className="pixel-panel max-h-[85vh] w-full max-w-md overflow-y-auto sm:mt-0">
         {mode === "sitting" ? (
           <SittingFlow
             throne={throne}
@@ -58,14 +58,12 @@ export function ThroneSheet({
           />
         ) : (
           <div className="p-5">
-            <div className="mx-auto mb-3 h-1 w-9 rounded-full bg-vellum-line sm:hidden" />
-
             <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="font-mono text-[10.5px] uppercase tracking-widest text-ink-faint">
+                <p className="font-mono text-[13px] uppercase tracking-widest text-brass">
                   {THRONE_CATEGORY_LABEL[throne.category]}
                 </p>
-                <h2 className="mt-0.5 font-display text-xl font-bold text-ink text-balance">
+                <h2 className="mt-1 font-display text-[15px] leading-relaxed text-ink text-balance">
                   {throne.name}
                 </h2>
               </div>
@@ -73,7 +71,7 @@ export function ThroneSheet({
                 type="button"
                 onClick={onClose}
                 aria-label="Close"
-                className="shrink-0 rounded-full border border-vellum-line px-2.5 py-1 text-xs text-ink-faint hover:text-ink"
+                className="pixel-chip shrink-0 bg-vellum px-2.5 py-1 font-mono text-sm text-ink-faint hover:text-ink"
               >
                 ✕
               </button>
@@ -81,25 +79,25 @@ export function ThroneSheet({
 
             <div className="mt-3 flex flex-wrap items-center gap-2">
               {throne.status === "rumored" ? (
-                <span className="rounded-full border border-brass/50 bg-brass/10 px-2.5 py-1 text-[10.5px] font-semibold uppercase tracking-wide text-brass-strong">
+                <span className="pixel-chip bg-brass/20 px-2.5 py-1 font-mono text-[13px] uppercase tracking-wide text-brass-strong">
                   Rumored
                 </span>
               ) : (
-                <span className="rounded-full border border-emerald/40 bg-emerald/10 px-2.5 py-1 text-[10.5px] font-semibold uppercase tracking-wide text-emerald">
+                <span className="pixel-chip bg-emerald/20 px-2.5 py-1 font-mono text-[13px] uppercase tracking-wide text-emerald">
                   ✓ Verified
                 </span>
               )}
               {forgotten && (
-                <span className="rounded-full border border-crimson/40 bg-crimson/10 px-2.5 py-1 text-[10.5px] font-semibold uppercase tracking-wide text-crimson">
+                <span className="pixel-chip bg-crimson/20 px-2.5 py-1 font-mono text-[13px] uppercase tracking-wide text-crimson">
                   Forgotten by the Realm
                 </span>
               )}
               {score !== null ? (
-                <span className="font-mono text-xs tabular text-ink-soft">
+                <span className="font-mono text-[15px] tabular text-ink-soft">
                   {score.toFixed(1)} / 5 · {count} sitting{count === 1 ? "" : "s"}
                 </span>
               ) : (
-                <span className="font-mono text-xs text-ink-faint">Unrated</span>
+                <span className="font-mono text-[15px] text-ink-faint">Unrated</span>
               )}
             </div>
 
@@ -107,7 +105,7 @@ export function ThroneSheet({
               <button
                 type="button"
                 onClick={() => confirmThrone(throne.id)}
-                className="mt-3 w-full rounded-lg border border-brass py-2 text-xs font-semibold uppercase tracking-wide text-brass-strong hover:bg-brass/10"
+                className="pixel-btn mt-3 w-full py-2.5 font-mono text-[14px] uppercase tracking-wide"
               >
                 Confirm this throne is real (+25 Influence)
               </button>
@@ -118,7 +116,7 @@ export function ThroneSheet({
                 {amenities.map(([k]) => (
                   <span
                     key={k}
-                    className="rounded-full bg-vellum px-2.5 py-1 text-[10.5px] text-ink-soft"
+                    className="pixel-chip bg-vellum px-2.5 py-1 font-mono text-[13px] text-ink-soft"
                   >
                     {AMENITY_LABEL[k]}
                   </span>
@@ -128,13 +126,13 @@ export function ThroneSheet({
 
             {recentRatings.length > 0 && (
               <div className="mt-5">
-                <p className="text-xs font-semibold uppercase tracking-wide text-ink-faint">
+                <p className="font-mono text-[13px] uppercase tracking-wide text-ink-faint">
                   Recent testimony
                 </p>
                 <ul className="mt-2 space-y-2.5">
                   {recentRatings.map((r) => (
-                    <li key={r.id} className="rounded-lg bg-vellum p-2.5 text-xs">
-                      <div className="flex items-center justify-between text-[10.5px] text-ink-faint">
+                    <li key={r.id} className="pixel-chip bg-vellum p-2.5 text-[14px]">
+                      <div className="flex items-center justify-between font-mono text-[13px] text-ink-faint">
                         <span>
                           {r.authorName} ·{" "}
                           <span style={{ color: HOUSE_BY_ID[r.houseId].colorVar }}>
@@ -155,7 +153,7 @@ export function ThroneSheet({
             <button
               type="button"
               onClick={() => setMode("sitting")}
-              className="mt-5 w-full rounded-lg bg-brass py-3 text-center text-xs font-bold uppercase tracking-widest text-on-brass"
+              className="pixel-btn mt-5 w-full py-3 text-center font-display text-[11px] tracking-wider"
             >
               Sit Here
             </button>

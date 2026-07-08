@@ -18,10 +18,10 @@ export function ThemeToggle() {
     <button
       type="button"
       onClick={toggle}
-      aria-label="Toggle theme"
-      className="flex h-7 w-7 items-center justify-center rounded-full border border-vellum-line text-xs text-ink-soft"
+      aria-label="Toggle Torchlit / Moonlit"
+      className="pixel-chip flex h-8 w-8 items-center justify-center bg-vellum text-sm text-ink-soft"
     >
-      🌓
+      🔥
     </button>
   );
 }

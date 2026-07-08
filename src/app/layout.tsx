@@ -1,24 +1,24 @@
 import type { Metadata, Viewport } from "next";
-import { Cinzel, IBM_Plex_Mono, Public_Sans } from "next/font/google";
+import { Pixelify_Sans, Press_Start_2P, VT323 } from "next/font/google";
 import { StoreProvider } from "@/lib/store";
 import "./globals.css";
 
-const cinzel = Cinzel({
-  variable: "--font-cinzel",
+const pressStart = Press_Start_2P({
+  variable: "--font-press-start",
   subsets: ["latin"],
-  weight: ["600", "700"],
+  weight: ["400"],
 });
 
-const publicSans = Public_Sans({
-  variable: "--font-public-sans",
+const pixelifySans = Pixelify_Sans({
+  variable: "--font-pixelify",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  weight: ["500", "600", "700"],
 });
 
-const plexMono = IBM_Plex_Mono({
-  variable: "--font-plex-mono",
+const vt323 = VT323({
+  variable: "--font-vt323",
   subsets: ["latin"],
-  weight: ["400", "500"],
+  weight: ["400"],
 });
 
 export const metadata: Metadata = {
@@ -31,7 +31,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
-  themeColor: "#8c5e1e",
+  themeColor: "#e8c14c",
 };
 
 const THEME_INIT_SCRIPT = `
@@ -51,7 +51,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${cinzel.variable} ${publicSans.variable} ${plexMono.variable} h-full`}
+      className={`${pressStart.variable} ${pixelifySans.variable} ${vt323.variable} h-full`}
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
