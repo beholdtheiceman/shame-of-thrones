@@ -1,0 +1,138 @@
+@import "tailwindcss";
+@import "leaflet/dist/leaflet.css";
+
+:root {
+  --ink: #211b12;
+  --ink-soft: #4a4030;
+  --ink-faint: #7a6d51;
+  --vellum: #e7d9ac;
+  --vellum-raised: #f1e6c4;
+  --vellum-line: #c9b77e;
+  --brass: #8c5e1e;
+  --brass-strong: #6e4a17;
+  --on-brass: #fbf3dd;
+  --crimson: #7a2a28;
+  --emerald: #33593f;
+  --house-flush: #2b4368;
+  --house-bidet: #1b5c56;
+  --house-plunger: #5b4770;
+  --house-porcelain: #8a8168;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ink: #efe4c4;
+    --ink-soft: #c9bb93;
+    --ink-faint: #8c8062;
+    --vellum: #14110b;
+    --vellum-raised: #1d1810;
+    --vellum-line: #38301e;
+    --brass: #d2a24e;
+    --brass-strong: #e9c077;
+    --on-brass: #1a1408;
+    --crimson: #c86a5f;
+    --emerald: #6bae84;
+    --house-flush: #5b7fb0;
+    --house-bidet: #3e9c92;
+    --house-plunger: #9482b8;
+    --house-porcelain: #b4aa88;
+  }
+}
+
+:root[data-theme="dark"] {
+  --ink: #efe4c4;
+  --ink-soft: #c9bb93;
+  --ink-faint: #8c8062;
+  --vellum: #14110b;
+  --vellum-raised: #1d1810;
+  --vellum-line: #38301e;
+  --brass: #d2a24e;
+  --brass-strong: #e9c077;
+  --on-brass: #1a1408;
+  --crimson: #c86a5f;
+  --emerald: #6bae84;
+  --house-flush: #5b7fb0;
+  --house-bidet: #3e9c92;
+  --house-plunger: #9482b8;
+  --house-porcelain: #b4aa88;
+}
+
+:root[data-theme="light"] {
+  --ink: #211b12;
+  --ink-soft: #4a4030;
+  --ink-faint: #7a6d51;
+  --vellum: #e7d9ac;
+  --vellum-raised: #f1e6c4;
+  --vellum-line: #c9b77e;
+  --brass: #8c5e1e;
+  --brass-strong: #6e4a17;
+  --on-brass: #fbf3dd;
+  --crimson: #7a2a28;
+  --emerald: #33593f;
+  --house-flush: #2b4368;
+  --house-bidet: #1b5c56;
+  --house-plunger: #5b4770;
+  --house-porcelain: #8a8168;
+}
+
+@theme inline {
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-ink-faint: var(--ink-faint);
+  --color-vellum: var(--vellum);
+  --color-vellum-raised: var(--vellum-raised);
+  --color-vellum-line: var(--vellum-line);
+  --color-brass: var(--brass);
+  --color-brass-strong: var(--brass-strong);
+  --color-on-brass: var(--on-brass);
+  --color-crimson: var(--crimson);
+  --color-emerald: var(--emerald);
+  --color-house-flush: var(--house-flush);
+  --color-house-bidet: var(--house-bidet);
+  --color-house-plunger: var(--house-plunger);
+  --color-house-porcelain: var(--house-porcelain);
+  --font-display: var(--font-cinzel);
+  --font-body: var(--font-public-sans);
+  --font-mono: var(--font-plex-mono);
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  background: var(--vellum);
+  color: var(--ink);
+  font-family: var(--font-body), -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+::selection {
+  background: var(--brass);
+  color: var(--on-brass);
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Leaflet ships its own default marker image paths that we never load
+   since every marker here is a custom DivIcon; keep the container
+   themed instead of Leaflet's default white chrome. */
+.leaflet-container {
+  background: var(--vellum);
+  font-family: var(--font-body), sans-serif;
+}
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+  background: var(--vellum-raised);
+  color: var(--ink);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
