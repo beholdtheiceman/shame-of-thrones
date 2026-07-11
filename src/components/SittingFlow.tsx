@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { QUICK_TAGS, VERDICT_SCALE } from "@/lib/data";
+import { VERDICT_SCALE } from "@/lib/data";
 import { haversineMeters } from "@/lib/geo";
+import { RATING_TAGS } from "@/lib/game/rules";
 import { useStore } from "@/lib/store";
 import type { Throne } from "@/lib/types";
 
@@ -127,7 +128,7 @@ export function SittingFlow({
       </div>
 
       <div className="mt-4 flex flex-wrap gap-1.5">
-        {QUICK_TAGS.map((tag) => (
+        {RATING_TAGS.map((tag) => (
           <button
             key={tag}
             type="button"

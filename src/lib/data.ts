@@ -51,18 +51,6 @@ export const VERDICT_SCALE = [
   { value: 5 as const, glyph: "👑", label: "The Iron Throne" },
 ];
 
-export const QUICK_TAGS = [
-  "Clean",
-  "Stocked",
-  "Hot water",
-  "Smells like victory",
-  "Smells like defeat",
-  "No soap (a war crime)",
-  "Door lock broken",
-  "Line too long",
-  "Hidden gem",
-];
-
 export const THRONE_CATEGORY_LABEL: Record<string, string> = {
   cafe: "Café",
   restaurant: "Restaurant",
