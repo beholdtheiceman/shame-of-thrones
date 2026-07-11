@@ -38,13 +38,17 @@ describe("schema integrity", () => {
       throneId: throne.id,
     }).returning();
 
+    // Drizzle wraps the PG error; the trigger's message lives on error.cause.
+    const appendOnly = (e: unknown) =>
+      /append-only/.test(String((e as { cause?: unknown }).cause ?? e));
+
     await expect(
       db.update(influenceEvents).set({ points: 999 }).where(eq(influenceEvents.id, ev.id))
-    ).rejects.toThrow(/append-only/);
+    ).rejects.toSatisfy(appendOnly);
 
     await expect(
       db.delete(influenceEvents).where(eq(influenceEvents.id, ev.id))
-    ).rejects.toThrow(/append-only/);
+    ).rejects.toSatisfy(appendOnly);
   });
 
   it("users.displayName is unique", async () => {
