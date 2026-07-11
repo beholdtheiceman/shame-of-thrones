@@ -1,12 +1,7 @@
 import type { NextConfig } from "next";
 
-// Static export for GitHub Pages: the whole app is client-rendered and
-// persists to localStorage, so no Node server is required. GitHub Pages
-// serves this as a project site under /shame-of-thrones/, hence basePath.
-const nextConfig: NextConfig = {
-  output: "export",
-  basePath: "/shame-of-thrones",
-  images: { unoptimized: true },
-};
+// The app now runs a server (API route handlers + Auth.js), so the old
+// GitHub Pages static export is gone. Deploys to Vercel.
+const nextConfig: NextConfig = {};
 
 export default nextConfig;
