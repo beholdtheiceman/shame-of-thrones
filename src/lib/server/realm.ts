@@ -1,0 +1,54 @@
+import { desc, eq } from "drizzle-orm";
+import { db } from "@/db/client";
+import { influenceEvents, ledgerEntries, ratings, thrones, users } from "@/db/schema";
+import { fiefIdForCoords } from "@/lib/geo";
+import { fiefControl, throneScore } from "@/lib/selectors";
+import { toGameEvent, toGameRating } from "./mappers";
+
+export async function realmPayload(now = Date.now()) {
+  const [throneRows, ratingRows, eventRows, ledgerRows] = await Promise.all([
+    db.select().from(thrones),
+    db
+      .select({ rating: ratings, displayName: users.displayName, houseId: users.houseId })
+      .from(ratings)
+      .innerJoin(users, eq(ratings.userId, users.id)),
+    db.select().from(influenceEvents),
+    db.select().from(ledgerEntries).orderBy(desc(ledgerEntries.createdAt)).limit(60),
+  ]);
+
+  const gameRatings = ratingRows.map((r) =>
+    toGameRating(r.rating, { displayName: r.displayName, houseId: r.houseId })
+  );
+  const gameEvents = eventRows.map(toGameEvent);
+
+  const throneDtos = throneRows.map((t) => {
+    const { score, count } = throneScore(t.id, gameRatings, now);
+    return {
+      id: t.id,
+      name: t.name,
+      lat: t.lat,
+      lng: t.lng,
+      category: t.category,
+      status: t.status,
+      amenities: t.amenities,
+      addedBy: t.addedBy,
+      addedAt: t.addedAt.getTime(),
+      lastConfirmedAt: t.lastConfirmedAt.getTime(),
+      fiefId: fiefIdForCoords(t.lat, t.lng),
+      score,
+      ratingCount: count,
+    };
+  });
+
+  const fiefIds = [...new Set(gameEvents.map((e) => e.fiefId))];
+  const fiefs = fiefIds.map((id) => fiefControl(id, gameEvents, now));
+
+  return {
+    thrones: throneDtos,
+    ratings: gameRatings,
+    fiefs,
+    ledger: ledgerRows.map((l) => ({ id: l.id, createdAt: l.createdAt.getTime(), text: l.text })),
+  };
+}
+
+export type RealmPayload = Awaited<ReturnType<typeof realmPayload>>;
