@@ -145,3 +145,39 @@ export function tierForScore(score: number): VerdictTier {
   const value = Math.round(clamped) as VerdictTier["value"];
   return VERDICT_SCALE.find((t) => t.value === value) as VerdictTier;
 }
+
+export interface FiefCardRow {
+  houseId: HouseId;
+  percent: number; // integer 0-100
+  share: number; // 0-1, for bar width
+}
+
+export interface FiefCardModel {
+  rows: FiefCardRow[];
+  leaderHouseId: HouseId | null;
+  contested: boolean;
+  held: boolean; // false => "No House holds this land"
+}
+
+/** Display model for the fief bottom card. Accepts null/undefined so a
+ * tapped fief with no influence events renders an honest empty state. */
+export function fiefCardModel(control: FiefControl | null | undefined): FiefCardModel {
+  if (!control || control.totalInfluence <= 0) {
+    return {
+      rows: HOUSES.map((h) => ({ houseId: h.id, percent: 0, share: 0 })),
+      leaderHouseId: null,
+      contested: false,
+      held: false,
+    };
+  }
+  return {
+    rows: control.shares.map((s) => ({
+      houseId: s.houseId,
+      percent: Math.round(s.share * 100),
+      share: s.share,
+    })),
+    leaderHouseId: control.leader?.houseId ?? null,
+    contested: control.contested,
+    held: true,
+  };
+}

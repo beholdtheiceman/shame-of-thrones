@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { fiefControl, lifetimeXp, rankForXp, throneScore, tierForScore } from "./selectors";
+import { fiefCardModel, fiefControl, lifetimeXp, rankForXp, throneScore, tierForScore } from "./selectors";
 import type { InfluenceEvent, Rating } from "./types";
 
 const DAY = 86_400_000;
@@ -110,5 +110,40 @@ describe("tierForScore", () => {
 
   it("returns the glyph for display", () => {
     expect(tierForScore(4.2).glyph).toBe("🏰");
+  });
+});
+
+describe("fiefCardModel", () => {
+  it("maps shares to integer percents, sorted desc, all four Houses", () => {
+    const control = fiefControl("f1", [
+      event({ id: "a", houseId: "flush", points: 42 }),
+      event({ id: "b", houseId: "bidet", points: 38 }),
+      event({ id: "c", houseId: "plunger", points: 20 }),
+    ], NOW);
+    const model = fiefCardModel(control);
+    expect(model.held).toBe(true);
+    expect(model.leaderHouseId).toBe("flush");
+    expect(model.rows.map((r) => r.houseId)).toEqual([
+      "flush", "bidet", "plunger", "porcelain",
+    ]);
+    expect(model.rows.map((r) => r.percent)).toEqual([42, 38, 20, 0]);
+  });
+
+  it("flags contested fiefs", () => {
+    const control = fiefControl("f1", [
+      event({ id: "a", houseId: "flush", points: 50 }),
+      event({ id: "b", houseId: "bidet", points: 48 }),
+    ], NOW);
+    expect(fiefCardModel(control).contested).toBe(true);
+  });
+
+  it("renders the empty state for missing or zero-influence fiefs", () => {
+    for (const model of [fiefCardModel(null), fiefCardModel(fiefControl("f9", [], NOW))]) {
+      expect(model.held).toBe(false);
+      expect(model.leaderHouseId).toBeNull();
+      expect(model.contested).toBe(false);
+      expect(model.rows).toHaveLength(4);
+      expect(model.rows.every((r) => r.percent === 0)).toBe(true);
+    }
   });
 });

@@ -108,13 +108,13 @@ describe("fiefCardModel", () => {
     const control = fiefControl("f1", [
       event({ id: "a", houseId: "flush", points: 42 }),
       event({ id: "b", houseId: "bidet", points: 38 }),
-      event({ id: "c", houseId: "garderobe", points: 20 }),
+      event({ id: "c", houseId: "plunger", points: 20 }),
     ], NOW);
     const model = fiefCardModel(control);
     expect(model.held).toBe(true);
     expect(model.leaderHouseId).toBe("flush");
     expect(model.rows.map((r) => r.houseId)).toEqual([
-      "flush", "bidet", "garderobe", "porcelain",
+      "flush", "bidet", "plunger", "porcelain",
     ]);
     expect(model.rows.map((r) => r.percent)).toEqual([42, 38, 20, 0]);
   });
