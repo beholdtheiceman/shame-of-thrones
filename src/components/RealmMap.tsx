@@ -90,7 +90,8 @@ function FiefLayer({
             eventHandlers={{
               click: (e) => {
                 if (addMode) return;
-                e.originalEvent.stopPropagation();
+                // Leaflet's stop helper is required because native stopPropagation runs too late for its internal dispatch.
+                L.DomEvent.stopPropagation(e);
                 onSelectFief(fiefId);
               },
             }}
