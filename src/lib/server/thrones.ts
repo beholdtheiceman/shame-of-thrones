@@ -42,7 +42,7 @@ export async function addThrone(
 export async function confirmThrone(confirmer: UserRow, throneId: string, now = Date.now()) {
   return db.transaction(async (tx) => {
     const throne = await tx.query.thrones.findFirst({ where: eq(thrones.id, throneId) });
-    if (!throne) throw new ThroneError("no such throne", 404);
+    if (!throne || throne.hiddenAt) throw new ThroneError("no such throne", 404);
     if (throne.status === "verified") throw new ThroneError("already confirmed", 409);
     if (throne.addedBy === confirmer.id) {
       throw new ThroneError("a throne cannot vouch for itself — a second traveler must confirm it", 403);

@@ -13,7 +13,7 @@ export function toGameRating(row: RatingRow, author: Pick<UserRow, "displayName"
     houseId: author.houseId,
     verdict: row.verdict as Rating["verdict"],
     tags: row.tags,
-    testimony: "",
+    testimony: row.testimonyHiddenAt ? "" : (row.testimony ?? ""),
     verified: row.verified,
     createdAt: row.createdAt.getTime(),
   };

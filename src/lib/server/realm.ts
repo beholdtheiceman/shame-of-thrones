@@ -1,4 +1,4 @@
-import { desc, eq } from "drizzle-orm";
+import { desc, eq, isNull } from "drizzle-orm";
 import { db } from "@/db/client";
 import { influenceEvents, ledgerEntries, ratings, thrones, users } from "@/db/schema";
 import { fiefIdForCoords } from "@/lib/geo";
@@ -7,18 +7,20 @@ import { toGameEvent, toGameRating } from "./mappers";
 
 export async function realmPayload(now = Date.now()) {
   const [throneRows, ratingRows, eventRows, ledgerRows] = await Promise.all([
-    db.select().from(thrones),
+    db.select().from(thrones).where(isNull(thrones.hiddenAt)),
     db
       .select({ rating: ratings, displayName: users.displayName, houseId: users.houseId })
       .from(ratings)
-      .innerJoin(users, eq(ratings.userId, users.id)),
+      .innerJoin(users, eq(ratings.userId, users.id))
+      .where(isNull(ratings.hiddenAt)),
     db.select().from(influenceEvents),
     db.select().from(ledgerEntries).orderBy(desc(ledgerEntries.createdAt)).limit(60),
   ]);
 
-  const gameRatings = ratingRows.map((r) =>
-    toGameRating(r.rating, { displayName: r.displayName, houseId: r.houseId })
-  );
+  const visibleThroneIds = new Set(throneRows.map((t) => t.id));
+  const gameRatings = ratingRows
+    .filter((r) => visibleThroneIds.has(r.rating.throneId))
+    .map((r) => toGameRating(r.rating, { displayName: r.displayName, houseId: r.houseId }));
   const gameEvents = eventRows.map(toGameEvent);
 
   const throneDtos = throneRows.map((t) => {

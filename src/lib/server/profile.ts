@@ -54,7 +54,7 @@ export async function mePayload(userId: string) {
   const user = await db.query.users.findFirst({ where: eq(users.id, userId) });
   if (!user) throw new ProfileError("no profile", 404);
   const events = await db.select().from(influenceEvents).where(eq(influenceEvents.userId, userId));
-  const xp = lifetimeXp(userId, events.map(toGameEvent));
+  const xp = Math.max(0, lifetimeXp(userId, events.map(toGameEvent)));
   return {
     profile: {
       name: user.displayName,

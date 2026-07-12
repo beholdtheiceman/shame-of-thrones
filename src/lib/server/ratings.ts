@@ -26,7 +26,7 @@ export class RatingError extends Error {
 export async function submitRating(user: UserRow, input: SubmitRatingInput, now = Date.now()) {
   return db.transaction(async (tx) => {
     const throne = await tx.query.thrones.findFirst({ where: eq(thrones.id, input.throneId) });
-    if (!throne) throw new RatingError("no such throne", 404);
+    if (!throne || throne.hiddenAt) throw new RatingError("no such throne", 404);
 
     const fiefId = fiefIdForCoords(throne.lat, throne.lng);
 
