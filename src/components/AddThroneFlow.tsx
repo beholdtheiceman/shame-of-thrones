@@ -58,6 +58,7 @@ export function AddThroneForm({
     open24h: false,
   });
   const [submitting, setSubmitting] = useState(false);
+  const [attested, setAttested] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   function toggleAmenity(key: keyof Amenities) {
@@ -69,7 +70,7 @@ export function AddThroneForm({
     setSubmitting(true);
     setError(null);
     try {
-      await addThrone({ name: name.trim(), lat: coords.lat, lng: coords.lng, category, amenities });
+      await addThrone({ name: name.trim(), lat: coords.lat, lng: coords.lng, category, amenities, publicAccessAttested: true });
       onClose();
     } catch (e) {
       setError(e instanceof ApiError ? e.message : e instanceof Error ? e.message : "the ravens were lost");
@@ -146,6 +147,21 @@ export function AddThroneForm({
           ))}
         </div>
 
+        <button
+          type="button"
+          onClick={() => setAttested((v) => !v)}
+          className="pixel-chip mt-4 flex w-full items-start gap-2 px-3 py-2.5 text-left"
+          style={{
+            background: attested ? "var(--brass)" : "var(--vellum)",
+            color: attested ? "var(--on-brass)" : "var(--ink-soft)",
+          }}
+        >
+          <span className="font-mono text-[15px] leading-none">{attested ? "☑" : "☐"}</span>
+          <span className="font-mono text-[13px] leading-snug">
+            I attest this throne is in a publicly accessible place — not a private residence.
+          </span>
+        </button>
+
         <p className="mt-4 font-mono text-[13px] text-ink-faint">
           New thrones enter the Realm as <b className="text-ink-soft">Rumored</b> until confirmed.
         </p>
@@ -161,7 +177,7 @@ export function AddThroneForm({
           </button>
           <button
             type="button"
-            disabled={name.trim().length < 2 || submitting}
+            disabled={name.trim().length < 2 || !attested || submitting}
             onClick={handleSubmit}
             className="pixel-btn flex-1 py-2.5 font-display text-[10px] tracking-wide"
           >

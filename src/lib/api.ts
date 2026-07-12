@@ -21,6 +21,7 @@ export interface MeDTO {
     badges: string[]; lastHouseSwitchAt: number | null;
   } | null;
   rank?: RankInfo;
+  ageGate?: { confirmed: boolean; locked: boolean };
 }
 
 export class ApiError extends Error {
@@ -48,11 +49,15 @@ export const api = {
     request<{ ok: true }>("/api/profile", { method: "POST", body: JSON.stringify({ name, houseId }) }),
   switchHouse: (houseId: HouseId) =>
     request<{ ok: true }>("/api/profile", { method: "POST", body: JSON.stringify({ houseId }) }),
+  ageGate: (birthDate: string) =>
+    request<{ confirmed: boolean; locked: boolean }>("/api/age-gate", {
+      method: "POST", body: JSON.stringify({ birthDate }),
+    }),
   submitRating: (input: { throneId: string; verdict: number; tags: string[]; verified: boolean }) =>
     request<{ updated: boolean; influence: number; flipped: boolean }>("/api/ratings", {
       method: "POST", body: JSON.stringify(input),
     }),
-  addThrone: (input: { name: string; lat: number; lng: number; category: ThroneCategory; amenities: Amenities }) =>
+  addThrone: (input: { name: string; lat: number; lng: number; category: ThroneCategory; amenities: Amenities; publicAccessAttested: boolean }) =>
     request<{ ok: true; throneId: string }>("/api/thrones", { method: "POST", body: JSON.stringify(input) }),
   confirmThrone: (throneId: string) =>
     request<{ ok: true }>(`/api/thrones/${throneId}/confirm`, { method: "POST" }),

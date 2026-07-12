@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 import { useMemo, useState } from "react";
 import { AddThroneForm, AddThroneToggle } from "@/components/AddThroneFlow";
+import { AgeGate } from "@/components/AgeGate";
 import { Ledger } from "@/components/Ledger";
 import { NearestWorthyButton } from "@/components/NearestWorthyButton";
 import { Onboarding } from "@/components/Onboarding";
@@ -40,6 +41,10 @@ export default function Home() {
     [thrones, selectedThroneId]
   );
 
+  const signedIn = state.authStatus === "needs_profile" || state.authStatus === "ready";
+  if (signedIn && state.ageGate !== null && (!state.ageGate.confirmed || state.ageGate.locked)) {
+    return <AgeGate />;
+  }
   if (state.authStatus === "needs_profile") return <Onboarding />;
 
   const house = state.profile ? HOUSE_BY_ID[state.profile.houseId] : null;
