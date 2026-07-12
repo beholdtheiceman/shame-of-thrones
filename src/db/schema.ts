@@ -1,5 +1,6 @@
 import {
   boolean,
+  customType,
   doublePrecision,
   index,
   integer,
@@ -12,6 +13,12 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 
+const bytea = customType<{ data: Buffer }>({
+  dataType() {
+    return "bytea";
+  },
+});
+
 export const houseEnum = pgEnum("house_id", ["flush", "bidet", "plunger", "porcelain"]);
 export const throneStatusEnum = pgEnum("throne_status", ["rumored", "verified"]);
 export const throneCategoryEnum = pgEnum("throne_category", [
@@ -21,10 +28,11 @@ export const influenceReasonEnum = pgEnum("influence_reason", [
   "rating", "first_of_name", "new_throne", "confirmation", "hearsay", "reversal",
 ]);
 export const userRoleEnum = pgEnum("user_role", ["user", "moderator"]);
-export const reviewKindEnum = pgEnum("review_kind", ["rating", "new_throne", "confirmation", "report", "testimony"]);
+export const reviewKindEnum = pgEnum("review_kind", ["rating", "new_throne", "confirmation", "report", "testimony", "photo"]);
 export const reviewSeverityEnum = pgEnum("review_severity", ["low", "medium", "high"]);
 export const reviewStatusEnum = pgEnum("review_status", ["pending", "resolved"]);
-export const reportSubjectEnum = pgEnum("report_subject", ["throne", "rating"]);
+export const reportSubjectEnum = pgEnum("report_subject", ["throne", "rating", "photo"]);
+export const photoStatusEnum = pgEnum("photo_status", ["pending", "approved", "rejected"]);
 export const reportReasonEnum = pgEnum("report_reason", [
   "wrong_info", "closed", "inappropriate", "not_public_restroom", "harassment", "spam",
 ]);
@@ -62,6 +70,24 @@ export const thrones = pgTable("thrones", {
   hiddenAt: timestamp("hidden_at", { withTimezone: true }),
   hiddenBy: uuid("hidden_by").references(() => users.id),
 });
+
+export const photos = pgTable(
+  "photos",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    throneId: uuid("throne_id").notNull().references(() => thrones.id),
+    uploadedBy: uuid("uploaded_by").notNull().references(() => users.id),
+    bytes: bytea("bytes").notNull(),
+    contentType: text("content_type").notNull(),
+    status: photoStatusEnum("status").notNull().default("pending"),
+    aiVerdict: jsonb("ai_verdict").$type<{ personDetected: boolean; nsfw: boolean; relevant: boolean; note: string }>(),
+    rejectedReason: text("rejected_reason"),
+    reviewedBy: uuid("reviewed_by").references(() => users.id),
+    reviewedAt: timestamp("reviewed_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("photos_throne_status_idx").on(t.throneId, t.status)]
+);
 
 export const ratings = pgTable(
   "ratings",
@@ -111,6 +137,8 @@ export type ReviewSignal =
   | { signal: "user_report"; reason: string; reporterCount: number }
   | { signal: "testimony_blocked"; category: string }
   | { signal: "testimony_flagged"; category?: string }
+  | { signal: "photo_rejected"; reason: string }
+  | { signal: "photo_pending"; relevant: boolean }
   | { signal: "screen_unavailable" };
 
 export const ageAttestations = pgTable("age_attestations", {

@@ -5,13 +5,13 @@ import { sessionInfo } from "./session";
 
 export interface ReviewItemDTO {
   id: string;
-  kind: "rating" | "new_throne" | "confirmation" | "report" | "testimony";
+  kind: "rating" | "new_throne" | "confirmation" | "report" | "testimony" | "photo";
   severity: "low" | "medium" | "high";
   status: "pending" | "resolved";
   signals: unknown[];
   actor: string;
   subject: string;
-  subjectKind: "throne" | "rating";
+  subjectKind: "throne" | "rating" | "photo";
   subjectId: string;
   actorUserId: string;
   aiAssessment: string | null;
@@ -69,11 +69,13 @@ export async function listReview(): Promise<ReviewItemDTO[]> {
     signals: row.signals,
     actor: nameById.get(row.userId) ?? "?",
     subject: await subjectSummary(row),
-    subjectKind: (row.kind === "rating" || row.kind === "testimony"
+    subjectKind: (row.kind === "photo"
+      ? "photo"
+      : row.kind === "rating" || row.kind === "testimony"
       ? "rating"
       : row.kind === "report"
         ? ((await db.query.ratings.findFirst({ where: eq(ratings.id, row.subjectId) })) ? "rating" : "throne")
-        : "throne") as "throne" | "rating",
+        : "throne") as "throne" | "rating" | "photo",
     subjectId: row.subjectId,
     actorUserId: row.userId,
     aiAssessment: row.aiAssessment, aiSeverity: row.aiSeverity,

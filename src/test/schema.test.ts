@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { eq } from "drizzle-orm";
 import { db } from "@/db/client";
-import { ageAttestations, influenceEvents, ratings, reports, reviewQueue, thrones, users } from "@/db/schema";
+import { ageAttestations, influenceEvents, photos, ratings, reports, reviewQueue, thrones, users } from "@/db/schema";
 import { resetDb } from "./db";
 
 describe("schema integrity", () => {
@@ -142,5 +142,26 @@ describe("cycle A schema", () => {
       fiefId: "f1", houseId: "flush", userId: u.id, points: -10, reason: "reversal", throneId: t.id,
     }).returning();
     expect(ev.points).toBe(-10);
+  });
+});
+
+describe("cycle B schema", () => {
+  beforeEach(resetDb);
+
+  it("photos store bytes and default to pending", async () => {
+    const [u] = await db.insert(users).values({
+      googleSubject: "sub-ph", displayName: "Ph", houseId: "flush",
+    }).returning();
+    const [t] = await db.insert(thrones).values({
+      name: "PT", lat: 1, lng: 1, category: "cafe",
+      amenities: { accessible: false, babyChanging: false, genderNeutral: false, freeAccess: true, open24h: false },
+      addedBy: u.id, publicAccessAttested: true,
+    }).returning();
+    const [p] = await db.insert(photos).values({
+      throneId: t.id, uploadedBy: u.id, bytes: Buffer.from([0xff, 0xd8, 0xff]), contentType: "image/jpeg",
+    }).returning();
+    expect(p.status).toBe("pending");
+    expect(Buffer.from(p.bytes).equals(Buffer.from([0xff, 0xd8, 0xff]))).toBe(true);
+    expect(p.aiVerdict).toBeNull();
   });
 });

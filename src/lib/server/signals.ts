@@ -64,6 +64,8 @@ const SIGNAL_SEVERITY: Record<ReviewSignal["signal"], Severity> = {
   user_report: "medium",
   testimony_blocked: "high",
   testimony_flagged: "medium",
+  photo_rejected: "high",
+  photo_pending: "low",
   screen_unavailable: "medium",
 };
 
