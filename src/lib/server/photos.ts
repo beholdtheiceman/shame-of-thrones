@@ -51,9 +51,11 @@ export async function submitPhoto(
       .rotate()
       .toFormat(SHARP_FORMAT[input.contentType])
       .toBuffer();
-  } catch {
+  } catch (e) {
+    console.error("photo re-encode failed", e);
     throw new PhotoError("that file is not a readable image", 400);
   }
+  if (bytes.length > MAX_BYTES) throw new PhotoError("portraits may not exceed 5MB", 413);
 
   const count = sql<number>`count(*)::int`;
   const [[perThrone], [pending]] = await Promise.all([

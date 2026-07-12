@@ -116,6 +116,24 @@ describe("submitPhoto", () => {
     expect((await sharp(Buffer.from(p.bytes)).metadata()).exif).toBeUndefined();
   });
 
+  it("bakes EXIF orientation into pixels before stripping", async () => {
+    const user = await makeUser();
+    const throne = await makeThrone(user.id);
+    const sideways = await sharp({
+      create: { width: 2, height: 4, channels: 3, background: { r: 5, g: 5, b: 5 } },
+    }).jpeg().withMetadata({ orientation: 6 }).toBuffer();
+    const { photoId } = await submitPhoto(
+      user,
+      { throneId: throne.id, bytes: sideways, contentType: "image/jpeg" },
+      Date.now(),
+      okVision
+    );
+    const [p] = await db.select().from(photos).where(eq(photos.id, photoId));
+    const meta = await sharp(Buffer.from(p.bytes)).metadata();
+    expect(meta.orientation).toBeUndefined();
+    expect([meta.width, meta.height]).toEqual([4, 2]);
+  });
+
   it("rejects unreadable image bytes with 400", async () => {
     const user = await makeUser();
     const throne = await makeThrone(user.id);
