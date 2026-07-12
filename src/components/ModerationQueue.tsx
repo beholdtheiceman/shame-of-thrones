@@ -5,9 +5,12 @@ import { useCallback, useEffect, useState } from "react";
 interface ReviewItem {
   id: string;
   kind: string;
+  subjectKind: "throne" | "rating";
+  subjectId: string;
+  actorUserId: string;
   severity: "low" | "medium" | "high";
   status: "pending" | "resolved";
-  signals: { signal: string; [k: string]: unknown }[];
+  signals: { signal: string; reason?: string; [k: string]: unknown }[];
   actor: string;
   subject: string;
   aiAssessment: string | null;
@@ -25,6 +28,7 @@ export function ModerationQueue() {
   const [items, setItems] = useState<ReviewItem[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
+  const [notes, setNotes] = useState<Record<string, string>>({});
 
   const load = useCallback(async () => {
     try {
@@ -53,6 +57,15 @@ export function ModerationQueue() {
     }
   }
 
+  async function moderate(item: ReviewItem, action: string, days?: number) {
+    const subjectId = action === "suspend_user" || action === "ban_user" ? item.actorUserId : item.subjectId;
+    await act(item.id, "/api/moderate", { action, subjectId, days, note: notes[item.id] || undefined, reviewId: item.id });
+  }
+
+  async function resolveOnly(item: ReviewItem) {
+    await act(item.id, `/api/review/${item.id}`, { action: "resolve", note: notes[item.id] || undefined });
+  }
+
   if (error) return <p className="mt-4 font-mono text-[13px] text-crimson">{error}</p>;
   if (items === null) return <p className="mt-4 font-mono text-[13px] text-ink-faint">Consulting the ledgers…</p>;
   if (items.length === 0) return <p className="mt-4 font-mono text-[13px] text-ink-faint">The queue is empty. The Realm is at peace.</p>;
@@ -76,7 +89,7 @@ export function ModerationQueue() {
 
           <p className="mt-2 font-mono text-[14px] text-ink">{item.subject}</p>
           <p className="mt-1 font-mono text-[13px] text-ink-soft">
-            by <b>{item.actor}</b> · signals: {item.signals.map((s) => s.signal).join(", ")}
+            by <b>{item.actor}</b> · signals: {item.signals.map((s) => ("reason" in s && s.reason ? `${s.signal}(${s.reason})` : s.signal)).join(", ")}
           </p>
 
           {item.aiAssessment ? (
@@ -93,28 +106,56 @@ export function ModerationQueue() {
           )}
 
           {item.status === "pending" ? (
-            <div className="mt-3 flex gap-2">
-              <button
-                type="button"
-                disabled={busy === item.id}
-                onClick={() => {
-                  const note = window.prompt("Resolution note (optional):") ?? undefined;
-                  void act(item.id, `/api/review/${item.id}`, { action: "resolve", note });
-                }}
-                className="pixel-btn flex-1 py-2 font-display text-[9px] tracking-wide"
-              >
-                Resolve
-              </button>
-              {!item.aiAssessment && (
-                <button
-                  type="button"
-                  disabled={busy === item.id}
-                  onClick={() => void act(item.id, `/api/review/${item.id}/triage`)}
-                  className="pixel-chip flex-1 bg-vellum py-2 font-mono text-[13px] uppercase tracking-wide text-ink-soft"
-                >
-                  Ask the Maester again
+            <div className="mt-3">
+              <input
+                value={notes[item.id] ?? ""}
+                onChange={(e) => setNotes((n) => ({ ...n, [item.id]: e.target.value }))}
+                maxLength={500}
+                placeholder="Resolution note (optional)"
+                className="pixel-panel-flat w-full px-3 py-2 font-mono text-[13px] text-ink outline-none placeholder:text-ink-faint"
+              />
+              <div className="mt-2 flex flex-wrap gap-2">
+                {item.subjectKind === "throne" && (
+                  <button type="button" disabled={busy === item.id} onClick={() => void moderate(item, "hide_throne")}
+                    className="pixel-chip bg-vellum px-3 py-2 font-mono text-[12px] uppercase text-crimson">
+                    Hide throne
+                  </button>
+                )}
+                {item.subjectKind === "rating" && (
+                  <>
+                    <button type="button" disabled={busy === item.id} onClick={() => void moderate(item, "hide_rating")}
+                      className="pixel-chip bg-vellum px-3 py-2 font-mono text-[12px] uppercase text-crimson">
+                      Hide rating
+                    </button>
+                    <button type="button" disabled={busy === item.id} onClick={() => void moderate(item, "hide_testimony")}
+                      className="pixel-chip bg-vellum px-3 py-2 font-mono text-[12px] uppercase text-crimson">
+                      Strike testimony
+                    </button>
+                  </>
+                )}
+                <button type="button" disabled={busy === item.id} onClick={() => void moderate(item, "suspend_user", 7)}
+                  className="pixel-chip bg-vellum px-3 py-2 font-mono text-[12px] uppercase text-ink-soft">
+                  Suspend 7d
                 </button>
-              )}
+                <button type="button" disabled={busy === item.id} onClick={() => void moderate(item, "suspend_user", 30)}
+                  className="pixel-chip bg-vellum px-3 py-2 font-mono text-[12px] uppercase text-ink-soft">
+                  Suspend 30d
+                </button>
+                <button type="button" disabled={busy === item.id} onClick={() => void moderate(item, "ban_user")}
+                  className="pixel-chip bg-vellum px-3 py-2 font-mono text-[12px] uppercase text-crimson">
+                  Ban
+                </button>
+                <button type="button" disabled={busy === item.id} onClick={() => void resolveOnly(item)}
+                  className="pixel-btn px-4 py-2 font-display text-[9px] tracking-wide">
+                  Resolve
+                </button>
+                {!item.aiAssessment && (
+                  <button type="button" disabled={busy === item.id} onClick={() => void act(item.id, `/api/review/${item.id}/triage`)}
+                    className="pixel-chip bg-vellum px-3 py-2 font-mono text-[12px] uppercase text-ink-soft">
+                    Ask the Maester again
+                  </button>
+                )}
+              </div>
             </div>
           ) : (
             item.resolutionNote && (

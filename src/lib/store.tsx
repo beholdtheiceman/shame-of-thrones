@@ -25,7 +25,7 @@ interface StoreContextValue {
   setProfile: (name: string, houseId: HouseId) => Promise<void>;
   switchHouse: (houseId: HouseId) => Promise<void>;
   submitAgeGate: (birthDate: string) => Promise<void>;
-  submitRating: (input: { throneId: string; verdict: 1 | 2 | 3 | 4 | 5; tags: string[]; testimony: string; verified: boolean }) => Promise<void>;
+  submitRating: (input: { throneId: string; verdict: 1 | 2 | 3 | 4 | 5; tags: string[]; testimony: string; verified: boolean }) => Promise<{ testimonyBlocked: boolean }>;
   addThrone: (input: { name: string; lat: number; lng: number; category: ThroneCategory; amenities: Amenities; publicAccessAttested: boolean }) => Promise<void>;
   confirmThrone: (throneId: string) => Promise<void>;
 }
@@ -93,7 +93,18 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       setProfile: (name, houseId) => mutate(() => api.createProfile(name, houseId)),
       switchHouse: (houseId) => mutate(() => api.switchHouse(houseId)),
       submitAgeGate: (birthDate) => mutate(() => api.ageGate(birthDate)),
-      submitRating: ({ testimony: _ignored, ...input }) => mutate(() => api.submitRating(input)),
+      submitRating: async (input) => {
+        let blocked = false;
+        await mutate(async () => {
+          const res = await api.submitRating({
+            throneId: input.throneId, verdict: input.verdict, tags: input.tags, verified: input.verified,
+            testimony: input.testimony.trim() || undefined,
+          });
+          blocked = !!res.testimonyBlocked;
+          return res;
+        });
+        return { testimonyBlocked: blocked };
+      },
       addThrone: (input) => mutate(() => api.addThrone(input)),
       confirmThrone: (throneId) => mutate(() => api.confirmThrone(throneId)),
     }),

@@ -23,6 +23,8 @@ export function SittingFlow({
   const { state, submitRating } = useStore();
   const [verdict, setVerdict] = useState<1 | 2 | 3 | 4 | 5 | null>(null);
   const [tags, setTags] = useState<string[]>([]);
+  const [testimony, setTestimony] = useState("");
+  const [blockedNote, setBlockedNote] = useState(false);
   const [proximity, setProximity] = useState<ProximityState>("checking");
   const [submitting, setSubmitting] = useState(false);
   const [influenceClaimed, setInfluenceClaimed] = useState(false);
@@ -64,13 +66,14 @@ export function SittingFlow({
     setSubmitting(true);
     setError(null);
     try {
-      await submitRating({
+      const result = await submitRating({
         throneId: throne.id,
         verdict,
         tags,
-        testimony: "",
+        testimony,
         verified: proximity === "verified",
       });
+      if (result.testimonyBlocked) setBlockedNote(true);
       setInfluenceClaimed(true);
       window.setTimeout(onSubmitted, 700);
     } catch (e) {
@@ -159,10 +162,28 @@ export function SittingFlow({
         ))}
       </div>
 
+      <label className="mt-4 block font-mono text-[13px] uppercase tracking-wide text-ink-faint">
+        Scroll of Testimony (optional)
+      </label>
+      <textarea
+        value={testimony}
+        onChange={(e) => setTestimony(e.target.value)}
+        maxLength={280}
+        rows={3}
+        placeholder="Speak, traveler. What horrors or wonders did you find?"
+        className="pixel-panel-flat mt-1.5 w-full resize-none px-3 py-2.5 font-mono text-[14px] text-ink outline-none placeholder:text-ink-faint"
+      />
+      <p className="mt-1 text-right font-mono text-[11px] text-ink-faint">{testimony.length}/280</p>
+
       {error && <p className="mt-4 font-mono text-[14px] text-crimson">{error}</p>}
       {influenceClaimed && (
         <p className="pixel-chip mt-4 animate-bounce bg-brass px-3 py-2 text-center font-mono text-[14px] text-on-brass">
           Influence claimed!
+        </p>
+      )}
+      {blockedNote && (
+        <p className="mt-2 font-mono text-[13px] text-crimson">
+          The Maester declines to record those words. Your verdict stands.
         </p>
       )}
 

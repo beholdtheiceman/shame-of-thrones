@@ -7,6 +7,7 @@ import { useStore } from "@/lib/store";
 import { haversineMeters } from "@/lib/geo";
 import { useNow } from "@/lib/useNow";
 import type { Throne } from "@/lib/types";
+import { ReportModal } from "./ReportModal";
 import { SignInGate } from "./SignInGate";
 import { SittingFlow } from "./SittingFlow";
 
@@ -29,6 +30,7 @@ export function ThroneSheet({
   const [mode, setMode] = useState<"detail" | "sitting">("detail");
   const [showSignInGate, setShowSignInGate] = useState(false);
   const [confirmError, setConfirmError] = useState<string | null>(null);
+  const [reporting, setReporting] = useState<{ kind: "throne" | "rating"; id: string; label: string } | null>(null);
   const now = useNow();
 
   const score = throne.score;
@@ -81,6 +83,13 @@ export function ThroneSheet({
                   {throne.name}
                 </h2>
               </div>
+              <div className="flex shrink-0 items-center gap-2">
+                {state.authStatus === "ready" && (
+                  <button type="button" onClick={() => setReporting({ kind: "throne", id: throne.id, label: throne.name })}
+                    className="font-mono text-[11px] uppercase tracking-wide text-ink-faint underline">
+                    Report
+                  </button>
+                )}
               <button
                 type="button"
                 onClick={onClose}
@@ -89,6 +98,7 @@ export function ThroneSheet({
               >
                 ✕
               </button>
+              </div>
             </div>
 
             <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -157,7 +167,15 @@ export function ThroneSheet({
                             {HOUSE_BY_ID[r.houseId].name}
                           </span>
                         </span>
-                        <span className="tabular">{r.verdict}/5</span>
+                        <span>
+                          <span className="tabular">{r.verdict}/5</span>
+                          {state.authStatus === "ready" && (
+                            <button type="button" onClick={() => setReporting({ kind: "rating", id: r.id, label: `a rating at ${throne.name}` })}
+                              className="ml-2 font-mono text-[10px] uppercase text-ink-faint underline">
+                              Report
+                            </button>
+                          )}
+                        </span>
                       </div>
                       {r.testimony && (
                         <p className="mt-1 italic text-ink-soft">&ldquo;{r.testimony}&rdquo;</p>
@@ -178,6 +196,9 @@ export function ThroneSheet({
           </div>
         )}
       </div>
+      {reporting && (
+        <ReportModal subjectKind={reporting.kind} subjectId={reporting.id} subjectLabel={reporting.label} onClose={() => setReporting(null)} />
+      )}
     </div>
   );
 }
