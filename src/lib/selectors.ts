@@ -1,4 +1,4 @@
-import { HOUSES } from "./data";
+import { HOUSES, VERDICT_SCALE } from "./data";
 import type { HouseId, InfluenceEvent, Rating } from "./types";
 
 const MS_PER_DAY = 86_400_000;
@@ -130,4 +130,18 @@ export function scoreBand(score: number | null): "high" | "mid" | "low" | "unrat
   if (score >= 4) return "high";
   if (score >= 3) return "mid";
   return "low";
+}
+
+export interface VerdictTier {
+  value: 1 | 2 | 3 | 4 | 5;
+  glyph: string;
+  label: string;
+}
+
+/** Maps an average score to the nearest VERDICT_SCALE tier ("Fit for a
+ * Knight" leads the display; the raw number is secondary — PRD register). */
+export function tierForScore(score: number): VerdictTier {
+  const clamped = Math.min(5, Math.max(1, score));
+  const value = Math.round(clamped) as VerdictTier["value"];
+  return VERDICT_SCALE.find((t) => t.value === value) as VerdictTier;
 }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { fiefControl, lifetimeXp, rankForXp, throneScore } from "./selectors";
+import { fiefControl, lifetimeXp, rankForXp, throneScore, tierForScore } from "./selectors";
 import type { InfluenceEvent, Rating } from "./types";
 
 const DAY = 86_400_000;
@@ -91,5 +91,24 @@ describe("ranks", () => {
     expect(rankForXp(300).name).toBe("Knight");
     expect(rankForXp(12000).name).toBe("Grand Maester of the Privy Council");
     expect(rankForXp(12000).progress).toBe(1);
+  });
+});
+
+describe("tierForScore", () => {
+  it("rounds to the nearest tier", () => {
+    expect(tierForScore(4.2).label).toBe("Fit for a Knight");
+    expect(tierForScore(2.49).label).toBe("Peasant's Privy");
+    expect(tierForScore(2.5).label).toBe("Soldier's Rest");
+    expect(tierForScore(4.5).label).toBe("The Iron Throne");
+    expect(tierForScore(1.0).label).toBe("The Dungeon");
+  });
+
+  it("clamps out-of-range scores", () => {
+    expect(tierForScore(0.2).value).toBe(1);
+    expect(tierForScore(9).value).toBe(5);
+  });
+
+  it("returns the glyph for display", () => {
+    expect(tierForScore(4.2).glyph).toBe("🏰");
   });
 });
