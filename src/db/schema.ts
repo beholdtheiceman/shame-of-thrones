@@ -19,12 +19,17 @@ export const throneCategoryEnum = pgEnum("throne_category", [
 export const influenceReasonEnum = pgEnum("influence_reason", [
   "rating", "first_of_name", "new_throne", "confirmation", "hearsay",
 ]);
+export const userRoleEnum = pgEnum("user_role", ["user", "moderator"]);
+export const reviewKindEnum = pgEnum("review_kind", ["rating", "new_throne", "confirmation"]);
+export const reviewSeverityEnum = pgEnum("review_severity", ["low", "medium", "high"]);
+export const reviewStatusEnum = pgEnum("review_status", ["pending", "resolved"]);
 
 export const users = pgTable("users", {
   id: uuid("id").defaultRandom().primaryKey(),
   googleSubject: text("google_subject").notNull().unique(),
   displayName: text("display_name").notNull().unique(),
   houseId: houseEnum("house_id").notNull(),
+  role: userRoleEnum("role").notNull().default("user"),
   badges: jsonb("badges").$type<string[]>().notNull().default([]),
   joinedAt: timestamp("joined_at", { withTimezone: true }).notNull().defaultNow(),
   lastHouseSwitchAt: timestamp("last_house_switch_at", { withTimezone: true }),
@@ -37,6 +42,7 @@ export const thrones = pgTable("thrones", {
   lng: doublePrecision("lng").notNull(),
   category: throneCategoryEnum("category").notNull(),
   status: throneStatusEnum("status").notNull().default("rumored"),
+  publicAccessAttested: boolean("public_access_attested").notNull().default(false),
   amenities: jsonb("amenities")
     .$type<{
       accessible: boolean; babyChanging: boolean; genderNeutral: boolean;
@@ -82,3 +88,40 @@ export const ledgerEntries = pgTable("ledger_entries", {
   text: text("text").notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
+
+export type ReviewSignal =
+  | { signal: "new_account"; accountAgeDays: number }
+  | { signal: "rate_soft"; writesLastHour: number }
+  | { signal: "impossible_travel"; kmh: number; fromThroneId: string; minutes: number }
+  | { signal: "new_throne" };
+
+export const ageAttestations = pgTable("age_attestations", {
+  googleSubject: text("google_subject").primaryKey(),
+  over13ConfirmedAt: timestamp("over13_confirmed_at", { withTimezone: true }),
+  lockedAt: timestamp("locked_at", { withTimezone: true }),
+});
+
+export const reviewQueue = pgTable(
+  "review_queue",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    kind: reviewKindEnum("kind").notNull(),
+    subjectId: uuid("subject_id").notNull(), // rating id or throne id — spans tables, no FK
+    userId: uuid("user_id").notNull().references(() => users.id),
+    signals: jsonb("signals").$type<ReviewSignal[]>().notNull(),
+    severity: reviewSeverityEnum("severity").notNull(),
+    aiAssessment: text("ai_assessment"),
+    aiSeverity: reviewSeverityEnum("ai_severity"),
+    aiTriagedAt: timestamp("ai_triaged_at", { withTimezone: true }),
+    aiError: text("ai_error"),
+    status: reviewStatusEnum("status").notNull().default("pending"),
+    resolvedBy: uuid("resolved_by").references(() => users.id),
+    resolvedAt: timestamp("resolved_at", { withTimezone: true }),
+    resolutionNote: text("resolution_note"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    index("review_status_created_idx").on(t.status, t.createdAt),
+    index("review_user_idx").on(t.userId),
+  ]
+);

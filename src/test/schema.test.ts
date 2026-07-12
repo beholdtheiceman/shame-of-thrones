@@ -59,3 +59,40 @@ describe("schema integrity", () => {
     ).rejects.toThrow();
   });
 });
+
+import { ageAttestations, reviewQueue } from "@/db/schema";
+
+describe("phase 1 schema", () => {
+  beforeEach(resetDb);
+
+  it("users default to role 'user'", async () => {
+    const [user] = await db.insert(users).values({
+      googleSubject: "sub-r", displayName: "RoleUser", houseId: "flush",
+    }).returning();
+    expect(user.role).toBe("user");
+  });
+
+  it("review_queue stores signals jsonb and defaults to pending", async () => {
+    const [user] = await db.insert(users).values({
+      googleSubject: "sub-q", displayName: "QueueUser", houseId: "flush",
+    }).returning();
+    const [row] = await db.insert(reviewQueue).values({
+      kind: "rating",
+      subjectId: "00000000-0000-0000-0000-000000000001",
+      userId: user.id,
+      signals: [{ signal: "impossible_travel", kmh: 840, fromThroneId: "x", minutes: 12 }],
+      severity: "high",
+    }).returning();
+    expect(row.status).toBe("pending");
+    expect(row.aiAssessment).toBeNull();
+    expect(row.signals[0]).toMatchObject({ signal: "impossible_travel", kmh: 840 });
+  });
+
+  it("age_attestations keys by google_subject and stores no birthdate", async () => {
+    const [att] = await db.insert(ageAttestations).values({
+      googleSubject: "sub-a", over13ConfirmedAt: new Date(),
+    }).returning();
+    expect(att.lockedAt).toBeNull();
+    expect(Object.keys(att).sort()).toEqual(["googleSubject", "lockedAt", "over13ConfirmedAt"]);
+  });
+});

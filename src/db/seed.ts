@@ -36,6 +36,7 @@ async function main() {
   for (const t of SEED_THRONES) {
     const [row] = await db.insert(thrones).values({
       name: t.name, lat: t.lat, lng: t.lng, category: t.category, status: t.status,
+      publicAccessAttested: true,
       amenities: t.amenities, addedBy: userIdByName.get(t.addedBy)!,
       addedAt: new Date(t.addedAt), lastConfirmedAt: new Date(t.lastConfirmedAt),
     }).returning();
