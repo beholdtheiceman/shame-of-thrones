@@ -3,7 +3,7 @@ import { db } from "@/db/client";
 import { influenceEvents, ledgerEntries, thrones, users } from "@/db/schema";
 import { HOUSE_BY_ID } from "@/lib/data";
 import { fiefIdForCoords } from "@/lib/geo";
-import { INFLUENCE } from "@/lib/game/rules";
+import { INFLUENCE, rampedPoints } from "@/lib/game/rules";
 import type { Amenities, ThroneCategory } from "@/lib/types";
 
 type UserRow = typeof users.$inferSelect;
@@ -51,15 +51,17 @@ export async function confirmThrone(confirmer: UserRow, throneId: string, now = 
     if (!adder) throw new ThroneError("adder no longer exists", 500);
 
     const fiefId = fiefIdForCoords(throne.lat, throne.lng);
+    const adderAward = rampedPoints(INFLUENCE.throneConfirmedAdderAward, now - adder.joinedAt.getTime());
+    const confirmAward = rampedPoints(INFLUENCE.confirmAction, now - confirmer.joinedAt.getTime());
     await tx.insert(influenceEvents).values([
       { // PRD §5.5: adding a throne pays out once confirmed — to the adder
         fiefId, houseId: adder.houseId, userId: adder.id,
-        points: INFLUENCE.throneConfirmedAdderAward, reason: "new_throne",
+        points: adderAward, reason: "new_throne",
         throneId: throne.id, createdAt: new Date(now),
       },
       { // PRD §5.5: the confirmation itself is a freshness check — to the confirmer
         fiefId, houseId: confirmer.houseId, userId: confirmer.id,
-        points: INFLUENCE.confirmAction, reason: "confirmation",
+        points: confirmAward, reason: "confirmation",
         throneId: throne.id, createdAt: new Date(now),
       },
     ]);
@@ -69,7 +71,7 @@ export async function confirmThrone(confirmer: UserRow, throneId: string, now = 
       .where(eq(thrones.id, throne.id)).returning();
 
     await tx.insert(ledgerEntries).values({
-      text: `✅ **${confirmer.displayName}** confirms **${throne.name}** is real — it enters the Realm's official record (+${INFLUENCE.throneConfirmedAdderAward} Influence to **${HOUSE_BY_ID[adder.houseId].name}**).`,
+      text: `✅ **${confirmer.displayName}** confirms **${throne.name}** is real — it enters the Realm's official record (+${adderAward} Influence to **${HOUSE_BY_ID[adder.houseId].name}**).`,
       createdAt: new Date(now),
     });
     return updated;

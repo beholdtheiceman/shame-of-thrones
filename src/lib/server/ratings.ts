@@ -3,7 +3,7 @@ import { db } from "@/db/client";
 import { influenceEvents, ledgerEntries, ratings, thrones, users } from "@/db/schema";
 import { HOUSE_BY_ID } from "@/lib/data";
 import { fiefIdForCoords } from "@/lib/geo";
-import { INFLUENCE, RATING_UPDATE_WINDOW_MS } from "@/lib/game/rules";
+import { INFLUENCE, rampedPoints, RATING_UPDATE_WINDOW_MS } from "@/lib/game/rules";
 import { fiefControl } from "@/lib/selectors";
 import { toGameEvent } from "./mappers";
 
@@ -54,7 +54,12 @@ export async function submitRating(user: UserRow, input: SubmitRatingInput, now 
     const fiefEventRows = await tx.select().from(influenceEvents).where(eq(influenceEvents.fiefId, fiefId));
     const before = fiefControl(fiefId, fiefEventRows.map(toGameEvent), now);
 
-    const base = input.verified ? INFLUENCE.verifiedRating : INFLUENCE.hearsayRating;
+    const accountAgeMs = now - user.joinedAt.getTime();
+    const base = rampedPoints(
+      input.verified ? INFLUENCE.verifiedRating : INFLUENCE.hearsayRating,
+      accountAgeMs
+    );
+    const firstBonus = rampedPoints(INFLUENCE.firstOfNameBonus, accountAgeMs);
     const newEvents = [
       {
         fiefId, houseId: user.houseId, userId: user.id, points: base,
@@ -63,7 +68,7 @@ export async function submitRating(user: UserRow, input: SubmitRatingInput, now 
       },
       ...(isFirstRating
         ? [{
-            fiefId, houseId: user.houseId, userId: user.id, points: INFLUENCE.firstOfNameBonus,
+            fiefId, houseId: user.houseId, userId: user.id, points: firstBonus,
             reason: "first_of_name" as const, throneId: throne.id, createdAt: new Date(now),
           }]
         : []),
@@ -72,7 +77,7 @@ export async function submitRating(user: UserRow, input: SubmitRatingInput, now 
 
     const after = fiefControl(fiefId, [...fiefEventRows, ...inserted].map(toGameEvent), now);
     const flipped = !!after.leader && (!before.leader || before.leader.houseId !== after.leader.houseId);
-    const points = base + (isFirstRating ? INFLUENCE.firstOfNameBonus : 0);
+    const points = base + (isFirstRating ? firstBonus : 0);
     const houseName = HOUSE_BY_ID[user.houseId].name;
 
     const ledgerTexts: string[] = [];

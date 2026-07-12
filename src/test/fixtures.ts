@@ -7,6 +7,7 @@ export async function makeUser(overrides: Partial<typeof users.$inferInsert> = {
     googleSubject: `sub-${n}`,
     displayName: `User-${n}`,
     houseId: "flush",
+    joinedAt: new Date(Date.now() - 30 * 86_400_000), // established; override for ramp tests
     ...overrides,
   }).returning();
   return user;
