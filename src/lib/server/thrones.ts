@@ -16,13 +16,14 @@ export class ThroneError extends Error {
 
 export async function addThrone(
   user: UserRow,
-  input: { name: string; lat: number; lng: number; category: ThroneCategory; amenities: Amenities },
+  input: { name: string; lat: number; lng: number; category: ThroneCategory; amenities: Amenities; publicAccessAttested: boolean },
   now = Date.now()
 ) {
   return db.transaction(async (tx) => {
     const [throne] = await tx.insert(thrones).values({
       name: input.name, lat: input.lat, lng: input.lng,
       category: input.category, amenities: input.amenities,
+      publicAccessAttested: input.publicAccessAttested,
       status: "rumored", addedBy: user.id,
       addedAt: new Date(now), lastConfirmedAt: new Date(now),
     }).returning();

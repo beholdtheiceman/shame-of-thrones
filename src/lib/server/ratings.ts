@@ -45,11 +45,11 @@ export async function submitRating(user: UserRow, input: SubmitRatingInput, now 
       (await tx.select({ id: ratings.id }).from(ratings).where(eq(ratings.throneId, throne.id)).limit(1))
         .length === 0;
 
-    await tx.insert(ratings).values({
+    const [insertedRating] = await tx.insert(ratings).values({
       throneId: throne.id, userId: user.id,
       verdict: input.verdict, tags: input.tags, verified: input.verified,
       createdAt: new Date(now),
-    });
+    }).returning();
 
     const fiefEventRows = await tx.select().from(influenceEvents).where(eq(influenceEvents.fiefId, fiefId));
     const before = fiefControl(fiefId, fiefEventRows.map(toGameEvent), now);
@@ -97,6 +97,10 @@ export async function submitRating(user: UserRow, input: SubmitRatingInput, now 
     await tx.insert(ledgerEntries).values(ledgerTexts.map((text) => ({ text, createdAt: new Date(now) })));
     await tx.update(thrones).set({ lastConfirmedAt: new Date(now) }).where(eq(thrones.id, throne.id));
 
-    return { updated: false as const, influence: points, flipped, firstOfName: isFirstRating, fief: after };
+    return {
+      updated: false as const, influence: points, flipped, firstOfName: isFirstRating, fief: after,
+      ratingId: insertedRating.id,
+      throne: { id: throne.id, lat: throne.lat, lng: throne.lng },
+    };
   });
 }

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { HOUSES } from "@/lib/data";
+import { AgeGateError, requireAgeGate } from "@/lib/server/ageGate";
 import { createProfile, ProfileError, switchHouse } from "@/lib/server/profile";
 import { sessionInfo } from "@/lib/server/session";
 import type { HouseId } from "@/lib/types";
@@ -20,6 +21,7 @@ export async function POST(req: Request) {
   if (!parsed.success) return NextResponse.json({ error: "invalid body" }, { status: 400 });
 
   try {
+    await requireAgeGate(info.kind === "user" ? info.user.googleSubject : info.googleSubject);
     if (info.kind === "no_profile") {
       if (!parsed.data.name) return NextResponse.json({ error: "name required" }, { status: 400 });
       const user = await createProfile(info.googleSubject, parsed.data.name, parsed.data.houseId);
@@ -28,6 +30,7 @@ export async function POST(req: Request) {
     await switchHouse(info.user.id, parsed.data.houseId);
     return NextResponse.json({ ok: true });
   } catch (e) {
+    if (e instanceof AgeGateError) return NextResponse.json({ error: e.code }, { status: e.status });
     if (e instanceof ProfileError) return NextResponse.json({ error: e.message }, { status: e.status });
     throw e;
   }
