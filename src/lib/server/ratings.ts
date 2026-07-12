@@ -12,6 +12,7 @@ export interface SubmitRatingInput {
   verdict: 1 | 2 | 3 | 4 | 5;
   tags: string[];
   verified: boolean;
+  testimony?: string;
 }
 
 type UserRow = typeof users.$inferSelect;
@@ -38,7 +39,7 @@ export async function submitRating(user: UserRow, input: SubmitRatingInput, now 
       await tx.update(ratings)
         .set({ verdict: input.verdict, tags: input.tags, verified: input.verified })
         .where(eq(ratings.id, latest.id));
-      return { updated: true as const, influence: 0, flipped: false, firstOfName: false };
+      return { updated: true as const, influence: 0, flipped: false, firstOfName: false, ratingId: latest.id };
     }
 
     const isFirstRating =
@@ -48,6 +49,7 @@ export async function submitRating(user: UserRow, input: SubmitRatingInput, now 
     const [insertedRating] = await tx.insert(ratings).values({
       throneId: throne.id, userId: user.id,
       verdict: input.verdict, tags: input.tags, verified: input.verified,
+      testimony: input.testimony?.trim() || null,
       createdAt: new Date(now),
     }).returning();
 
