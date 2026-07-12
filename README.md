@@ -56,6 +56,15 @@ Peasant"); signing in with Google lets you pledge a House and rate Thrones.
   `UPDATE users SET role = 'moderator' WHERE display_name = '...';` in the Neon
   console. Requires `ANTHROPIC_API_KEY` for triage (optional in dev — items show
   "triage pending" without it).
+- **Reports, takedowns & testimony (Phase 1, sub-project 2)** — report buttons on
+  thrones and ratings (PRD reason picker, one report per user per subject, 20/day
+  cap, reports merge into one queue row with severity escalation); moderator
+  takedowns soft-hide content and append **negative reversal events** to the
+  influence ledger (append-only invariant holds, decay math cancels exactly);
+  account suspend/ban/reinstate levers block writes only; 280-char Scroll of
+  Testimony with a synchronous AI screen — severe content (slurs/doxxing/threats)
+  is blocked at submit, borderline posts and flags for review, and a screen
+  outage fails open.
 - **Today's Dispatches** — a global event feed of rating strikes, Fief flips, and
   confirmations, shared across all users.
 - A 16/32-bit pixel-RPG visual identity: Press Start 2P / Pixelify Sans / VT323,

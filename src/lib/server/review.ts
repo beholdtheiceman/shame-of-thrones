@@ -32,14 +32,19 @@ export async function moderatorOrNull() {
 }
 
 async function subjectSummary(row: typeof reviewQueue.$inferSelect): Promise<string> {
-  if (row.kind === "rating") {
+  if (row.kind === "rating" || row.kind === "testimony" || row.kind === "report") {
     const rating = await db.query.ratings.findFirst({ where: eq(ratings.id, row.subjectId) });
-    if (!rating) return "Rating (missing)";
-    const throne = await db.query.thrones.findFirst({ where: eq(thrones.id, rating.throneId) });
-    return `${rating.verified ? "Verified" : "Hearsay"} ${rating.verdict}/5 rating at "${throne?.name ?? "?"}"`;
+    if (rating) {
+      const throne = await db.query.thrones.findFirst({ where: eq(thrones.id, rating.throneId) });
+      const base = `${rating.verified ? "Verified" : "Hearsay"} ${rating.verdict}/5 rating at "${throne?.name ?? "?"}"`;
+      return row.kind === "report" ? `Reported: ${base}` : base;
+    }
+    if (row.kind !== "report") return "Rating (missing)";
   }
   const throne = await db.query.thrones.findFirst({ where: eq(thrones.id, row.subjectId) });
-  const label = row.kind === "new_throne" ? "New throne" : "Confirmation of";
+  const label = row.kind === "new_throne" ? "New throne"
+    : row.kind === "report" ? "Reported throne"
+    : "Confirmation of";
   return `${label} "${throne?.name ?? "?"}"`;
 }
 
