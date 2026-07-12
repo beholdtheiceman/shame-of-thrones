@@ -66,15 +66,20 @@ async function buildPrompt(row: typeof reviewQueue.$inferSelect): Promise<string
   ]);
 
   let subject = "";
-  if (row.kind === "rating") {
-    const rating = await db.query.ratings.findFirst({ where: eq(ratings.id, row.subjectId) });
-    const throne = rating
-      ? await db.query.thrones.findFirst({ where: eq(thrones.id, rating.throneId) })
-      : undefined;
-    subject = `A ${rating?.verified ? "verified" : "hearsay"} rating (verdict ${rating?.verdict}/5, tags: ${rating?.tags.join(", ") || "none"}) at throne "${throne?.name}" (category ${throne?.category}, at ${throne?.lat}, ${throne?.lng}).`;
+  const asRating = (row.kind === "rating" || row.kind === "testimony" || row.kind === "report")
+    ? await db.query.ratings.findFirst({ where: eq(ratings.id, row.subjectId) })
+    : undefined;
+  if (asRating) {
+    const throne = await db.query.thrones.findFirst({ where: eq(thrones.id, asRating.throneId) });
+    subject = `A ${asRating.verified ? "verified" : "hearsay"} rating (verdict ${asRating.verdict}/5, tags: ${asRating.tags.join(", ") || "none"}${asRating.testimony ? `, testimony: "${asRating.testimony}"` : ""}) at throne "${throne?.name}" (category ${throne?.category}, at ${throne?.lat}, ${throne?.lng}).`;
+  } else if (row.kind === "rating" || row.kind === "testimony") {
+    subject = "Rating (missing).";
   } else {
     const throne = await db.query.thrones.findFirst({ where: eq(thrones.id, row.subjectId) });
-    subject = `${row.kind === "new_throne" ? "A newly charted throne" : "A confirmation of throne"}: "${throne?.name}" (category ${throne?.category}, at ${throne?.lat}, ${throne?.lng}, status ${throne?.status}).`;
+    const label = row.kind === "new_throne" ? "A newly charted throne"
+      : row.kind === "report" ? "A reported throne"
+      : "A confirmation of throne";
+    subject = `${label}: "${throne?.name}" (category ${throne?.category}, at ${throne?.lat}, ${throne?.lng}, status ${throne?.status}).`;
   }
 
   return [

@@ -37,7 +37,10 @@ export async function submitRating(user: UserRow, input: SubmitRatingInput, now 
 
     if (latest && now - latest.createdAt.getTime() < RATING_UPDATE_WINDOW_MS) {
       await tx.update(ratings)
-        .set({ verdict: input.verdict, tags: input.tags, verified: input.verified })
+        .set({
+          verdict: input.verdict, tags: input.tags, verified: input.verified,
+          ...(input.testimony !== undefined ? { testimony: input.testimony.trim() || null } : {}),
+        })
         .where(eq(ratings.id, latest.id));
       return { updated: true as const, influence: 0, flipped: false, firstOfName: false, ratingId: latest.id };
     }
