@@ -65,6 +65,13 @@ Peasant"); signing in with Google lets you pledge a House and rate Thrones.
   Testimony with a synchronous AI screen — severe content (slurs/doxxing/threats)
   is blocked at submit, borderline posts and flags for review, and a screen
   outage fails open.
+- **Photo pipeline (Phase 1, sub-project 3)** — "Offer a Portrait" on each
+  throne (entrances/signage/sinks only, 5MB, 3 per user per throne). Bytes live
+  in Postgres and are served ONLY through a status-checking route; Claude
+  vision classifies at upload (any person → auto-reject; NSFW → auto-reject +
+  bytes wiped; classification outage **fails closed** — the photo stays
+  invisible); every photo needs human approval on `/moderation` before public
+  visibility. Approved photos are reportable like all UGC.
 - **Today's Dispatches** — a global event feed of rating strikes, Fief flips, and
   confirmations, shared across all users.
 - A 16/32-bit pixel-RPG visual identity: Press Start 2P / Pixelify Sans / VT323,
