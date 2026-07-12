@@ -5,7 +5,7 @@ export interface ThroneDTO {
   id: string; name: string; lat: number; lng: number;
   category: ThroneCategory; status: "rumored" | "verified";
   amenities: Amenities; addedBy: string; addedAt: number; lastConfirmedAt: number;
-  fiefId: string; score: number | null; ratingCount: number;
+  fiefId: string; score: number | null; ratingCount: number; photoCount: number;
 }
 
 export interface RealmDTO {

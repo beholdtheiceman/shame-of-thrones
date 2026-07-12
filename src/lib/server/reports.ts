@@ -1,6 +1,6 @@
 import { and, eq, gte, sql } from "drizzle-orm";
 import { db } from "@/db/client";
-import { ratings, reports, reviewQueue, thrones, users, type ReviewSignal } from "@/db/schema";
+import { photos, ratings, reports, reviewQueue, thrones, users, type ReviewSignal } from "@/db/schema";
 import { scheduleTriage } from "./triage";
 
 type UserRow = typeof users.$inferSelect;
@@ -24,7 +24,7 @@ export class ReportError extends Error {
 }
 
 export interface SubmitReportInput {
-  subjectKind: "throne" | "rating";
+  subjectKind: "throne" | "rating" | "photo";
   subjectId: string;
   reason: ReportReason;
   note?: string;
@@ -37,6 +37,10 @@ export async function submitReport(reporter: UserRow, input: SubmitReportInput, 
     const t = await db.query.thrones.findFirst({ where: eq(thrones.id, input.subjectId) });
     if (!t || t.hiddenAt) throw new ReportError("no such throne", 404);
     authorId = t.addedBy;
+  } else if (input.subjectKind === "photo") {
+    const p = await db.query.photos.findFirst({ where: eq(photos.id, input.subjectId) });
+    if (!p || p.status !== "approved") throw new ReportError("no such photo", 404);
+    authorId = p.uploadedBy;
   } else {
     const r = await db.query.ratings.findFirst({ where: eq(ratings.id, input.subjectId) });
     if (!r || r.hiddenAt) throw new ReportError("no such rating", 404);

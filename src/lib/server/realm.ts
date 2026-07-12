@@ -1,12 +1,12 @@
-import { desc, eq, isNull } from "drizzle-orm";
+import { desc, eq, isNull, sql } from "drizzle-orm";
 import { db } from "@/db/client";
-import { influenceEvents, ledgerEntries, ratings, thrones, users } from "@/db/schema";
+import { influenceEvents, ledgerEntries, photos, ratings, thrones, users } from "@/db/schema";
 import { fiefIdForCoords } from "@/lib/geo";
 import { fiefControl, throneScore } from "@/lib/selectors";
 import { toGameEvent, toGameRating } from "./mappers";
 
 export async function realmPayload(now = Date.now()) {
-  const [throneRows, ratingRows, eventRows, ledgerRows] = await Promise.all([
+  const [throneRows, ratingRows, eventRows, ledgerRows, photoCounts] = await Promise.all([
     db.select().from(thrones).where(isNull(thrones.hiddenAt)),
     db
       .select({ rating: ratings, displayName: users.displayName, houseId: users.houseId })
@@ -15,6 +15,8 @@ export async function realmPayload(now = Date.now()) {
       .where(isNull(ratings.hiddenAt)),
     db.select().from(influenceEvents),
     db.select().from(ledgerEntries).orderBy(desc(ledgerEntries.createdAt)).limit(60),
+    db.select({ throneId: photos.throneId, n: sql<number>`count(*)::int` })
+      .from(photos).where(eq(photos.status, "approved")).groupBy(photos.throneId),
   ]);
 
   const visibleThroneIds = new Set(throneRows.map((t) => t.id));
@@ -22,6 +24,7 @@ export async function realmPayload(now = Date.now()) {
     .filter((r) => visibleThroneIds.has(r.rating.throneId))
     .map((r) => toGameRating(r.rating, { displayName: r.displayName, houseId: r.houseId }));
   const gameEvents = eventRows.map(toGameEvent);
+  const photoCountByThrone = new Map(photoCounts.map((p) => [p.throneId, p.n]));
 
   const throneDtos = throneRows.map((t) => {
     const { score, count } = throneScore(t.id, gameRatings, now);
@@ -39,6 +42,7 @@ export async function realmPayload(now = Date.now()) {
       fiefId: fiefIdForCoords(t.lat, t.lng),
       score,
       ratingCount: count,
+      photoCount: photoCountByThrone.get(t.id) ?? 0,
     };
   });
 

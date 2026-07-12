@@ -92,3 +92,24 @@ export async function submitPhoto(
   });
   return { photoId: photo.id, status: "pending" as const };
 }
+
+export async function approvePhoto(photoId: string, moderator: UserRow, now = Date.now()) {
+  const photo = await db.query.photos.findFirst({ where: eq(photos.id, photoId) });
+  if (!photo) throw new PhotoError("no such photo", 404);
+  if (photo.status === "approved") throw new PhotoError("already approved", 409);
+  const [updated] = await db.update(photos).set({
+    status: "approved", rejectedReason: null, reviewedBy: moderator.id, reviewedAt: new Date(now),
+  }).where(eq(photos.id, photoId)).returning({ id: photos.id, status: photos.status });
+  return updated;
+}
+
+export async function rejectPhoto(photoId: string, moderator: UserRow, note?: string, now = Date.now()) {
+  const photo = await db.query.photos.findFirst({ where: eq(photos.id, photoId) });
+  if (!photo) throw new PhotoError("no such photo", 404);
+  if (photo.status === "rejected") throw new PhotoError("already rejected", 409);
+  const [updated] = await db.update(photos).set({
+    status: "rejected", rejectedReason: note?.trim() || "rejected by moderator",
+    reviewedBy: moderator.id, reviewedAt: new Date(now),
+  }).where(eq(photos.id, photoId)).returning({ id: photos.id, status: photos.status });
+  return updated;
+}

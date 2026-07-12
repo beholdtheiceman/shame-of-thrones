@@ -1,6 +1,6 @@
 import { desc, eq, inArray } from "drizzle-orm";
 import { db } from "@/db/client";
-import { ratings, reviewQueue, thrones, users } from "@/db/schema";
+import { photos, ratings, reviewQueue, thrones, users } from "@/db/schema";
 import { sessionInfo } from "./session";
 
 export interface ReviewItemDTO {
@@ -32,6 +32,15 @@ export async function moderatorOrNull() {
 }
 
 async function subjectSummary(row: typeof reviewQueue.$inferSelect): Promise<string> {
+  if (row.kind === "photo" || (row.kind === "report" && await db.query.photos.findFirst({ where: eq(photos.id, row.subjectId) }))) {
+    const photo = await db.query.photos.findFirst({ where: eq(photos.id, row.subjectId) });
+    if (photo) {
+      const throne = await db.query.thrones.findFirst({ where: eq(thrones.id, photo.throneId) });
+      const base = `Photo (${photo.status}) at "${throne?.name ?? "?"}"`;
+      return row.kind === "report" ? `Reported: ${base}` : base;
+    }
+    return "Photo (missing)";
+  }
   if (row.kind === "rating" || row.kind === "testimony" || row.kind === "report") {
     const rating = await db.query.ratings.findFirst({ where: eq(ratings.id, row.subjectId) });
     if (rating) {
@@ -74,7 +83,9 @@ export async function listReview(): Promise<ReviewItemDTO[]> {
       : row.kind === "rating" || row.kind === "testimony"
       ? "rating"
       : row.kind === "report"
-        ? ((await db.query.ratings.findFirst({ where: eq(ratings.id, row.subjectId) })) ? "rating" : "throne")
+        ? ((await db.query.photos.findFirst({ where: eq(photos.id, row.subjectId) }))
+          ? "photo"
+          : (await db.query.ratings.findFirst({ where: eq(ratings.id, row.subjectId) })) ? "rating" : "throne")
         : "throne") as "throne" | "rating" | "photo",
     subjectId: row.subjectId,
     actorUserId: row.userId,

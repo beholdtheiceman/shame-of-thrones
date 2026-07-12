@@ -6,7 +6,7 @@ import { sessionInfo } from "@/lib/server/session";
 import { requireGoodStanding, StandingError } from "@/lib/server/standing";
 
 const bodySchema = z.object({
-  subjectKind: z.enum(["throne", "rating"]),
+  subjectKind: z.enum(["throne", "rating", "photo"]),
   subjectId: z.string().uuid(),
   reason: z.enum(["wrong_info", "closed", "inappropriate", "not_public_restroom", "harassment", "spam"]),
   note: z.string().trim().max(280).optional(),
