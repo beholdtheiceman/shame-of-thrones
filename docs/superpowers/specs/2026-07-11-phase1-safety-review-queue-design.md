@@ -42,13 +42,24 @@ bot-scale rate ceiling.
 
 ## Schema changes
 
-### `users` — three new columns
+### `users` — one new column
 
 | column | type | notes |
 |---|---|---|
 | `role` | new `user_role` pg enum: `user`, `moderator` | not null, default `user` |
-| `over13ConfirmedAt` | timestamptz, nullable | null = not yet attested; set server-side when a submitted birthdate computes to ≥13 |
-| `ageGateLockedAt` | timestamptz, nullable | set when a submitted birthdate computes to <13; blocks retry; stores no age data |
+
+### New table `age_attestations`
+
+The age gate runs **before profile creation**, when no `users` row exists yet —
+so attestation is keyed by the Google subject (available from the session at
+that point), not by user id. This also makes the under-13 lock survive
+"sign out, try again" without a profile ever existing.
+
+| column | type | notes |
+|---|---|---|
+| `googleSubject` | text, primary key | |
+| `over13ConfirmedAt` | timestamptz, nullable | set server-side when a submitted birthdate computes to ≥13; the birthdate itself is never stored |
+| `lockedAt` | timestamptz, nullable | set when a submitted birthdate computes to <13; blocks retry; stores no age data |
 
 ### `thrones` — one new column
 
@@ -120,15 +131,16 @@ number.
 
 ## Age gate
 
-- **`POST /api/age-gate`** — body `{ birthDate: "YYYY-MM-DD" }`. Server
-  computes age (calendar-correct: someone turns 13 *on* their 13th birthday).
-  ≥13 → set `over13ConfirmedAt = now()`, discard the date. <13 → set
-  `ageGateLockedAt = now()`, respond locked. If already locked, always
-  respond locked.
-- **Write-path enforcement:** every write endpoint returns 403 with error code
-  `age_gate_required` (or `age_gate_locked`) when the user's
-  `over13ConfirmedAt` is null. Read paths stay open (Wandering Peasant mode is
-  unaffected).
+- **`POST /api/age-gate`** — body `{ birthDate: "YYYY-MM-DD" }`. Requires a
+  signed-in session (profile not required). Server computes age
+  (calendar-correct: someone turns 13 *on* their 13th birthday). ≥13 → set
+  `over13ConfirmedAt = now()` on the caller's `age_attestations` row, discard
+  the date. <13 → set `lockedAt = now()`, respond locked. If already locked,
+  always respond locked.
+- **Write-path enforcement:** every write endpoint (including profile
+  creation) returns 403 with error code `age_gate_required` (or
+  `age_gate_locked`) when the caller's attestation is missing/locked. Read
+  paths stay open (Wandering Peasant mode is unaffected).
 - **Client:** a neutral birthdate screen — no mention of 13 or COPPA — shown
   after Google sign-in and **before profile creation** for new users; existing
   users see it on next sign-in (the app checks `/api/me` for the flag). Locked
