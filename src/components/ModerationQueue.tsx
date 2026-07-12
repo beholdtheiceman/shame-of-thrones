@@ -5,7 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 interface ReviewItem {
   id: string;
   kind: string;
-  subjectKind: "throne" | "rating";
+  subjectKind: "throne" | "rating" | "photo";
   subjectId: string;
   actorUserId: string;
   severity: "low" | "medium" | "high";
@@ -105,6 +105,15 @@ export function ModerationQueue() {
             </p>
           )}
 
+          {item.subjectKind === "photo" && (
+            <img
+              src={"/api/photos/" + item.subjectId}
+              alt="Portrait under review"
+              className="pixel-panel-flat mt-2 max-h-64 w-auto"
+              onError={(e) => { e.currentTarget.style.display = "none"; }}
+            />
+          )}
+
           {item.status === "pending" ? (
             <div className="mt-3">
               <input
@@ -130,6 +139,18 @@ export function ModerationQueue() {
                     <button type="button" disabled={busy === item.id} onClick={() => void moderate(item, "hide_testimony")}
                       className="pixel-chip bg-vellum px-3 py-2 font-mono text-[12px] uppercase text-crimson">
                       Strike testimony
+                    </button>
+                  </>
+                )}
+                {item.subjectKind === "photo" && (
+                  <>
+                    <button type="button" disabled={busy === item.id} onClick={() => void moderate(item, "approve_photo")}
+                      className="pixel-chip bg-vellum px-3 py-2 font-mono text-[12px] uppercase text-emerald">
+                      Approve photo
+                    </button>
+                    <button type="button" disabled={busy === item.id} onClick={() => void moderate(item, "reject_photo")}
+                      className="pixel-chip bg-vellum px-3 py-2 font-mono text-[12px] uppercase text-crimson">
+                      Reject photo
                     </button>
                   </>
                 )}

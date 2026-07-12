@@ -13,7 +13,7 @@ const REASONS = [
 ] as const;
 
 export function ReportModal({ subjectKind, subjectId, subjectLabel, onClose }: {
-  subjectKind: "throne" | "rating";
+  subjectKind: "throne" | "rating" | "photo";
   subjectId: string;
   subjectLabel: string;
   onClose: () => void;

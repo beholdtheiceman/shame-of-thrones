@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { ApiError, type ThroneDTO } from "@/lib/api";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { api, ApiError, type ThroneDTO } from "@/lib/api";
 import { HOUSE_BY_ID, THRONE_CATEGORY_LABEL } from "@/lib/data";
 import { useStore } from "@/lib/store";
 import { haversineMeters } from "@/lib/geo";
@@ -30,8 +30,22 @@ export function ThroneSheet({
   const [mode, setMode] = useState<"detail" | "sitting">("detail");
   const [showSignInGate, setShowSignInGate] = useState(false);
   const [confirmError, setConfirmError] = useState<string | null>(null);
-  const [reporting, setReporting] = useState<{ kind: "throne" | "rating"; id: string; label: string } | null>(null);
+  const [reporting, setReporting] = useState<{ kind: "throne" | "rating" | "photo"; id: string; label: string } | null>(null);
+  const [photos, setPhotos] = useState<Awaited<ReturnType<typeof api.listPhotos>>["photos"]>([]);
+  const [photoMessage, setPhotoMessage] = useState<string | null>(null);
+  const [photoUploading, setPhotoUploading] = useState(false);
   const now = useNow();
+
+  const loadPhotos = useCallback(async () => {
+    try {
+      const result = await api.listPhotos(throne.id);
+      setPhotos(result.photos);
+    } catch {
+      setPhotos([]);
+    }
+  }, [throne.id]);
+
+  useEffect(() => { void loadPhotos(); }, [loadPhotos]);
 
   const score = throne.score;
   const count = throne.ratingCount;
@@ -55,6 +69,22 @@ export function ThroneSheet({
       await confirmThrone(throne.id);
     } catch (e) {
       setConfirmError(e instanceof ApiError ? e.message : e instanceof Error ? e.message : "the ravens were lost");
+    }
+  }
+
+  async function handlePhotoUpload(file: File) {
+    setPhotoUploading(true);
+    setPhotoMessage(null);
+    try {
+      const result = await api.uploadPhoto(throne.id, file);
+      setPhotoMessage(result.status === "rejected"
+        ? "The Maesters have refused this portrait."
+        : "This portrait awaits the Maesters' review.");
+      await loadPhotos();
+    } catch (e) {
+      setPhotoMessage(e instanceof ApiError ? e.message : "the ravens were lost");
+    } finally {
+      setPhotoUploading(false);
     }
   }
 
@@ -185,6 +215,57 @@ export function ThroneSheet({
                 </ul>
               </div>
             )}
+
+            <div className="mt-5">
+              <p className="font-mono text-[13px] uppercase tracking-wide text-ink-faint">
+                Offer a Portrait
+              </p>
+              {photos.some((p) => p.status === "approved") && (
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {photos.filter((p) => p.status === "approved").map((p) => (
+                    <div key={p.id}>
+                      <img src={"/api/photos/" + p.id} alt="Throne portrait" className="pixel-panel-flat h-24 w-24 object-cover" />
+                      {state.authStatus === "ready" && (
+                        <button type="button" onClick={() => setReporting({ kind: "photo", id: p.id, label: `a portrait of ${throne.name}` })}
+                          className="mt-1 block font-mono text-[10px] uppercase text-ink-faint underline">
+                          Report
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+              {photos.filter((p) => p.mine && p.status !== "approved").length > 0 && (
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  {photos.filter((p) => p.mine && p.status !== "approved").map((p) => (
+                    <span key={p.id} className="pixel-chip bg-vellum px-2.5 py-1 font-mono text-[12px] text-ink-soft">
+                      {p.status === "pending" ? "awaits the Maesters' review" : "refused"}
+                    </span>
+                  ))}
+                </div>
+              )}
+              {state.authStatus === "ready" && (
+                <div className="mt-3">
+                  <p className="font-mono text-[12px] text-ink-faint">
+                    Entrances, signage, and sinks only. No people — any face means rejection.
+                  </p>
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    disabled={photoUploading}
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) void handlePhotoUpload(file);
+                      e.target.value = "";
+                    }}
+                    className="pixel-panel-flat mt-2 w-full px-3 py-2 font-mono text-[12px] text-ink-soft file:mr-3 file:border-0 file:bg-transparent file:font-mono file:text-[12px] file:uppercase file:text-brass"
+                  />
+                </div>
+              )}
+              {photoMessage && (
+                <p className="mt-2 font-mono text-[13px] text-ink-soft">{photoMessage}</p>
+              )}
+            </div>
 
             <button
               type="button"

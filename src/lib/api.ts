@@ -57,8 +57,23 @@ export const api = {
     request<{ updated: boolean; influence: number; flipped: boolean; testimonyBlocked?: boolean }>("/api/ratings", {
       method: "POST", body: JSON.stringify(input),
     }),
-  report: (input: { subjectKind: "throne" | "rating"; subjectId: string; reason: string; note?: string }) =>
+  report: (input: { subjectKind: "throne" | "rating" | "photo"; subjectId: string; reason: string; note?: string }) =>
     request<{ ok: true }>("/api/report", { method: "POST", body: JSON.stringify(input) }),
+  listPhotos: (throneId: string) =>
+    request<{ photos: { id: string; status: "pending" | "approved" | "rejected"; mine: boolean; rejectedReason: string | null; createdAt: number }[] }>(
+      `/api/thrones/${throneId}/photos`
+    ),
+  uploadPhoto: async (throneId: string, file: File) => {
+    const form = new FormData();
+    form.set("file", file);
+    form.set("throneId", throneId);
+    const res = await fetch("/api/photos", { method: "POST", body: form });
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      throw new ApiError(body.error ?? `request failed (${res.status})`, res.status);
+    }
+    return res.json() as Promise<{ photoId: string; status: "pending" | "rejected" }>;
+  },
   addThrone: (input: { name: string; lat: number; lng: number; category: ThroneCategory; amenities: Amenities; publicAccessAttested: boolean }) =>
     request<{ ok: true; throneId: string }>("/api/thrones", { method: "POST", body: JSON.stringify(input) }),
   confirmThrone: (throneId: string) =>
