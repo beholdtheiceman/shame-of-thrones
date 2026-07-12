@@ -1,12 +1,13 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { ApiError, type ThroneDTO } from "@/lib/api";
 import { HOUSE_BY_ID, THRONE_CATEGORY_LABEL } from "@/lib/data";
-import { throneScore } from "@/lib/selectors";
 import { useStore } from "@/lib/store";
 import { haversineMeters } from "@/lib/geo";
 import { useNow } from "@/lib/useNow";
 import type { Throne } from "@/lib/types";
+import { SignInGate } from "./SignInGate";
 import { SittingFlow } from "./SittingFlow";
 
 const AMENITY_LABEL: Record<string, string> = {
@@ -21,26 +22,39 @@ export function ThroneSheet({
   throne,
   onClose,
 }: {
-  throne: Throne;
+  throne: ThroneDTO;
   onClose: () => void;
 }) {
   const { state, confirmThrone } = useStore();
   const [mode, setMode] = useState<"detail" | "sitting">("detail");
+  const [showSignInGate, setShowSignInGate] = useState(false);
+  const [confirmError, setConfirmError] = useState<string | null>(null);
   const now = useNow();
 
-  const { score, count } = useMemo(
-    () => throneScore(throne.id, state.ratings, now),
-    [throne.id, state.ratings, now]
-  );
+  const score = throne.score;
+  const count = throne.ratingCount;
 
   const recentRatings = useMemo(
     () =>
-      state.ratings
+      (state.realm?.ratings ?? [])
         .filter((r) => r.throneId === throne.id)
         .sort((a, b) => b.createdAt - a.createdAt)
         .slice(0, 4),
-    [state.ratings, throne.id]
+    [state.realm?.ratings, throne.id]
   );
+
+  async function handleConfirm() {
+    if (state.authStatus === "anonymous") {
+      setShowSignInGate(true);
+      return;
+    }
+    setConfirmError(null);
+    try {
+      await confirmThrone(throne.id);
+    } catch (e) {
+      setConfirmError(e instanceof ApiError ? e.message : e instanceof Error ? e.message : "the ravens were lost");
+    }
+  }
 
   const daysSinceConfirmed = Math.floor((now - throne.lastConfirmedAt) / 86_400_000);
   const forgotten = now > 0 && daysSinceConfirmed > 120;
@@ -104,11 +118,15 @@ export function ThroneSheet({
             {throne.status === "rumored" && (
               <button
                 type="button"
-                onClick={() => confirmThrone(throne.id)}
+                onClick={handleConfirm}
                 className="pixel-btn mt-3 w-full py-2.5 font-mono text-[14px] uppercase tracking-wide"
               >
-                Confirm this throne is real (+25 Influence)
+                Confirm this throne is real (+3 Influence)
               </button>
+            )}
+            {showSignInGate && <SignInGate />}
+            {confirmError && (
+              <p className="mt-3 font-mono text-[13px] text-crimson">{confirmError}</p>
             )}
 
             {amenities.length > 0 && (

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { ApiError } from "@/lib/api";
 import { THRONE_CATEGORY_LABEL } from "@/lib/data";
 import { useStore } from "@/lib/store";
 import type { Amenities, ThroneCategory } from "@/lib/types";
@@ -56,15 +57,24 @@ export function AddThroneForm({
     freeAccess: true,
     open24h: false,
   });
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   function toggleAmenity(key: keyof Amenities) {
     setAmenities((a) => ({ ...a, [key]: !a[key] }));
   }
 
-  function handleSubmit() {
+  async function handleSubmit() {
     if (name.trim().length < 2) return;
-    addThrone({ name: name.trim(), lat: coords.lat, lng: coords.lng, category, amenities });
-    onClose();
+    setSubmitting(true);
+    setError(null);
+    try {
+      await addThrone({ name: name.trim(), lat: coords.lat, lng: coords.lng, category, amenities });
+      onClose();
+    } catch (e) {
+      setError(e instanceof ApiError ? e.message : e instanceof Error ? e.message : "the ravens were lost");
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -139,6 +149,7 @@ export function AddThroneForm({
         <p className="mt-4 font-mono text-[13px] text-ink-faint">
           New thrones enter the Realm as <b className="text-ink-soft">Rumored</b> until confirmed.
         </p>
+        {error && <p className="mt-3 font-mono text-[13px] text-crimson">{error}</p>}
 
         <div className="mt-4 flex gap-2">
           <button
@@ -150,7 +161,7 @@ export function AddThroneForm({
           </button>
           <button
             type="button"
-            disabled={name.trim().length < 2}
+            disabled={name.trim().length < 2 || submitting}
             onClick={handleSubmit}
             className="pixel-btn flex-1 py-2.5 font-display text-[10px] tracking-wide"
           >

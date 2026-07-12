@@ -7,6 +7,7 @@ import { Ledger } from "@/components/Ledger";
 import { NearestWorthyButton } from "@/components/NearestWorthyButton";
 import { Onboarding } from "@/components/Onboarding";
 import { ProfilePanel } from "@/components/ProfilePanel";
+import { SignInGate } from "@/components/SignInGate";
 import { TabBar, type TabId } from "@/components/TabBar";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { ThroneSheet } from "@/components/ThroneSheet";
@@ -31,15 +32,17 @@ export default function Home() {
     null
   );
   const [flyTarget, setFlyTarget] = useState<[number, number] | null>(null);
+  const [showAddSignInGate, setShowAddSignInGate] = useState(false);
+  const thrones = state.realm?.thrones ?? [];
 
   const selectedThrone = useMemo(
-    () => state.thrones.find((t) => t.id === selectedThroneId) ?? null,
-    [state.thrones, selectedThroneId]
+    () => thrones.find((t) => t.id === selectedThroneId) ?? null,
+    [thrones, selectedThroneId]
   );
 
-  if (!state.profile) return <Onboarding />;
+  if (state.authStatus === "needs_profile") return <Onboarding />;
 
-  const house = HOUSE_BY_ID[state.profile.houseId];
+  const house = state.profile ? HOUSE_BY_ID[state.profile.houseId] : null;
 
   return (
     <div className="stone-wall flex h-dvh flex-col">
@@ -53,11 +56,13 @@ export default function Home() {
         </div>
         <div className="flex items-center gap-2.5">
           <ThemeToggle />
-          <span
-            className="pixel-chip block h-7 w-7"
-            style={{ background: house.colorVar }}
-            title={house.name}
-          />
+          {house && (
+            <span
+              className="pixel-chip block h-7 w-7"
+              style={{ background: house.colorVar }}
+              title={house.name}
+            />
+          )}
         </div>
       </header>
 
@@ -65,9 +70,8 @@ export default function Home() {
         {activeTab === "realm" && (
           <div className="relative h-full w-full">
             <RealmMap
-              thrones={state.thrones}
-              ratings={state.ratings}
-              influenceEvents={state.influenceEvents}
+              thrones={thrones}
+              fiefs={state.realm?.fiefs ?? []}
               selectedThroneId={selectedThroneId}
               onSelectThrone={setSelectedThroneId}
               addMode={addMode}
@@ -79,7 +83,16 @@ export default function Home() {
             />
 
             <div className="pointer-events-none absolute inset-x-0 top-3 flex justify-center">
-              <AddThroneToggle addMode={addMode} onToggle={() => setAddMode((v) => !v)} />
+              <AddThroneToggle
+                addMode={addMode}
+                onToggle={() => {
+                  if (state.authStatus === "anonymous") {
+                    setShowAddSignInGate(true);
+                    return;
+                  }
+                  setAddMode((v) => !v);
+                }}
+              />
             </div>
 
             <div className="pointer-events-none absolute inset-x-0 bottom-4 flex justify-center">
@@ -101,7 +114,15 @@ export default function Home() {
 
         {activeTab === "ranks" && (
           <div className="h-full overflow-y-auto">
-            <ProfilePanel />
+            {state.authStatus === "anonymous" ? (
+              <div className="mx-auto max-w-md px-4 py-5">
+                <div className="pixel-panel p-5">
+                  <Onboarding />
+                </div>
+              </div>
+            ) : (
+              <ProfilePanel />
+            )}
           </div>
         )}
       </main>
@@ -114,6 +135,21 @@ export default function Home() {
 
       {pendingCoords && (
         <AddThroneForm coords={pendingCoords} onClose={() => setPendingCoords(null)} />
+      )}
+
+      {showAddSignInGate && (
+        <div className="fixed inset-0 z-[1002] flex items-end justify-center bg-black/60 sm:items-center sm:p-6">
+          <div className="pixel-panel w-full max-w-md p-5">
+            <SignInGate />
+            <button
+              type="button"
+              onClick={() => setShowAddSignInGate(false)}
+              className="pixel-chip mt-4 w-full bg-vellum py-2.5 font-mono text-[13px] uppercase tracking-wide text-ink-soft"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );

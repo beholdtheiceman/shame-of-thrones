@@ -4,10 +4,9 @@ import { useEffect, useMemo } from "react";
 import { MapContainer, Marker, Polygon, TileLayer, useMap, useMapEvents } from "react-leaflet";
 import L from "leaflet";
 import { HOUSE_BY_ID, REALM_CENTER, REALM_ZOOM } from "@/lib/data";
-import { fiefBoundary, fiefIdForCoords } from "@/lib/geo";
-import { fiefControl, scoreBand, throneScore } from "@/lib/selectors";
-import { useNow } from "@/lib/useNow";
-import type { InfluenceEvent, Throne } from "@/lib/types";
+import { fiefBoundary } from "@/lib/geo";
+import { scoreBand, type FiefControl } from "@/lib/selectors";
+import type { ThroneDTO } from "@/lib/api";
 
 const SCORE_BAND_VAR: Record<string, string> = {
   high: "var(--emerald)",
@@ -16,7 +15,7 @@ const SCORE_BAND_VAR: Record<string, string> = {
   unrated: "var(--ink-faint)",
 };
 
-function throneIcon(band: string, selected: boolean, status: Throne["status"]) {
+function throneIcon(band: string, selected: boolean, status: ThroneDTO["status"]) {
   const color = SCORE_BAND_VAR[band];
   const size = selected ? 22 : 16;
   const dashed = status === "rumored" ? "border-style:dashed;" : "";
@@ -53,21 +52,21 @@ function ClickHandler({
 
 function FiefLayer({
   thrones,
-  influenceEvents,
+  fiefs,
 }: {
-  thrones: Throne[];
-  influenceEvents: InfluenceEvent[];
+  thrones: ThroneDTO[];
+  fiefs: FiefControl[];
 }) {
-  const now = useNow();
   const fiefIds = useMemo(
-    () => [...new Set(thrones.map((t) => fiefIdForCoords(t.lat, t.lng)))],
+    () => [...new Set(thrones.map((t) => t.fiefId))],
     [thrones]
   );
 
   return (
     <>
       {fiefIds.map((fiefId) => {
-        const control = fiefControl(fiefId, influenceEvents, now);
+        const control = fiefs.find((fief) => fief.fiefId === fiefId);
+        if (!control) return null;
         if (!control.leader) return null;
         const color = HOUSE_BY_ID[control.leader.houseId].colorVar;
         return (
@@ -89,9 +88,8 @@ function FiefLayer({
 }
 
 export interface RealmMapProps {
-  thrones: Throne[];
-  ratings: import("@/lib/types").Rating[];
-  influenceEvents: InfluenceEvent[];
+  thrones: ThroneDTO[];
+  fiefs: FiefControl[];
   selectedThroneId: string | null;
   onSelectThrone: (id: string) => void;
   addMode: boolean;
@@ -101,15 +99,13 @@ export interface RealmMapProps {
 
 export default function RealmMap({
   thrones,
-  ratings,
-  influenceEvents,
+  fiefs,
   selectedThroneId,
   onSelectThrone,
   addMode,
   onMapClick,
   flyTarget,
 }: RealmMapProps) {
-  const now = useNow();
   return (
     <MapContainer
       center={REALM_CENTER}
@@ -122,10 +118,9 @@ export default function RealmMap({
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
-      <FiefLayer thrones={thrones} influenceEvents={influenceEvents} />
+      <FiefLayer thrones={thrones} fiefs={fiefs} />
       {thrones.map((t) => {
-        const { score } = throneScore(t.id, ratings, now);
-        const band = scoreBand(score);
+        const band = scoreBand(t.score);
         return (
           <Marker
             key={t.id}

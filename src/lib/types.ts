@@ -79,11 +79,3 @@ export interface Profile {
   badges: BadgeId[];
   lastHouseSwitchAt: number | null;
 }
-
-export interface StoreState {
-  profile: Profile | null;
-  thrones: Throne[];
-  ratings: Rating[];
-  influenceEvents: InfluenceEvent[];
-  ledger: LedgerEntry[];
-}

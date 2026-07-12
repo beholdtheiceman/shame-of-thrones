@@ -1,9 +1,9 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
+import { ApiError } from "@/lib/api";
 import { HOUSES, HOUSE_BY_ID } from "@/lib/data";
-import { fiefIdForCoords } from "@/lib/geo";
-import { fiefControl, lifetimeXp, rankForXp } from "@/lib/selectors";
+import { HOUSE_SWITCH_WINDOW_MS } from "@/lib/game/rules";
 import { useStore } from "@/lib/store";
 import { useNow } from "@/lib/useNow";
 import type { BadgeId, HouseId } from "@/lib/types";
@@ -21,22 +21,18 @@ const BADGE_META: Record<BadgeId, { icon: string; title: string; desc: string }>
   },
 };
 
-const SWITCH_COOLDOWN_MS = 60 * 60 * 1000; // demo cooldown; a real Season is 8 weeks
-
 export function ProfilePanel() {
   const { state, switchHouse } = useStore();
   const { profile } = state;
   const now = useNow();
+  const [switchingHouse, setSwitchingHouse] = useState(false);
+  const [switchError, setSwitchError] = useState<string | null>(null);
 
   const standings = useMemo(() => {
-    const fiefIds = [
-      ...new Set(state.thrones.map((t) => fiefIdForCoords(t.lat, t.lng))),
-    ];
     const totals = new Map<HouseId, { influence: number; fiefsHeld: number }>();
     for (const h of HOUSES) totals.set(h.id, { influence: 0, fiefsHeld: 0 });
 
-    for (const fiefId of fiefIds) {
-      const control = fiefControl(fiefId, state.influenceEvents, now);
+    for (const control of state.realm?.fiefs ?? []) {
       for (const s of control.shares) {
         const entry = totals.get(s.houseId)!;
         entry.influence += s.influence;
@@ -47,16 +43,28 @@ export function ProfilePanel() {
     return HOUSES.map((h) => ({ house: h, ...totals.get(h.id)! })).sort(
       (a, b) => b.fiefsHeld - a.fiefsHeld || b.influence - a.influence
     );
-  }, [state.thrones, state.influenceEvents, now]);
+  }, [state.realm?.fiefs]);
 
   if (!profile) return null;
 
-  const xp = lifetimeXp(profile.name, state.influenceEvents);
-  const rank = rankForXp(xp);
+  const rank = state.rank;
+  if (!rank) return null;
   const house = HOUSE_BY_ID[profile.houseId];
 
   const canSwitch =
-    !profile.lastHouseSwitchAt || now - profile.lastHouseSwitchAt > SWITCH_COOLDOWN_MS;
+    !profile.lastHouseSwitchAt || now - profile.lastHouseSwitchAt > HOUSE_SWITCH_WINDOW_MS;
+
+  async function handleSwitchHouse(houseId: HouseId) {
+    setSwitchingHouse(true);
+    setSwitchError(null);
+    try {
+      await switchHouse(houseId);
+    } catch (e) {
+      setSwitchError(e instanceof ApiError ? e.message : e instanceof Error ? e.message : "the ravens were lost");
+    } finally {
+      setSwitchingHouse(false);
+    }
+  }
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-5">
@@ -76,7 +84,7 @@ export function ProfilePanel() {
           <div className="h-full bg-brass" style={{ width: `${Math.round(rank.progress * 100)}%` }} />
         </div>
         <p className="mt-1.5 text-right font-mono text-[14px] text-ink-faint tabular">
-          {xp} {rank.ceiling ? `/ ${rank.ceiling}` : ""} XP
+          {rank.xp} {rank.ceiling ? `/ ${rank.ceiling}` : ""} XP
         </p>
       </div>
 
@@ -97,8 +105,8 @@ export function ProfilePanel() {
             <button
               key={h.id}
               type="button"
-              disabled={!canSwitch}
-              onClick={() => switchHouse(h.id)}
+              disabled={!canSwitch || switchingHouse}
+              onClick={() => void handleSwitchHouse(h.id)}
               className="pixel-chip bg-vellum px-2.5 py-1.5 text-left font-mono text-[13px] text-ink-soft transition disabled:cursor-not-allowed disabled:opacity-40"
             >
               Ride for {h.name}
@@ -109,13 +117,14 @@ export function ProfilePanel() {
           Houses may be switched once per Season
           {!canSwitch && " — you've already switched recently"}.
         </p>
+        {switchError && <p className="mt-2 font-mono text-[13px] text-crimson">{switchError}</p>}
       </div>
 
       {profile.badges.length > 0 && (
         <div className="pixel-panel mt-4 p-4">
           <p className="font-mono text-[13px] uppercase tracking-wide text-ink-faint">Badges</p>
           <div className="mt-2.5 space-y-2.5">
-            {profile.badges.map((b) => (
+            {profile.badges.filter((b): b is BadgeId => b in BADGE_META).map((b) => (
               <div key={b} className="flex items-center gap-2.5">
                 <span className="pixel-chip flex h-8 w-8 items-center justify-center bg-brass text-sm text-on-brass">
                   {BADGE_META[b].icon}

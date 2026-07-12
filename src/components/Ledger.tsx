@@ -27,6 +27,7 @@ function timeAgo(ts: number): string {
 
 export function Ledger() {
   const { state } = useStore();
+  const ledger = state.realm?.ledger ?? [];
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-5">
@@ -38,7 +39,7 @@ export function Ledger() {
       </h1>
 
       <div className="pixel-panel mt-4 divide-y-2 divide-vellum-line">
-        {state.ledger.map((entry) => (
+        {ledger.map((entry) => (
           <div key={entry.id} className="flex gap-3 px-4 py-3 text-[15px] text-ink-soft">
             <span className="w-16 shrink-0 font-mono text-[14px] text-ink-faint tabular">
               {timeAgo(entry.createdAt)}
@@ -46,7 +47,7 @@ export function Ledger() {
             <span>{renderDispatch(entry.text)}</span>
           </div>
         ))}
-        {state.ledger.length === 0 && (
+        {ledger.length === 0 && (
           <p className="px-4 py-6 text-center font-mono text-[14px] text-ink-faint">
             No dispatches yet. Strike a banner to make history.
           </p>

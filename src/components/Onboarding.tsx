@@ -1,16 +1,42 @@
 "use client";
 
 import { useState } from "react";
+import { ApiError } from "@/lib/api";
 import { HOUSES } from "@/lib/data";
 import { useStore } from "@/lib/store";
 import type { HouseId } from "@/lib/types";
+import { SignInGate } from "./SignInGate";
 
 export function Onboarding() {
-  const { setProfile } = useStore();
+  const { state, setProfile } = useStore();
   const [name, setName] = useState("");
   const [houseId, setHouseId] = useState<HouseId | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
   const canSubmit = name.trim().length >= 2 && houseId !== null;
+
+  async function handleSubmit() {
+    if (!canSubmit || !houseId) return;
+    setSubmitting(true);
+    setError(null);
+    try {
+      await setProfile(name.trim(), houseId);
+    } catch (e) {
+      setError(
+        e instanceof ApiError && e.status === 409
+          ? "that name is already sworn to another"
+          : e instanceof Error
+            ? e.message
+            : "the ravens were lost"
+      );
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  if (state.authStatus === "anonymous") return <SignInGate />;
+  if (state.authStatus !== "needs_profile") return null;
 
   return (
     <div className="stone-wall fixed inset-0 z-[1002] flex flex-col items-center overflow-y-auto px-4 py-8">
@@ -82,12 +108,15 @@ export function Onboarding() {
 
         <button
           type="button"
-          disabled={!canSubmit}
-          onClick={() => houseId && setProfile(name.trim(), houseId)}
+          disabled={!canSubmit || submitting}
+          onClick={handleSubmit}
           className="pixel-btn mt-6 w-full py-3.5 text-center font-display text-[11px] tracking-wider"
         >
           ▸ Press Start
         </button>
+        {error && (
+          <p className="mt-3 text-center font-mono text-[13px] text-crimson">{error}</p>
+        )}
       </div>
     </div>
   );

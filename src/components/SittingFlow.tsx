@@ -1,11 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { ApiError } from "@/lib/api";
 import { VERDICT_SCALE } from "@/lib/data";
 import { haversineMeters } from "@/lib/geo";
 import { RATING_TAGS } from "@/lib/game/rules";
 import { useStore } from "@/lib/store";
 import type { Throne } from "@/lib/types";
+import { SignInGate } from "./SignInGate";
 
 type ProximityState = "checking" | "verified" | "hearsay" | "denied";
 
@@ -18,13 +20,16 @@ export function SittingFlow({
   onCancel: () => void;
   onSubmitted: () => void;
 }) {
-  const { submitRating } = useStore();
+  const { state, submitRating } = useStore();
   const [verdict, setVerdict] = useState<1 | 2 | 3 | 4 | 5 | null>(null);
   const [tags, setTags] = useState<string[]>([]);
-  const [testimony, setTestimony] = useState("");
   const [proximity, setProximity] = useState<ProximityState>("checking");
+  const [submitting, setSubmitting] = useState(false);
+  const [influenceClaimed, setInfluenceClaimed] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (state.authStatus === "anonymous") return;
     function markDenied() {
       setProximity("denied");
     }
@@ -46,7 +51,7 @@ export function SittingFlow({
     return () => {
       if (typeof id === "number") navigator.geolocation.clearWatch?.(id);
     };
-  }, [throne.lat, throne.lng]);
+  }, [state.authStatus, throne.lat, throne.lng]);
 
   function toggleTag(tag: string) {
     setTags((prev) =>
@@ -54,17 +59,27 @@ export function SittingFlow({
     );
   }
 
-  function handleSubmit() {
+  async function handleSubmit() {
     if (verdict === null) return;
-    submitRating({
-      throneId: throne.id,
-      verdict,
-      tags,
-      testimony: testimony.trim(),
-      verified: proximity === "verified",
-    });
-    onSubmitted();
+    setSubmitting(true);
+    setError(null);
+    try {
+      await submitRating({
+        throneId: throne.id,
+        verdict,
+        tags,
+        testimony: "",
+        verified: proximity === "verified",
+      });
+      setInfluenceClaimed(true);
+      window.setTimeout(onSubmitted, 700);
+    } catch (e) {
+      setError(e instanceof ApiError ? e.message : e instanceof Error ? e.message : "the ravens were lost");
+      setSubmitting(false);
+    }
   }
+
+  if (state.authStatus === "anonymous") return <SignInGate />;
 
   return (
     <div className="p-5">
@@ -144,24 +159,18 @@ export function SittingFlow({
         ))}
       </div>
 
-      <div className="mt-4">
-        <textarea
-          value={testimony}
-          onChange={(e) => setTestimony(e.target.value.slice(0, 280))}
-          placeholder="Speak, traveler. What horrors or wonders did you find?"
-          rows={3}
-          className="pixel-panel-flat w-full resize-none px-3 py-2 font-mono text-[15px] italic text-ink-soft outline-none placeholder:text-ink-faint"
-        />
-        <p className="mt-1 text-right font-mono text-[13px] text-ink-faint tabular">
-          {testimony.length} / 280
+      {error && <p className="mt-4 font-mono text-[14px] text-crimson">{error}</p>}
+      {influenceClaimed && (
+        <p className="pixel-chip mt-4 animate-bounce bg-brass px-3 py-2 text-center font-mono text-[14px] text-on-brass">
+          Influence claimed!
         </p>
-      </div>
+      )}
 
       <button
         type="button"
-        disabled={verdict === null}
+        disabled={verdict === null || submitting}
         onClick={handleSubmit}
-        className="pixel-btn mt-2 w-full py-3 text-center font-display text-[11px] tracking-wider"
+        className="pixel-btn mt-4 w-full py-3 text-center font-display text-[11px] tracking-wider"
       >
         Strike Your Banner
       </button>

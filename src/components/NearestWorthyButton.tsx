@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { REALM_CENTER } from "@/lib/data";
 import { haversineMeters } from "@/lib/geo";
-import { throneScore } from "@/lib/selectors";
 import { useStore } from "@/lib/store";
 
 export function NearestWorthyButton({
@@ -16,12 +15,9 @@ export function NearestWorthyButton({
   const [busy, setBusy] = useState(false);
 
   function locateAndPick(origin: { lat: number; lng: number }, usedFallback: boolean) {
-    const now = Date.now();
-    const worthy = state.thrones.filter((t) => {
-      const { score } = throneScore(t.id, state.ratings, now);
-      return score !== null && score >= 3.5;
-    });
-    const pool = worthy.length > 0 ? worthy : state.thrones;
+    const thrones = state.realm?.thrones ?? [];
+    const worthy = thrones.filter((t) => t.score !== null && t.score >= 3.5);
+    const pool = worthy.length > 0 ? worthy : thrones;
 
     let best = pool[0];
     let bestDist = Infinity;
