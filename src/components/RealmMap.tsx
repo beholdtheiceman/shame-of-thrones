@@ -36,15 +36,18 @@ function FlyToController({ target }: { target: [number, number] | null }) {
 }
 
 function ClickHandler({
-  active,
-  onClick,
+  addMode,
+  onAddClick,
+  onBackgroundClick,
 }: {
-  active: boolean;
-  onClick: (lat: number, lng: number) => void;
+  addMode: boolean;
+  onAddClick: (lat: number, lng: number) => void;
+  onBackgroundClick: () => void;
 }) {
   useMapEvents({
     click(e) {
-      if (active) onClick(e.latlng.lat, e.latlng.lng);
+      if (addMode) onAddClick(e.latlng.lat, e.latlng.lng);
+      else onBackgroundClick();
     },
   });
   return null;
@@ -53,9 +56,13 @@ function ClickHandler({
 function FiefLayer({
   thrones,
   fiefs,
+  addMode,
+  onSelectFief,
 }: {
   thrones: ThroneDTO[];
   fiefs: FiefControl[];
+  addMode: boolean;
+  onSelectFief: (fiefId: string) => void;
 }) {
   const fiefIds = useMemo(
     () => [...new Set(thrones.map((t) => t.fiefId))],
@@ -80,6 +87,13 @@ function FiefLayer({
               fillOpacity: 0.3 + control.leader.share * 0.3,
               dashArray: control.contested ? "6 4" : undefined,
             }}
+            eventHandlers={{
+              click: (e) => {
+                if (addMode) return;
+                e.originalEvent.stopPropagation();
+                onSelectFief(fiefId);
+              },
+            }}
           />
         );
       })}
@@ -92,6 +106,8 @@ export interface RealmMapProps {
   fiefs: FiefControl[];
   selectedThroneId: string | null;
   onSelectThrone: (id: string) => void;
+  onSelectFief: (fiefId: string) => void;
+  onBackgroundClick: () => void;
   addMode: boolean;
   onMapClick: (lat: number, lng: number) => void;
   flyTarget: [number, number] | null;
@@ -102,6 +118,8 @@ export default function RealmMap({
   fiefs,
   selectedThroneId,
   onSelectThrone,
+  onSelectFief,
+  onBackgroundClick,
   addMode,
   onMapClick,
   flyTarget,
@@ -118,7 +136,7 @@ export default function RealmMap({
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
-      <FiefLayer thrones={thrones} fiefs={fiefs} />
+      <FiefLayer thrones={thrones} fiefs={fiefs} addMode={addMode} onSelectFief={onSelectFief} />
       {thrones.map((t) => {
         const band = scoreBand(t.score);
         return (
@@ -130,7 +148,7 @@ export default function RealmMap({
           />
         );
       })}
-      <ClickHandler active={addMode} onClick={onMapClick} />
+      <ClickHandler addMode={addMode} onAddClick={onMapClick} onBackgroundClick={onBackgroundClick} />
       <FlyToController target={flyTarget} />
     </MapContainer>
   );

@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import { useMemo, useState } from "react";
 import { AddThroneForm, AddThroneToggle } from "@/components/AddThroneFlow";
 import { AgeGate } from "@/components/AgeGate";
+import { FiefCard } from "@/components/FiefCard";
 import { Ledger } from "@/components/Ledger";
 import { NearestWorthyButton } from "@/components/NearestWorthyButton";
 import { Onboarding } from "@/components/Onboarding";
@@ -28,6 +29,7 @@ export default function Home() {
   const { state } = useStore();
   const [activeTab, setActiveTab] = useState<TabId>("realm");
   const [selectedThroneId, setSelectedThroneId] = useState<string | null>(null);
+  const [selectedFiefId, setSelectedFiefId] = useState<string | null>(null);
   const [addMode, setAddMode] = useState(false);
   const [pendingCoords, setPendingCoords] = useState<{ lat: number; lng: number } | null>(
     null
@@ -39,6 +41,10 @@ export default function Home() {
   const selectedThrone = useMemo(
     () => thrones.find((t) => t.id === selectedThroneId) ?? null,
     [thrones, selectedThroneId]
+  );
+  const selectedFief = useMemo(
+    () => (state.realm?.fiefs ?? []).find((f) => f.fiefId === selectedFiefId) ?? null,
+    [state.realm?.fiefs, selectedFiefId]
   );
 
   const signedIn = state.authStatus === "needs_profile" || state.authStatus === "ready";
@@ -78,7 +84,15 @@ export default function Home() {
               thrones={thrones}
               fiefs={state.realm?.fiefs ?? []}
               selectedThroneId={selectedThroneId}
-              onSelectThrone={setSelectedThroneId}
+              onSelectThrone={(id) => {
+                setSelectedThroneId(id);
+                setSelectedFiefId(null);
+              }}
+              onSelectFief={(id) => {
+                setSelectedFiefId(id);
+                setSelectedThroneId(null);
+              }}
+              onBackgroundClick={() => setSelectedFiefId(null)}
               addMode={addMode}
               onMapClick={(lat, lng) => {
                 setPendingCoords({ lat, lng });
@@ -100,14 +114,20 @@ export default function Home() {
               />
             </div>
 
-            <div className="pointer-events-none absolute inset-x-0 bottom-4 flex justify-center">
-              <NearestWorthyButton
-                onFound={(id, coords) => {
-                  setSelectedThroneId(id);
-                  setFlyTarget(coords);
-                }}
-              />
-            </div>
+            {!selectedFiefId && (
+              <div className="pointer-events-none absolute inset-x-0 bottom-4 flex justify-center">
+                <NearestWorthyButton
+                  onFound={(id, coords) => {
+                    setSelectedThroneId(id);
+                    setFlyTarget(coords);
+                  }}
+                />
+              </div>
+            )}
+
+            {selectedFiefId && (
+              <FiefCard control={selectedFief} onClose={() => setSelectedFiefId(null)} />
+            )}
           </div>
         )}
 
