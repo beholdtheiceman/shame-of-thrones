@@ -95,14 +95,14 @@ becomes a fix task in the plan):**
 - [x] PASS — reports, review-queue rows, and AI-triage payloads carry no user
       coordinates; triage prompts include the THRONE's public location only
       (`src/lib/server/triage.ts:74,82`).
-- [ ] **FAIL** — photo uploads persist the original bytes verbatim
-      (`src/lib/server/photos.ts:55-58`) and the serving route returns them
-      byte-for-byte once approved (`src/app/api/photos/[id]/route.ts:19-25`).
-      EXIF is never stripped, so a camera JPEG's GPS position, capture time,
-      and device model become publicly downloadable after approval. GPS EXIF
-      normally ≈ the throne's already-public location, but not always (edited
-      or mis-attached photos), and the metadata identifies the uploader's
-      device regardless. Fix required — see Findings.
+- [x] ~~FAIL~~ **FIXED in this cycle (Larry-approved scope addition)** —
+      photo uploads originally persisted the uploader's bytes verbatim and
+      served them byte-for-byte once approved, EXIF (GPS/time/device)
+      included. `submitPhoto` now re-encodes every upload with sharp
+      (`.rotate()` to bake in orientation, then format re-encode, which drops
+      all EXIF/XMP) before anything is stored or screened; unreadable files
+      400. Covered by tests: "strips EXIF metadata on upload" and "rejects
+      unreadable image bytes" in `src/test/photos.test.ts`.
 - [x] PASS — no route handler or middleware logs coordinates; the only
       `console.*` calls in `src/` are in `src/db/seed.ts` (14, 74, 81).
 - [x] PASS (stronger than required) — the client never sends user coordinates

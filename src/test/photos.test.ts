@@ -1,5 +1,6 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { eq } from "drizzle-orm";
+import sharp from "sharp";
 import { db } from "@/db/client";
 import { photos, reviewQueue } from "@/db/schema";
 import { PhotoError, submitPhoto } from "@/lib/server/photos";
@@ -7,7 +8,12 @@ import type { VisionClient } from "@/lib/server/photoScreen";
 import { resetDb } from "./db";
 import { makeThrone, makeUser } from "./fixtures";
 
-const JPEG = Buffer.from([0xff, 0xd8, 0xff, 0xe0, 0x00]);
+let JPEG: Buffer;
+beforeAll(async () => {
+  JPEG = await sharp({
+    create: { width: 2, height: 2, channels: 3, background: { r: 200, g: 180, b: 140 } },
+  }).jpeg().toBuffer();
+});
 const okVision: VisionClient = {
   async classify() { return { personDetected: false, nsfw: false, relevant: true, note: "an entrance" }; },
 };
@@ -88,5 +94,38 @@ describe("submitPhoto", () => {
     await expect(
       submitPhoto(user, { throneId: "00000000-0000-0000-0000-000000000001", bytes: JPEG, contentType: "image/jpeg" }, Date.now(), okVision)
     ).rejects.toBeInstanceOf(PhotoError);
+  });
+
+  it("strips EXIF metadata on upload", async () => {
+    const user = await makeUser();
+    const throne = await makeThrone(user.id);
+    const withExif = await sharp({
+      create: { width: 2, height: 2, channels: 3, background: { r: 10, g: 20, b: 30 } },
+    }).jpeg().withMetadata({
+      exif: { IFD0: { ImageDescription: "secret location", Software: "TestCam 9000" } },
+    }).toBuffer();
+    expect((await sharp(withExif).metadata()).exif).toBeDefined();
+
+    const { photoId } = await submitPhoto(
+      user,
+      { throneId: throne.id, bytes: withExif, contentType: "image/jpeg" },
+      Date.now(),
+      okVision
+    );
+    const [p] = await db.select().from(photos).where(eq(photos.id, photoId));
+    expect((await sharp(Buffer.from(p.bytes)).metadata()).exif).toBeUndefined();
+  });
+
+  it("rejects unreadable image bytes with 400", async () => {
+    const user = await makeUser();
+    const throne = await makeThrone(user.id);
+    await expect(
+      submitPhoto(
+        user,
+        { throneId: throne.id, bytes: Buffer.from([1, 2, 3, 4]), contentType: "image/jpeg" },
+        Date.now(),
+        okVision
+      )
+    ).rejects.toMatchObject({ status: 400 });
   });
 });

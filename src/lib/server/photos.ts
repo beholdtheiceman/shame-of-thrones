@@ -1,4 +1,5 @@
 import { and, eq, ne, sql } from "drizzle-orm";
+import sharp from "sharp";
 import { db } from "@/db/client";
 import { photos, reviewQueue, thrones, users } from "@/db/schema";
 import { screenPhoto, type VisionClient } from "./photoScreen";
@@ -7,6 +8,11 @@ type UserRow = typeof users.$inferSelect;
 
 const MAX_BYTES = 5 * 1024 * 1024;
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"] as const;
+const SHARP_FORMAT: Record<string, "jpeg" | "png" | "webp"> = {
+  "image/jpeg": "jpeg",
+  "image/png": "png",
+  "image/webp": "webp",
+};
 const MAX_PER_THRONE = 3;   // non-rejected photos per user per throne
 const MAX_PENDING = 10;     // pending photos per user overall
 
@@ -36,6 +42,19 @@ export async function submitPhoto(
   if (input.bytes.length === 0) throw new PhotoError("empty file", 400);
   if (input.bytes.length > MAX_BYTES) throw new PhotoError("portraits may not exceed 5MB", 413);
 
+  // Re-encode to strip EXIF/XMP (GPS, capture time, device) before anything
+  // is stored or screened; .rotate() bakes in EXIF orientation first so
+  // dropping the tag doesn't sideways-flip phone photos.
+  let bytes: Buffer;
+  try {
+    bytes = await sharp(input.bytes)
+      .rotate()
+      .toFormat(SHARP_FORMAT[input.contentType])
+      .toBuffer();
+  } catch {
+    throw new PhotoError("that file is not a readable image", 400);
+  }
+
   const count = sql<number>`count(*)::int`;
   const [[perThrone], [pending]] = await Promise.all([
     db.select({ n: count }).from(photos).where(and(
@@ -54,10 +73,10 @@ export async function submitPhoto(
 
   const [photo] = await db.insert(photos).values({
     throneId: input.throneId, uploadedBy: user.id,
-    bytes: input.bytes, contentType: input.contentType, createdAt: new Date(now),
+    bytes, contentType: input.contentType, createdAt: new Date(now),
   }).returning({ id: photos.id });
 
-  const verdict = await screenPhoto(input.bytes, input.contentType, vision);
+  const verdict = await screenPhoto(bytes, input.contentType, vision);
 
   if (!verdict) {
     // Fail CLOSED: stays pending (invisible); human review is the backstop.
