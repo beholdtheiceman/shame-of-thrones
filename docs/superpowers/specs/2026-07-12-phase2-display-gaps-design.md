@@ -84,21 +84,41 @@ real backend exists.
 **Audit checklist (findings recorded in this spec at completion; any FAIL
 becomes a fix task in the plan):**
 
-- [ ] `ratings` rows and the influence ledger store no user lat/lng — only
-      the proximity result.
-- [ ] Anti-gaming signals derive from THRONE coordinates + timestamps, and
-      persist no user coordinates (Phase 1 sub-project 1's design intent).
-- [ ] Reports, review-queue rows, and AI-triage payloads contain no user
-      coordinates.
-- [ ] Photo uploads: EXIF (including GPS) is stripped or never persisted;
-      the stored bytea and the serving route expose no location metadata.
-- [ ] No request logging path (route handlers, middleware) writes raw
-      coordinates to durable storage.
-- [ ] Client sends coordinates only where the API needs a proximity check,
-      and nowhere else.
+- [x] PASS — `ratings` rows and the influence ledger store no user lat/lng.
+      Schema has lat/lng only on `thrones` (`src/db/schema.ts:56-57`); the
+      ratings insert persists verdict/tags/verified/testimony only
+      (`src/lib/server/ratings.ts:52-57`).
+- [x] PASS — anti-gaming signals derive from THRONE coordinates + timestamps
+      (`src/lib/server/signals.ts:91-119`); the persisted `impossible_travel`
+      signal stores only `kmh`, `fromThroneId`, `minutes`
+      (`signals.ts:112-117`) — no user coordinates.
+- [x] PASS — reports, review-queue rows, and AI-triage payloads carry no user
+      coordinates; triage prompts include the THRONE's public location only
+      (`src/lib/server/triage.ts:74,82`).
+- [ ] **FAIL** — photo uploads persist the original bytes verbatim
+      (`src/lib/server/photos.ts:55-58`) and the serving route returns them
+      byte-for-byte once approved (`src/app/api/photos/[id]/route.ts:19-25`).
+      EXIF is never stripped, so a camera JPEG's GPS position, capture time,
+      and device model become publicly downloadable after approval. GPS EXIF
+      normally ≈ the throne's already-public location, but not always (edited
+      or mis-attached photos), and the metadata identifies the uploader's
+      device regardless. Fix required — see Findings.
+- [x] PASS — no route handler or middleware logs coordinates; the only
+      `console.*` calls in `src/` are in `src/db/seed.ts` (14, 74, 81).
+- [x] PASS (stronger than required) — the client never sends user coordinates
+      to any API. Proximity is computed on-device and only the boolean is
+      submitted (`src/components/SittingFlow.tsx:42-52`; the API accepts
+      `verified: z.boolean()` — `src/app/api/ratings/route.ts:18`).
+      `NearestWorthyButton` uses geolocation locally for map navigation only.
 
-Deliverable: this checklist filled in with pass/fail + file references,
-committed as an amendment to this spec.
+**Findings (2026-07-12):** 5 of 6 PASS. The PRD §7 promise holds for every
+write path except photos: EXIF (GPS/time/device) survives upload and public
+serving. Proposed fix: strip metadata at upload by re-encoding the image
+(e.g. `sharp` — re-encode drops all EXIF/XMP by default) inside
+`submitPhoto` before the insert, which also normalizes malformed files
+before they reach the vision screen. Decision on scope (fix now in this
+cycle vs. fast-follow) is Larry's; until fixed, every approved photo should
+be assumed to carry uploader EXIF.
 
 ## Error handling
 
