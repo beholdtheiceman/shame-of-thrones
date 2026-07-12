@@ -43,12 +43,12 @@ None of this exists in the prototype yet — it's the biggest gap between demo a
 
 Smaller, but these are real product bugs against the PRD, not just polish.
 
-- [ ] `ThroneSheet` currently shows a raw `4.2 / 5` score — PRD's intent is the tier name leads (e.g. "Fit for a Knight") so a bare number can't be misread as good-or-bad; add the tier label as the primary display, keep the number secondary
-- [ ] Add a Fief control breakdown to the UI (e.g. House Flush 42% / House Bidet 38% / ...) — currently only the leading House's tint is shown on the map polygon; the per-House split is computed (`fiefControl` in `selectors.ts`) but never surfaced
+- [x] `ThroneSheet` currently shows a raw `4.2 / 5` score — **shipped**: tier chip (glyph + name, e.g. "🏰 Fit for a Knight") leads the chip row; the number is secondary (`tierForScore` in `selectors.ts`)
+- [x] Add a Fief control breakdown to the UI — **shipped**: tapping a fief polygon opens a bottom card with all four Houses' share bars + Contested badge (`FiefCard`, fed by `fiefCardModel`)
 - [ ] Build the "Plain Speech" accessibility toggle from PRD §6 — not implemented at all; functional info (hours, accessibility, access requirements) must already display plainly even in themed mode, so check that too while adding the toggle
 - [ ] Full VoiceOver/TalkBack pass + WCAG AA contrast audit (PRD §6 accessibility requirement)
 - [ ] Offline support: cache map tiles + last-known Throne data, queue-and-sync ratings when connectivity drops (PRD §7 — restrooms are basement-adjacent, connectivity will be bad)
-- [ ] Privacy: confirm location handling stores only the proximity boolean + coarse geohash server-side, never a raw coordinate trail (needs to be re-verified once Phase 0's backend exists, and must be true in the App Store privacy label)
+- [x] Privacy: confirm location handling stores only the proximity boolean + coarse geohash server-side, never a raw coordinate trail — **audited 2026-07-12** (findings in the phase2-display-gaps spec): user coordinates never reach the server at all (proximity computed on-device); the one gap found — photo EXIF/GPS surviving upload — was fixed the same day (sharp re-encode strips all metadata)
 
 ## Phase 3 — Retention systems (P1 per PRD, first 90 days post-launch)
 
