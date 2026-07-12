@@ -12,9 +12,15 @@ the PRD §5.8 hard rules enforced — entrance/signage/sink only, automated
 person/NSFW classification, auto-reject on any detected person, human review
 before ANY public visibility, zero unmoderated public photos.
 
-Infrastructure decisions (locked with Larry): **Vercel Blob** for storage
-(included in the Pro plan's allotment) and **Claude vision** (Haiku via the
-existing `ANTHROPIC_API_KEY`) for classification — no new vendor accounts.
+Infrastructure decisions (locked with Larry): no new vendor accounts —
+**Claude vision** (Haiku via the existing `ANTHROPIC_API_KEY`) for
+classification. Storage amendment at implementation (2026-07-12): photo bytes
+live in **Postgres (bytea)** behind a `PhotoStore` interface rather than Vercel
+Blob. Rationale: private-by-construction (the PRD's "nothing public
+unmoderated" is enforced by one API route), no dashboard setup step or extra
+token, and trivially testable. At a 5MB cap and dev-scale volume Neon handles
+this comfortably; the interface makes a Vercel Blob swap a one-file change
+when volume demands it.
 
 ## Schema
 
@@ -25,7 +31,7 @@ existing `ANTHROPIC_API_KEY`) for classification — no new vendor accounts.
 | `id` | uuid pk | |
 | `throneId` | uuid → thrones, not null | |
 | `uploadedBy` | uuid → users, not null | |
-| `blobPathname` | text, not null | Vercel Blob pathname (kept private) |
+| `bytes` | bytea (drizzle `customType`), not null | the image itself — served ONLY through the status-checking API route |
 | `contentType` | text, not null | `image/jpeg`, `image/png`, `image/webp` |
 | `status` | new `photo_status` enum: `pending`, `approved`, `rejected` | default `pending` |
 | `aiVerdict` | jsonb, nullable | `{ personDetected, nsfw, relevant, note }` from classification |
@@ -43,9 +49,8 @@ Index on `(throneId, status)`. `review_kind` enum += `photo`.
   + age gate + good standing + the shared hard write ceiling. Validates: throne
   exists and isn't hidden; content type in the allowlist; ≤5MB; max 3 photos
   per user per throne; max 10 pending photos per user (backlog cap).
-- Server stores the file to Vercel Blob with `access: "private"` (the
-  `@vercel/blob` SDK — new dependency; `BLOB_READ_WRITE_TOKEN` comes from the
-  Vercel Blob store integration, added to env when the store is created).
+- Server stores the bytes in the `photos` row (bytea). No new dependency, no
+  token, no store setup.
 - UI: an "Offer a Portrait" section on `ThroneSheet` with the PRD policy copy
   baked in: "Entrances, signage, and sinks only. No people — any face means
   rejection." File picker → preview → upload → "awaits the Maesters' review"
@@ -63,9 +68,10 @@ Index on `(throneId, status)`. `review_kind` enum += `photo`.
 - **`personDetected` or `nsfw`** → status `rejected`, `rejectedReason` set;
   queue row (kind `photo`, severity high) so moderators see the pattern —
   PRD's zero tolerance means a moderator can follow up with the Cycle A ban
-  lever on verified violations. The blob is deleted immediately for `nsfw`;
-  kept for `person_detected` (benign-mistake appeal window; no automated
-  deletion job this phase — dev scale).
+  lever on verified violations. For `nsfw` the stored bytes are immediately
+  replaced with an empty buffer (nothing retained); `person_detected` bytes
+  are kept so moderators can audit benign mistakes (visible only via the
+  moderator/uploader serving path).
 - **passes** → status stays `pending`, queue row (kind `photo`, severity low
   when `relevant`, medium when not) with the AI note pre-filled — the photo is
   NOT public.
@@ -97,9 +103,9 @@ Index on `(throneId, status)`. `review_kind` enum += `photo`.
 - Serving authz: anonymous gets only approved; uploader sees own pending;
   moderator sees all; direct blob access impossible (private store).
 - Moderate actions: approve/reject flip status, stamp reviewer, auto-resolve.
-- Blob interactions mocked in tests (no network) — a thin
-  `src/lib/server/blob.ts` wrapper (`putPhoto`, `deletePhoto`, `streamPhoto`)
-  is the mock seam.
+- The vision client is the only mock seam needed (`VisionClient` interface,
+  same pattern as `ScreenClient`/`TriageClient`); storage is plain DB rows,
+  tested directly.
 
 Verify gate: suite + build + live browser pass (upload a clearly-compliant
 photo → pending → approve on `/moderation` → visible on the ThroneSheet;
@@ -112,9 +118,9 @@ upload a photo of a person → auto-rejected). Deploy pre-authorized.
   revisited before the native-app phase where camera uploads carry it)
 - Appeals UX for rejected photos (queue note only this phase)
 
-## Setup prerequisite (Larry or Claude-with-approval)
+## Setup prerequisite
 
-A Vercel Blob store must be created on the shame-of-thrones project (Vercel
-dashboard → Storage → Create → Blob) so `BLOB_READ_WRITE_TOKEN` lands in env —
-mirror it into `.env.local`. This is click-through config on the existing Pro
-plan, not a new vendor signup; Claude flags it at the Cycle B build gate.
+None — the bytea storage amendment removed the Blob store setup entirely. The
+existing `ANTHROPIC_API_KEY` covers classification. (When photo volume ever
+justifies it, swapping `PhotoStore` to Vercel Blob is a one-file change plus
+the store creation click-through.)
