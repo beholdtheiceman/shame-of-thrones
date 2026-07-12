@@ -11,6 +11,9 @@ export interface ReviewItemDTO {
   signals: unknown[];
   actor: string;
   subject: string;
+  subjectKind: "throne" | "rating";
+  subjectId: string;
+  actorUserId: string;
   aiAssessment: string | null;
   aiSeverity: "low" | "medium" | "high" | null;
   aiTriagedAt: number | null;
@@ -61,6 +64,13 @@ export async function listReview(): Promise<ReviewItemDTO[]> {
     signals: row.signals,
     actor: nameById.get(row.userId) ?? "?",
     subject: await subjectSummary(row),
+    subjectKind: (row.kind === "rating" || row.kind === "testimony"
+      ? "rating"
+      : row.kind === "report"
+        ? ((await db.query.ratings.findFirst({ where: eq(ratings.id, row.subjectId) })) ? "rating" : "throne")
+        : "throne") as "throne" | "rating",
+    subjectId: row.subjectId,
+    actorUserId: row.userId,
     aiAssessment: row.aiAssessment, aiSeverity: row.aiSeverity,
     aiTriagedAt: row.aiTriagedAt?.getTime() ?? null,
     aiError: row.aiError,
