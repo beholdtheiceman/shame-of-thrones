@@ -45,6 +45,17 @@ Peasant"); signing in with Google lets you pledge a House and rate Thrones.
   distinct** traveler must confirm it before it's verified (enforced server-side).
 - **Ranks & Houses** — lifetime XP → rank track (Peasant → Grand Maester), badges,
   a once-per-season House-switch control, and Realm standings.
+- **Trust & safety (Phase 1, sub-project 1)** — a COPPA age gate (neutral birthdate
+  screen; only a boolean is stored), a required public-access attestation on
+  Chart-a-Throne, and non-punitive anti-gaming: new accounts (<7 days) earn 50%
+  Influence, and heuristics (new account, write rate, impossible travel between
+  verified ratings — computed from throne coordinates only) flag actions to a
+  `review_queue` **without blocking them**. An AI triage job (Claude API,
+  `TRIAGE_MODEL`, default `claude-haiku-4-5`) annotates each flagged item for the
+  moderator page at `/moderation`. Promote a moderator with
+  `UPDATE users SET role = 'moderator' WHERE display_name = '...';` in the Neon
+  console. Requires `ANTHROPIC_API_KEY` for triage (optional in dev — items show
+  "triage pending" without it).
 - **Today's Dispatches** — a global event feed of rating strikes, Fief flips, and
   confirmations, shared across all users.
 - A 16/32-bit pixel-RPG visual identity: Press Start 2P / Pixelify Sans / VT323,

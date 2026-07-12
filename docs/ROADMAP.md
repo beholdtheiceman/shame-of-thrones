@@ -32,11 +32,11 @@ None of this exists in the prototype yet — it's the biggest gap between demo a
 - [ ] Photo upload pipeline with automated NSFW/person-detection classification, auto-reject on any detected face, human review queue before public visibility
 - [ ] Enforce photo policy in the add-photo flow copy (entrance/signage/sink only)
 - [ ] Text moderation: profanity/harassment/doxxing filters on Scroll of Testimony reviews
-- [ ] Report flow on every piece of UGC (throne, rating, photo) + moderator tooling with a 24h SLA target
-- [ ] Anti-gaming: GPS-spoof heuristics (impossible travel speed, mock-location flags), per-user/device/IP rate limits, new-account Influence ramp (accounts <7 days = 50% Influence)
+- [ ] Report flow on every piece of UGC (throne, rating, photo) + moderator tooling with a 24h SLA target — *seed shipped*: the `/moderation` review queue (AI-triaged) is the foundation this grows on; user-facing report buttons and takedown actions still to come
+- [x] Anti-gaming: GPS-spoof heuristics (impossible travel speed, mock-location flags), per-user/device/IP rate limits, new-account Influence ramp (accounts <7 days = 50% Influence) — **shipped as the non-punitive signals + review-queue system** (heuristics flag, never reject; two-threshold rate limits; ramp applied server-side). Device/IP-level limits and mock-location flags await native clients. AI triage (Claude API) annotates every flagged item for `/moderation`.
 - [ ] Fix the self-serve confirmation gap: PRD requires a **second, distinct user** to confirm a Rumored Throne; the prototype currently lets you confirm your own addition (README gap #2) — needs real multi-user state to even test properly
-- [ ] Private-residence exclusion on Add-a-Throne (venue category picker, no "residence" option, elevated review near residential parcels)
-- [ ] COPPA 13+ age gate at signup
+- [x] Private-residence exclusion on Add-a-Throne (venue category picker, no "residence" option, elevated review near residential parcels) — **shipped**: required publicly-accessible attestation + every new throne enters the review queue for human eyes. Parcel-proximity checks are out of scope pending a parcel data source.
+- [x] COPPA 13+ age gate at signup — **shipped**: neutral birthdate screen before profile creation; only an over-13 boolean + timestamp stored (never the birthdate); under-13 locks persistently by Google subject
 - [ ] Legal: trademark clearance on "Shame of Thrones" and House names before locking branding (PRD §11, open question #1 — this can run in parallel starting now, since it can take a while and blocks marketing)
 
 ## Phase 2 — Close the UI gaps found in review
