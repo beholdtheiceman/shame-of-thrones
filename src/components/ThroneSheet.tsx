@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { api, ApiError, type ThroneDTO } from "@/lib/api";
 import { HOUSE_BY_ID, THRONE_CATEGORY_LABEL } from "@/lib/data";
+import { tierForScore } from "@/lib/selectors";
 import { useStore } from "@/lib/store";
 import { haversineMeters } from "@/lib/geo";
 import { useNow } from "@/lib/useNow";
@@ -49,6 +50,7 @@ export function ThroneSheet({
 
   const score = throne.score;
   const count = throne.ratingCount;
+  const tier = score !== null ? tierForScore(score) : null;
 
   const recentRatings = useMemo(
     () =>
@@ -141,6 +143,11 @@ export function ThroneSheet({
                   ✓ Verified
                 </span>
               )}
+              {tier && (
+                <span className="pixel-chip bg-brass/20 px-2.5 py-1 font-mono text-[13px] uppercase tracking-wide text-brass-strong">
+                  {tier.glyph} {tier.label}
+                </span>
+              )}
               {forgotten && (
                 <span className="pixel-chip bg-crimson/20 px-2.5 py-1 font-mono text-[13px] uppercase tracking-wide text-crimson">
                   Forgotten by the Realm
@@ -148,7 +155,7 @@ export function ThroneSheet({
               )}
               {score !== null ? (
                 <span className="font-mono text-[15px] tabular text-ink-soft">
-                  {score.toFixed(1)} / 5 · {count} sitting{count === 1 ? "" : "s"}
+                  {score.toFixed(1)} · {count} sitting{count === 1 ? "" : "s"}
                 </span>
               ) : (
                 <span className="font-mono text-[15px] text-ink-faint">Unrated</span>
