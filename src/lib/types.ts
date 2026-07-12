@@ -58,7 +58,7 @@ export interface InfluenceEvent {
   fiefId: string; // H3 cell index
   houseId: HouseId;
   points: number;
-  reason: "rating" | "first_of_name" | "new_throne" | "confirmation" | "hearsay";
+  reason: "rating" | "first_of_name" | "new_throne" | "confirmation" | "hearsay" | "reversal";
   throneId: string;
   authorName: string;
   createdAt: number;

@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { eq } from "drizzle-orm";
 import { db } from "@/db/client";
-import { influenceEvents, thrones, users } from "@/db/schema";
+import { ageAttestations, influenceEvents, ratings, reports, reviewQueue, thrones, users } from "@/db/schema";
 import { resetDb } from "./db";
 
 describe("schema integrity", () => {
@@ -60,8 +60,6 @@ describe("schema integrity", () => {
   });
 });
 
-import { ageAttestations, reviewQueue } from "@/db/schema";
-
 describe("phase 1 schema", () => {
   beforeEach(resetDb);
 
@@ -94,5 +92,55 @@ describe("phase 1 schema", () => {
     }).returning();
     expect(att.lockedAt).toBeNull();
     expect(Object.keys(att).sort()).toEqual(["googleSubject", "lockedAt", "over13ConfirmedAt"]);
+  });
+});
+
+describe("cycle A schema", () => {
+  beforeEach(resetDb);
+
+  const AMEN = { accessible: false, babyChanging: false, genderNeutral: false, freeAccess: true, open24h: false };
+
+  it("reports dedupe per reporter+subject via unique index", async () => {
+    const [u] = await db.insert(users).values({
+      googleSubject: "sub-rep", displayName: "Reporter", houseId: "flush",
+    }).returning();
+    const subjectId = "00000000-0000-0000-0000-000000000042";
+    await db.insert(reports).values({ reporterId: u.id, subjectKind: "throne", subjectId, reason: "closed" });
+    await expect(
+      db.insert(reports).values({ reporterId: u.id, subjectKind: "throne", subjectId, reason: "spam" })
+    ).rejects.toThrow();
+  });
+
+  it("hide/enforcement/testimony columns default null", async () => {
+    const [u] = await db.insert(users).values({
+      googleSubject: "sub-cols", displayName: "Cols", houseId: "flush",
+    }).returning();
+    expect(u.suspendedUntil).toBeNull();
+    expect(u.bannedAt).toBeNull();
+    const [t] = await db.insert(thrones).values({
+      name: "T", lat: 1, lng: 1, category: "cafe", amenities: AMEN,
+      addedBy: u.id, publicAccessAttested: true,
+    }).returning();
+    expect(t.hiddenAt).toBeNull();
+    const [r] = await db.insert(ratings).values({
+      throneId: t.id, userId: u.id, verdict: 3, tags: [], verified: false, testimony: "clean enough",
+    }).returning();
+    expect(r.testimony).toBe("clean enough");
+    expect(r.hiddenAt).toBeNull();
+    expect(r.testimonyHiddenAt).toBeNull();
+  });
+
+  it("influence ledger accepts negative reversal events", async () => {
+    const [u] = await db.insert(users).values({
+      googleSubject: "sub-rev", displayName: "Rev", houseId: "flush",
+    }).returning();
+    const [t] = await db.insert(thrones).values({
+      name: "T2", lat: 1, lng: 1, category: "cafe", amenities: AMEN,
+      addedBy: u.id, publicAccessAttested: true,
+    }).returning();
+    const [ev] = await db.insert(influenceEvents).values({
+      fiefId: "f1", houseId: "flush", userId: u.id, points: -10, reason: "reversal", throneId: t.id,
+    }).returning();
+    expect(ev.points).toBe(-10);
   });
 });

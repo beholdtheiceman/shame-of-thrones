@@ -8,6 +8,7 @@ import {
   pgTable,
   text,
   timestamp,
+  uniqueIndex,
   uuid,
 } from "drizzle-orm/pg-core";
 
@@ -17,12 +18,16 @@ export const throneCategoryEnum = pgEnum("throne_category", [
   "cafe", "restaurant", "park", "transit", "library", "retail", "municipal", "gas_station", "other",
 ]);
 export const influenceReasonEnum = pgEnum("influence_reason", [
-  "rating", "first_of_name", "new_throne", "confirmation", "hearsay",
+  "rating", "first_of_name", "new_throne", "confirmation", "hearsay", "reversal",
 ]);
 export const userRoleEnum = pgEnum("user_role", ["user", "moderator"]);
-export const reviewKindEnum = pgEnum("review_kind", ["rating", "new_throne", "confirmation"]);
+export const reviewKindEnum = pgEnum("review_kind", ["rating", "new_throne", "confirmation", "report", "testimony"]);
 export const reviewSeverityEnum = pgEnum("review_severity", ["low", "medium", "high"]);
 export const reviewStatusEnum = pgEnum("review_status", ["pending", "resolved"]);
+export const reportSubjectEnum = pgEnum("report_subject", ["throne", "rating"]);
+export const reportReasonEnum = pgEnum("report_reason", [
+  "wrong_info", "closed", "inappropriate", "not_public_restroom", "harassment", "spam",
+]);
 
 export const users = pgTable("users", {
   id: uuid("id").defaultRandom().primaryKey(),
@@ -33,6 +38,8 @@ export const users = pgTable("users", {
   badges: jsonb("badges").$type<string[]>().notNull().default([]),
   joinedAt: timestamp("joined_at", { withTimezone: true }).notNull().defaultNow(),
   lastHouseSwitchAt: timestamp("last_house_switch_at", { withTimezone: true }),
+  suspendedUntil: timestamp("suspended_until", { withTimezone: true }),
+  bannedAt: timestamp("banned_at", { withTimezone: true }),
 });
 
 export const thrones = pgTable("thrones", {
@@ -52,6 +59,8 @@ export const thrones = pgTable("thrones", {
   addedBy: uuid("added_by").notNull().references(() => users.id),
   addedAt: timestamp("added_at", { withTimezone: true }).notNull().defaultNow(),
   lastConfirmedAt: timestamp("last_confirmed_at", { withTimezone: true }).notNull().defaultNow(),
+  hiddenAt: timestamp("hidden_at", { withTimezone: true }),
+  hiddenBy: uuid("hidden_by").references(() => users.id),
 });
 
 export const ratings = pgTable(
@@ -63,6 +72,11 @@ export const ratings = pgTable(
     verdict: integer("verdict").notNull(),
     tags: text("tags").array().notNull().default([]),
     verified: boolean("verified").notNull(),
+    testimony: text("testimony"),
+    hiddenAt: timestamp("hidden_at", { withTimezone: true }),
+    hiddenBy: uuid("hidden_by").references(() => users.id),
+    testimonyHiddenAt: timestamp("testimony_hidden_at", { withTimezone: true }),
+    testimonyHiddenBy: uuid("testimony_hidden_by").references(() => users.id),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [index("ratings_throne_idx").on(t.throneId), index("ratings_user_idx").on(t.userId)]
@@ -93,7 +107,11 @@ export type ReviewSignal =
   | { signal: "new_account"; accountAgeDays: number }
   | { signal: "rate_soft"; writesLastHour: number }
   | { signal: "impossible_travel"; kmh: number; fromThroneId: string; minutes: number }
-  | { signal: "new_throne" };
+  | { signal: "new_throne" }
+  | { signal: "user_report"; reason: string; reporterCount: number }
+  | { signal: "testimony_blocked"; category: string }
+  | { signal: "testimony_flagged"; category?: string }
+  | { signal: "screen_unavailable" };
 
 export const ageAttestations = pgTable("age_attestations", {
   googleSubject: text("google_subject").primaryKey(),
@@ -123,5 +141,22 @@ export const reviewQueue = pgTable(
   (t) => [
     index("review_status_created_idx").on(t.status, t.createdAt),
     index("review_user_idx").on(t.userId),
+  ]
+);
+
+export const reports = pgTable(
+  "reports",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    reporterId: uuid("reporter_id").notNull().references(() => users.id),
+    subjectKind: reportSubjectEnum("subject_kind").notNull(),
+    subjectId: uuid("subject_id").notNull(), // throne or rating id — spans tables, no FK
+    reason: reportReasonEnum("reason").notNull(),
+    note: text("note"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    uniqueIndex("reports_reporter_subject_idx").on(t.reporterId, t.subjectKind, t.subjectId),
+    index("reports_subject_idx").on(t.subjectKind, t.subjectId),
   ]
 );

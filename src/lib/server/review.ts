@@ -5,7 +5,7 @@ import { sessionInfo } from "./session";
 
 export interface ReviewItemDTO {
   id: string;
-  kind: "rating" | "new_throne" | "confirmation";
+  kind: "rating" | "new_throne" | "confirmation" | "report" | "testimony";
   severity: "low" | "medium" | "high";
   status: "pending" | "resolved";
   signals: unknown[];

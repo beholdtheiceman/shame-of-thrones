@@ -22,6 +22,13 @@
       "when": 1783823055504,
       "tag": "0002_phase1-safety",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1783861336867,
+      "tag": "0003_phase1-cycle-a",
+      "breakpoints": true
     }
   ]
 }

@@ -61,6 +61,10 @@ const SIGNAL_SEVERITY: Record<ReviewSignal["signal"], Severity> = {
   new_throne: "low",
   rate_soft: "medium",
   impossible_travel: "high",
+  user_report: "medium",
+  testimony_blocked: "high",
+  testimony_flagged: "medium",
+  screen_unavailable: "medium",
 };
 
 const RANK: Record<Severity, number> = { low: 0, medium: 1, high: 2 };
