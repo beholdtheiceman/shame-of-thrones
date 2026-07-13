@@ -37,7 +37,7 @@ export function FiefCard({
           </div>
           <div className="flex shrink-0 items-center gap-2">
             {model.contested && (
-              <span className="pixel-chip bg-crimson/20 px-2.5 py-1 font-mono text-[12px] uppercase tracking-wide text-crimson">
+              <span className="pixel-chip bg-crimson/10 px-2.5 py-1 font-mono text-[12px] uppercase tracking-wide text-crimson-strong">
                 {t("contested")}
               </span>
             )}
@@ -58,7 +58,8 @@ export function FiefCard({
             return (
               <li key={row.houseId}>
                 <div className="flex items-center justify-between font-mono text-[13px]">
-                  <span style={{ color: row.percent > 0 ? house.colorVar : "var(--ink-faint)" }}>
+                  {/* name in standard ink for AA contrast; the bar below carries the house color */}
+                  <span className={row.percent > 0 ? "text-ink-soft" : "text-ink-faint"}>
                     {house.name}
                   </span>
                   <span className="tabular text-ink-soft">{row.percent}%</span>

@@ -157,7 +157,7 @@ export function ThroneSheet({
                 </span>
               )}
               {forgotten && (
-                <span className="pixel-chip bg-crimson/20 px-2.5 py-1 font-mono text-[13px] uppercase tracking-wide text-crimson">
+                <span className="pixel-chip bg-crimson/10 px-2.5 py-1 font-mono text-[13px] uppercase tracking-wide text-crimson-strong">
                   {t("forgotten")}
                 </span>
               )}

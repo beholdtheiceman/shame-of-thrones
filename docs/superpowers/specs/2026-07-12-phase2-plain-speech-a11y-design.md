@@ -74,6 +74,30 @@ even in themed mode.
   the dev server, on both themes × both speech modes; violations fixed or
   explicitly waived with a reason. No persistent test-rig dependency.
 
+**Audit results (2026-07-12, amendment):**
+
+- Contrast fixes applied to `globals.css` (before → after, ratio on
+  vellum-raised): torchlit `--crimson` #e0483f (3.35) → #f07267 (4.74);
+  torchlit `--ink-faint` #9c8a63 (4.04) → #a8966d (4.70); moonlit
+  `--crimson` #d4453d (3.92) → #e05a51 (4.78); torchlit `--emerald`
+  #4cc26a (4.17 as chip text on its 20% tint) → #63d483 (4.78). New
+  `--crimson-strong` chip-text variable (torch #f8887e 5.01, moon #ea726a
+  5.33 on the reduced crimson/10 tint), mirroring brass/brass-strong.
+  All other palette pairs already met AA (4.5:1) on both backgrounds.
+- axe-core fixes: map markers gained `title`/`alt` (were 11 unnamed ARIA
+  buttons, serious); `maximumScale: 1` removed from the viewport export
+  (zoom must not be disabled); app title `<p>` → `<h1>`; Contested/
+  Forgotten chips moved to crimson/10 + crimson-strong; FiefCard house
+  names render in standard ink (the share bar carries the house color —
+  House Flush blue was 2.85:1 as text).
+- Final axe runs: **clean** on map view, ThroneSheet open, FiefCard open,
+  and the second theme (dev data exercises themed + plain modes).
+- Known limitation: testimony author house-names in ThroneSheet keep their
+  house color (game identity); current data (Bidet teal) passes, but House
+  Flush's blue would measure ~3.2:1 there. Accepted as decorative identity —
+  the name text is adjacent to plain-ink content and repeats no functional
+  info. Revisit if flagged by real users.
+
 ## 3. Cycle-1 carry-forward fixes
 
 - Tier chip styling made distinct from the Rumored chip (both are brass

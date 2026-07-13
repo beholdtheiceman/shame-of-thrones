@@ -4,15 +4,16 @@
 :root {
   --ink: #f6e9c8;
   --ink-soft: #d8c493;
-  --ink-faint: #9c8a63;
+  --ink-faint: #a8966d; /* WCAG AA: 4.70:1 on vellum-raised (was #9c8a63, 4.04:1) */
   --vellum: #171b30;
   --vellum-raised: #262c4a;
   --vellum-line: #0a0c18;
   --brass: #e8c14c;
   --brass-strong: #ffdd75;
   --on-brass: #241804;
-  --crimson: #e0483f;
-  --emerald: #4cc26a;
+  --crimson: #f07267; /* WCAG AA: 4.74:1 on vellum-raised (was #e0483f, 3.35:1) */
+  --crimson-strong: #f8887e; /* chip text on crimson/10 tint: 5.01:1 (mirrors brass/brass-strong) */
+  --emerald: #63d483; /* WCAG AA: 4.78:1 as chip text on emerald/20 over vellum-raised (was #4cc26a, 4.17:1) */
   --house-flush: #3f6fd1;
   --house-bidet: #2bb5a6;
   --house-plunger: #9b6fd1;
@@ -30,7 +31,8 @@
     --brass: #d9b04a;
     --brass-strong: #f0c968;
     --on-brass: #1c1304;
-    --crimson: #d4453d;
+    --crimson: #e05a51; /* WCAG AA: 4.78:1 on vellum-raised (was #d4453d, 3.92:1) */
+  --crimson-strong: #ea726a; /* chip text on crimson/10 tint: 5.33:1 */
     --emerald: #47b563;
     --house-flush: #4d76c9;
     --house-bidet: #2f9e92;
@@ -49,7 +51,8 @@
   --brass: #d9b04a;
   --brass-strong: #f0c968;
   --on-brass: #1c1304;
-  --crimson: #d4453d;
+  --crimson: #e05a51; /* WCAG AA: 4.78:1 on vellum-raised (was #d4453d, 3.92:1) */
+  --crimson-strong: #ea726a; /* chip text on crimson/10 tint: 5.33:1 */
   --emerald: #47b563;
   --house-flush: #4d76c9;
   --house-bidet: #2f9e92;
@@ -60,15 +63,16 @@
 :root[data-theme="light"] {
   --ink: #f6e9c8;
   --ink-soft: #d8c493;
-  --ink-faint: #9c8a63;
+  --ink-faint: #a8966d; /* WCAG AA: 4.70:1 on vellum-raised (was #9c8a63, 4.04:1) */
   --vellum: #171b30;
   --vellum-raised: #262c4a;
   --vellum-line: #0a0c18;
   --brass: #e8c14c;
   --brass-strong: #ffdd75;
   --on-brass: #241804;
-  --crimson: #e0483f;
-  --emerald: #4cc26a;
+  --crimson: #f07267; /* WCAG AA: 4.74:1 on vellum-raised (was #e0483f, 3.35:1) */
+  --crimson-strong: #f8887e; /* chip text on crimson/10 tint: 5.01:1 (mirrors brass/brass-strong) */
+  --emerald: #63d483; /* WCAG AA: 4.78:1 as chip text on emerald/20 over vellum-raised (was #4cc26a, 4.17:1) */
   --house-flush: #3f6fd1;
   --house-bidet: #2bb5a6;
   --house-plunger: #9b6fd1;
@@ -86,6 +90,7 @@
   --color-brass-strong: var(--brass-strong);
   --color-on-brass: var(--on-brass);
   --color-crimson: var(--crimson);
+  --color-crimson-strong: var(--crimson-strong);
   --color-emerald: var(--emerald);
   --color-house-flush: var(--house-flush);
   --color-house-bidet: var(--house-bidet);

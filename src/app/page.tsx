@@ -62,7 +62,7 @@ export default function Home() {
         <div className="flex items-center gap-2.5">
           <span className="pixel-gem" />
           <div>
-            <p className="font-display text-[9px] leading-tight text-brass">Shame of Thrones</p>
+            <h1 className="font-display text-[9px] leading-tight text-brass">Shame of Thrones</h1>
             <p className="mt-1 font-mono text-[15px] leading-none text-ink-soft">{REALM_NAME}</p>
           </div>
         </div>

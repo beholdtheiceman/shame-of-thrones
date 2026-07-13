@@ -145,6 +145,8 @@ export default function RealmMap({
             key={t.id}
             position={[t.lat, t.lng]}
             icon={throneIcon(band, t.id === selectedThroneId, t.status)}
+            title={t.name}
+            alt={t.name}
             eventHandlers={{ click: () => onSelectThrone(t.id) }}
           />
         );
