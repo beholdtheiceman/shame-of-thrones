@@ -1,10 +1,9 @@
 # Handoff — 2026-07-13 (Cycle A + B)
 
 ## Where things stand
-**Phase 2 complete & pushed.** **Phase 3 Cycle A (Standings) built, reviewed,
-and PUSHED to prod** (`feat/phase0-backend` → Vercel). **Phase 3 Cycle B
-(Recognition) built, reviewed, COMMITTED locally, NOT pushed** — commits
-`2ef94ba..5a29329`. Push = prod deploy → needs Larry's OK.
+**Phase 2 complete & pushed.** **Phase 3 Cycles A (Standings) and B
+(Recognition) are both built, reviewed, and PUSHED to prod**
+(`feat/phase0-backend` → Vercel, through commit `35c044d`).
 
 ## Cycle A — Standings (SHIPPED, on prod)
 "Standings" tab: The Small Council (individual board; Week/Season/All-Time ×
@@ -35,7 +34,6 @@ undecayed (gap #6 closed as a deliberate no). Spec/plan under
   via `mePayload` and pass → the computed-badge server path is DB-verified.
 
 ## ⚠️ Fragile / not done
-- **Cycle B is unpushed** — needs Larry's OK (= prod deploy).
 - **Rendered UI not visually confirmed** for either cycle this session — the
   browser preview pane hung (0×0 viewport / screenshot timeout, a harness
   glitch). Verified via API/tests instead. Eyeball once deployed: Standings tab
@@ -46,7 +44,8 @@ undecayed (gap #6 closed as a deliberate no). Spec/plan under
   rating. Predates Cycle B; worth a small follow-up.
 
 ## Next steps
-1. **Push Cycle B** (Larry's OK) → prod; eyeball ProfilePanel + Standings.
+1. **Eyeball on prod** once deployed: the Standings tab and the ProfilePanel
+   streak/badges (neither was visually confirmed this session).
 2. **Phase 3 Cycle C — Balance & re-engagement:** Underdog Blessing (Influence
    multiplier for trailing Houses; touches the award path) + notifications
    (needs new push-delivery infra — the heaviest remaining item).
