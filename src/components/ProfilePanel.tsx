@@ -20,6 +20,16 @@ const BADGE_META: Record<BadgeId, { icon: string; title: string; desc: string }>
     title: "The Cartographer",
     desc: "Charted a new throne for the Realm.",
   },
+  nights_watch: {
+    icon: "🌙",
+    title: "The Night's Watch",
+    desc: "Rated a throne in the small hours (before 5am).",
+  },
+  oathkeeper: {
+    icon: "🛡️",
+    title: "Oathkeeper",
+    desc: "Kept a 4-week streak of verified deeds.",
+  },
 };
 
 export function ProfilePanel() {
@@ -88,6 +98,14 @@ export function ProfilePanel() {
         <p className="mt-1.5 text-right font-mono text-[14px] text-ink-faint tabular">
           {rank.xp} {rank.ceiling ? `/ ${rank.ceiling}` : ""} XP
         </p>
+        {state.streak && state.streak.weeks > 0 && (
+          <p className="mt-2 font-mono text-[13px] text-ink-soft">
+            🔥 {state.streak.weeks}-week streak
+            {!state.streak.thisWeekActive && (
+              <span className="text-ink-faint"> · {t("streakAtRisk")}</span>
+            )}
+          </p>
+        )}
       </div>
 
       <div className="pixel-panel mt-4 p-4">

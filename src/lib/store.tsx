@@ -13,6 +13,7 @@ export interface StoreState {
   authStatus: AuthStatus;
   profile: MeDTO["profile"];
   rank: MeDTO["rank"] | null;
+  streak: MeDTO["streak"] | null;
   ageGate: { confirmed: boolean; locked: boolean } | null;
   realm: RealmDTO | null;
   error: string | null;
@@ -57,7 +58,7 @@ function loadSnapshot(): { savedAt: number; realm: RealmDTO } | null {
 
 export function StoreProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<StoreState>({
-    authStatus: "loading", profile: null, rank: null, ageGate: null, realm: null, error: null,
+    authStatus: "loading", profile: null, rank: null, streak: null, ageGate: null, realm: null, error: null,
     offline: false, snapshotSavedAt: null, queuedCount: pending().length, queueDropped: false,
   });
   const refreshing = useRef(false);
@@ -79,6 +80,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         realm,
         profile: me?.profile ?? null,
         rank: me?.rank ?? null,
+        streak: me?.streak ?? null,
         ageGate: me?.ageGate ?? null,
         authStatus: me === null ? "anonymous" : me.profile === null ? "needs_profile" : "ready",
         error: null,

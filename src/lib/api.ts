@@ -22,6 +22,7 @@ export interface MeDTO {
     badges: string[]; lastHouseSwitchAt: number | null;
   } | null;
   rank?: RankInfo;
+  streak?: { weeks: number; thisWeekActive: boolean };
   ageGate?: { confirmed: boolean; locked: boolean };
 }
 
