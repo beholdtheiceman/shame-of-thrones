@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Pixelify_Sans, Press_Start_2P, VT323 } from "next/font/google";
+import { ServiceWorkerRegistrar } from "@/components/ServiceWorkerRegistrar";
 import { StoreProvider } from "@/lib/store";
 import { PlainSpeechProvider } from "@/lib/copy";
 import "./globals.css";
@@ -57,6 +58,7 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
       </head>
       <body className="h-full min-h-full antialiased">
+        <ServiceWorkerRegistrar />
         <PlainSpeechProvider>
           <StoreProvider>{children}</StoreProvider>
         </PlainSpeechProvider>
