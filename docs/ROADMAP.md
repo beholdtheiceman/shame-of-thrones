@@ -56,8 +56,8 @@ Smaller, but these are real product bugs against the PRD, not just polish.
 - [ ] Underdog Blessing balance mechanic (temporary Influence multiplier for trailing Houses below a share threshold), shown transparently in UI
 - [ ] Titles & badges beyond the basic rank track ("First of Their Name," "The Cartographer," "Oathkeeper," "Breaker of Chains," "The Night's Watch")
 - [ ] Streaks (consecutive weeks with ≥1 verified contribution) + earned-currency streak protection
-- [ ] Leaderboards: per-Fief, per-Realm, per-House, weekly and seasonal (weekly boards matter for giving new users a winnable timeframe)
-- [ ] Individual rank decay — prototype currently uses un-decayed lifetime XP (README gap #6); decide if quality-weighted decay is needed for the rank ladder to stay meaningful long-term
+- [x] Leaderboards: ~~per-Fief~~, per-Realm, per-House, weekly and seasonal — **shipped (Cycle A, 2026-07-13)**: a "Standings" tab with **The Small Council** (individual board, realm-wide, Week/Season/All-Time × All-Houses/My-House filter — the My-House filter covers per-House) and **House Standings** (four Houses by current decayed realm Influence + fiefs led). Pure `src/lib/standings.ts` selectors over the influence ledger, one `/api/standings` route, no schema change. Per-Fief *individual* boards deferred (FiefCard already shows per-fief House shares). Week = Mon 00:00 UTC reset; Season = fixed 8-week epoch (no rollover job); soft-reset stays deferred.
+- [x] Individual rank decay — **resolved as a deliberate NO (Cycle A)**: rank stays lifetime/undecayed (README gap #6 closed). Rationale (spec D1): PRD splits decaying *Influence* (territory) from *lifetime* rank (reputation); rank-loss is a retention killer and this phase is *for* retention; territory decay already supplies contribution pressure. Quality-weighting limited to free reversal-netting; helpful-vote weighting stays its own P1 item.
 
 ## Phase 4 — Ship on mobile
 
