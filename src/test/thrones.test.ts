@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { db } from "@/db/client";
 import { influenceEvents } from "@/db/schema";
+import { mePayload } from "@/lib/server/profile";
 import { addThrone, confirmThrone, ThroneError } from "@/lib/server/thrones";
 import { resetDb } from "./db";
 import { makeUser } from "./fixtures";
@@ -15,6 +16,8 @@ describe("thrones", () => {
     const throne = await addThrone(user, { name: "New Privy", lat: 40.75, lng: -73.99, category: "park", amenities: AMENITIES, publicAccessAttested: true });
     expect(throne.status).toBe("rumored");
     expect(await db.select().from(influenceEvents)).toHaveLength(0);
+    const me = await mePayload(user.id);
+    expect(me.profile.badges).toContain("cartographer");
   });
 
   it("the adder cannot confirm their own throne", async () => {

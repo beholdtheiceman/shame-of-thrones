@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { eq } from "drizzle-orm";
 import { db } from "@/db/client";
-import { influenceEvents, ratings, users } from "@/db/schema";
+import { influenceEvents, ratings } from "@/db/schema";
+import { mePayload } from "@/lib/server/profile";
 import { submitRating } from "@/lib/server/ratings";
 import { resetDb } from "./db";
 import { makeThrone, makeUser } from "./fixtures";
@@ -19,8 +19,8 @@ describe("submitRating", () => {
     expect(result).toMatchObject({ influence: 25, firstOfName: true, updated: false });
     const events = await db.select().from(influenceEvents);
     expect(events.map((e) => e.points).sort()).toEqual([10, 15]);
-    const [refreshed] = await db.select().from(users).where(eq(users.id, user.id));
-    expect(refreshed.badges).toContain("first_of_their_name");
+    const me = await mePayload(user.id);
+    expect(me.profile.badges).toContain("first_of_their_name");
   });
 
   it("awards 2 for hearsay, no first bonus after someone else rated", async () => {
