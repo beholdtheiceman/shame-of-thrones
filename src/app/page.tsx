@@ -12,6 +12,7 @@ import { OfflineBanner } from "@/components/OfflineBanner";
 import { PlainSpeechToggle } from "@/components/PlainSpeechToggle";
 import { ProfilePanel } from "@/components/ProfilePanel";
 import { SignInGate } from "@/components/SignInGate";
+import { Standings } from "@/components/Standings";
 import { TabBar, type TabId } from "@/components/TabBar";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { ThroneSheet } from "@/components/ThroneSheet";
@@ -155,6 +156,12 @@ export default function Home() {
             ) : (
               <ProfilePanel />
             )}
+          </div>
+        )}
+
+        {activeTab === "standings" && (
+          <div className="h-full overflow-y-auto">
+            <Standings />
           </div>
         )}
       </main>

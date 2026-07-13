@@ -1,11 +1,12 @@
 "use client";
 
-export type TabId = "realm" | "ledger" | "ranks";
+export type TabId = "realm" | "ledger" | "ranks" | "standings";
 
 const TABS: { id: TabId; label: string }[] = [
   { id: "realm", label: "Realm" },
   { id: "ledger", label: "Ledger" },
   { id: "ranks", label: "Ranks" },
+  { id: "standings", label: "Standings" },
 ];
 
 export function TabBar({
