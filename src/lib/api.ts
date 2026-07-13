@@ -1,4 +1,5 @@
 import type { FiefControl, RankInfo } from "./selectors";
+import type { CouncilRow, HouseStandingRow, WindowKey } from "./standings";
 import type { Amenities, HouseId, LedgerEntry, Rating, ThroneCategory } from "./types";
 
 export interface ThroneDTO {
@@ -22,6 +23,12 @@ export interface MeDTO {
   } | null;
   rank?: RankInfo;
   ageGate?: { confirmed: boolean; locked: boolean };
+}
+
+export interface StandingsDTO {
+  council: { rows: CouncilRow[]; viewerRow: CouncilRow | null };
+  houses: HouseStandingRow[];
+  window: { key: WindowKey; start: number | null; end: number | null; seasonIndex?: number };
 }
 
 export class ApiError extends Error {
@@ -78,4 +85,6 @@ export const api = {
     request<{ ok: true; throneId: string }>("/api/thrones", { method: "POST", body: JSON.stringify(input) }),
   confirmThrone: (throneId: string) =>
     request<{ ok: true }>(`/api/thrones/${throneId}/confirm`, { method: "POST" }),
+  standings: (window: WindowKey, house: HouseId | "all") =>
+    request<StandingsDTO>(`/api/standings?window=${window}&house=${house}`),
 };
