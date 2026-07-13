@@ -34,6 +34,12 @@ export const COPY = {
   offlineBanner: { themed: "The ravens cannot fly — you see the Realm as it was", plain: "You're offline — showing saved data" },
   ratingQueued: { themed: "Your deed will be sung when the ravens return.", plain: "Saved — your rating will submit when you're back online." },
   queueDropped: { themed: "A queued deed was refused by the Maesters.", plain: "A saved rating couldn't be submitted." },
+  smallCouncil: { themed: "Small Council", plain: "Top Contributors" },
+  houseStandings: { themed: "House Standings", plain: "Team Standings" },
+  allHouses: { themed: "All Houses", plain: "All Teams" },
+  myHouse: { themed: "My House", plain: "My Team" },
+  noStandingsDeeds: { themed: "No deeds recorded here yet — be the first.", plain: "No contributions here yet — be the first." },
+  standingsSignIn: { themed: "Sign in to take your seat on the Small Council.", plain: "Sign in to appear on the contributor list." },
 } as const;
 
 export type CopyKey = keyof typeof COPY;
