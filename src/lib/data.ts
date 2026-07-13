@@ -44,11 +44,11 @@ export const HOUSE_BY_ID: Record<HouseId, House> = Object.fromEntries(
 ) as Record<HouseId, House>;
 
 export const VERDICT_SCALE = [
-  { value: 1 as const, glyph: "⚔️", label: "The Dungeon" },
-  { value: 2 as const, glyph: "💀", label: "Peasant's Privy" },
-  { value: 3 as const, glyph: "🛡️", label: "Soldier's Rest" },
-  { value: 4 as const, glyph: "🏰", label: "Fit for a Knight" },
-  { value: 5 as const, glyph: "👑", label: "The Iron Throne" },
+  { value: 1 as const, glyph: "⚔️", label: "The Dungeon", plainLabel: "Avoid" },
+  { value: 2 as const, glyph: "💀", label: "Peasant's Privy", plainLabel: "Poor" },
+  { value: 3 as const, glyph: "🛡️", label: "Soldier's Rest", plainLabel: "Okay" },
+  { value: 4 as const, glyph: "🏰", label: "Fit for a Knight", plainLabel: "Good" },
+  { value: 5 as const, glyph: "👑", label: "The Iron Throne", plainLabel: "Excellent" },
 ];
 
 export const THRONE_CATEGORY_LABEL: Record<string, string> = {

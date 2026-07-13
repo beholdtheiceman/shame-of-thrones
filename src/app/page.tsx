@@ -8,6 +8,7 @@ import { FiefCard } from "@/components/FiefCard";
 import { Ledger } from "@/components/Ledger";
 import { NearestWorthyButton } from "@/components/NearestWorthyButton";
 import { Onboarding } from "@/components/Onboarding";
+import { PlainSpeechToggle } from "@/components/PlainSpeechToggle";
 import { ProfilePanel } from "@/components/ProfilePanel";
 import { SignInGate } from "@/components/SignInGate";
 import { TabBar, type TabId } from "@/components/TabBar";
@@ -66,6 +67,7 @@ export default function Home() {
           </div>
         </div>
         <div className="flex items-center gap-2.5">
+          <PlainSpeechToggle />
           <ThemeToggle />
           {house && (
             <span

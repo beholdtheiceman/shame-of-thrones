@@ -136,6 +136,7 @@ export interface VerdictTier {
   value: 1 | 2 | 3 | 4 | 5;
   glyph: string;
   label: string;
+  plainLabel: string;
 }
 
 /** Maps an average score to the nearest VERDICT_SCALE tier ("Fit for a
@@ -144,6 +145,12 @@ export function tierForScore(score: number): VerdictTier {
   const clamped = Math.min(5, Math.max(1, score));
   const value = Math.round(clamped) as VerdictTier["value"];
   return VERDICT_SCALE.find((t) => t.value === value) as VerdictTier;
+}
+
+/** Tier derived from the value the UI displays (score.toFixed(1)), so the
+ * chip and the number can never disagree at the .45–.49 band. */
+export function displayTier(score: number): VerdictTier {
+  return tierForScore(Number(score.toFixed(1)));
 }
 
 export interface FiefCardRow {

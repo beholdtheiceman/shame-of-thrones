@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { fiefCardModel, fiefControl, lifetimeXp, rankForXp, throneScore, tierForScore } from "./selectors";
+import { displayTier, fiefCardModel, fiefControl, lifetimeXp, rankForXp, throneScore, tierForScore } from "./selectors";
 import type { InfluenceEvent, Rating } from "./types";
 
 const DAY = 86_400_000;
@@ -110,6 +110,14 @@ describe("tierForScore", () => {
 
   it("returns the glyph for display", () => {
     expect(tierForScore(4.2).glyph).toBe("🏰");
+  });
+});
+
+describe("displayTier", () => {
+  it("derives the tier from the displayed (toFixed 1) value", () => {
+    expect(displayTier(4.45).value).toBe(5); // shows "4.5" → Iron Throne
+    expect(displayTier(4.44).value).toBe(4); // shows "4.4" → Fit for a Knight
+    expect(displayTier(2.449).value).toBe(2);
   });
 });
 

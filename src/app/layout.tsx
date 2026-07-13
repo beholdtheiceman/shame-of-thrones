@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Pixelify_Sans, Press_Start_2P, VT323 } from "next/font/google";
 import { StoreProvider } from "@/lib/store";
+import { PlainSpeechProvider } from "@/lib/copy";
 import "./globals.css";
 
 const pressStart = Press_Start_2P({
@@ -57,7 +58,9 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
       </head>
       <body className="h-full min-h-full antialiased">
-        <StoreProvider>{children}</StoreProvider>
+        <PlainSpeechProvider>
+          <StoreProvider>{children}</StoreProvider>
+        </PlainSpeechProvider>
       </body>
     </html>
   );
