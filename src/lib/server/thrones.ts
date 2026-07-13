@@ -28,9 +28,6 @@ export async function addThrone(
       addedAt: new Date(now), lastConfirmedAt: new Date(now),
     }).returning();
 
-    if (!user.badges.includes("cartographer")) {
-      await tx.update(users).set({ badges: [...user.badges, "cartographer"] }).where(eq(users.id, user.id));
-    }
     await tx.insert(ledgerEntries).values({
       text: `📜 **${user.displayName}** charts a new throne — **${throne.name}** enters the Realm as *Rumored*.`,
       createdAt: new Date(now),

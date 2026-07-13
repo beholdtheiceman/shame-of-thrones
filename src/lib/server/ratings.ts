@@ -92,10 +92,7 @@ export async function submitRating(user: UserRow, input: SubmitRatingInput, now 
       ledgerTexts.push(`**${user.displayName}** struck a banner for **${houseName}** at **${throne.name}** (+${points} Influence).`);
     }
 
-    let badges = user.badges;
-    if (isFirstRating && !badges.includes("first_of_their_name")) {
-      badges = [...badges, "first_of_their_name"];
-      await tx.update(users).set({ badges }).where(eq(users.id, user.id));
+    if (isFirstRating) {
       ledgerTexts.push(`🏅 **${user.displayName}** earns "First of Their Name" — first rating at **${throne.name}**.`);
     }
 

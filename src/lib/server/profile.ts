@@ -1,11 +1,12 @@
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { db } from "@/db/client";
-import { influenceEvents, ledgerEntries, users } from "@/db/schema";
+import { influenceEvents, ledgerEntries, ratings, thrones, users } from "@/db/schema";
 import { HOUSE_BY_ID } from "@/lib/data";
 import { HOUSE_SWITCH_WINDOW_MS } from "@/lib/game/rules";
+import { currentStreak, earnedBadges } from "@/lib/recognition";
 import { lifetimeXp, rankForXp } from "@/lib/selectors";
 import type { HouseId } from "@/lib/types";
-import { toGameEvent } from "./mappers";
+import { toGameEvent, toGameRating } from "./mappers";
 
 export class ProfileError extends Error {
   constructor(message: string, public status: number) {
@@ -54,15 +55,30 @@ export async function mePayload(userId: string) {
   const user = await db.query.users.findFirst({ where: eq(users.id, userId) });
   if (!user) throw new ProfileError("no profile", 404);
   const events = await db.select().from(influenceEvents).where(eq(influenceEvents.userId, userId));
+  const ratingRows = await db.select().from(ratings).where(eq(ratings.userId, userId));
+  const myRatings = ratingRows.map((rating) => toGameRating(rating, user));
+  const [{ n: thronesAdded }] = await db
+    .select({ n: sql<number>`count(*)::int` })
+    .from(thrones)
+    .where(eq(thrones.addedBy, userId));
+  const now = Date.now();
+  const streak = currentStreak(myRatings, now);
+  const badges = earnedBadges({
+    ratings: myRatings,
+    thronesAdded,
+    streakWeeks: streak.weeks,
+    now,
+  });
   const xp = Math.max(0, lifetimeXp(userId, events.map(toGameEvent)));
   return {
     profile: {
       name: user.displayName,
       houseId: user.houseId,
       joinedAt: user.joinedAt.getTime(),
-      badges: user.badges,
+      badges,
       lastHouseSwitchAt: user.lastHouseSwitchAt?.getTime() ?? null,
     },
     rank: rankForXp(xp),
+    streak,
   };
 }
