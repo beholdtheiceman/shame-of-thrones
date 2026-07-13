@@ -70,7 +70,7 @@ export interface LedgerEntry {
   text: string; // pre-rendered dispatch text, may include ** for emphasis
 }
 
-export type BadgeId = "first_of_their_name" | "cartographer";
+export type BadgeId = "first_of_their_name" | "cartographer" | "nights_watch" | "oathkeeper";
 
 export interface Profile {
   name: string;
