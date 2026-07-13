@@ -135,7 +135,7 @@ export function SittingFlow({
                 background: verdict === v.value ? "var(--brass)" : "var(--vellum)",
               }}
             >
-              {v.glyph}
+              <span aria-hidden="true">{v.glyph}</span>
             </span>
             <span
               className={`text-center font-mono text-[10.5px] leading-tight ${

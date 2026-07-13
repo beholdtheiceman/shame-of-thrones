@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { api, ApiError, type ThroneDTO } from "@/lib/api";
 import { HOUSE_BY_ID, THRONE_CATEGORY_LABEL } from "@/lib/data";
 import { useCopy, usePlainSpeech } from "@/lib/copy";
@@ -8,6 +8,7 @@ import { displayTier } from "@/lib/selectors";
 import { useStore } from "@/lib/store";
 import { haversineMeters } from "@/lib/geo";
 import { useNow } from "@/lib/useNow";
+import { useEscape } from "@/lib/useEscape";
 import type { Throne } from "@/lib/types";
 import { ReportModal } from "./ReportModal";
 import { SignInGate } from "./SignInGate";
@@ -28,6 +29,9 @@ export function ThroneSheet({
   throne: ThroneDTO;
   onClose: () => void;
 }) {
+  useEscape(onClose);
+  const panelRef = useRef<HTMLDivElement>(null);
+  useEffect(() => { panelRef.current?.focus(); }, []);
   const { state, confirmThrone } = useStore();
   const t = useCopy();
   const { plain } = usePlainSpeech();
@@ -100,7 +104,7 @@ export function ThroneSheet({
 
   return (
     <div className="fixed inset-0 z-[1000] flex items-end justify-center bg-black/60 sm:items-center sm:p-6">
-      <div className="pixel-panel max-h-[85vh] w-full max-w-md overflow-y-auto sm:mt-0">
+      <div ref={panelRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="throne-sheet-title" className="pixel-panel max-h-[85vh] w-full max-w-md overflow-y-auto sm:mt-0">
         {mode === "sitting" ? (
           <SittingFlow
             throne={throne}
@@ -114,7 +118,7 @@ export function ThroneSheet({
                 <p className="font-mono text-[13px] uppercase tracking-widest text-brass">
                   {THRONE_CATEGORY_LABEL[throne.category]}
                 </p>
-                <h2 className="mt-1 font-display text-[15px] leading-relaxed text-ink text-balance">
+                <h2 id="throne-sheet-title" className="mt-1 font-display text-[15px] leading-relaxed text-ink text-balance">
                   {throne.name}
                 </h2>
               </div>
@@ -147,7 +151,7 @@ export function ThroneSheet({
                 </span>
               )}
               {tier && (
-                <span className="pixel-chip bg-brass/20 px-2.5 py-1 font-mono text-[13px] uppercase tracking-wide text-brass-strong">
+                <span className="pixel-chip border border-brass bg-vellum px-2.5 py-1 font-mono text-[13px] uppercase tracking-wide text-brass-strong">
                   <span aria-hidden="true">{tier.glyph}</span>{" "}
                   {plain ? tier.plainLabel : tier.label}
                 </span>

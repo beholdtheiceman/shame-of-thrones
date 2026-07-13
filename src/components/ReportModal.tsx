@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { api, ApiError } from "@/lib/api";
 import { useCopy } from "@/lib/copy";
+import { useEscape } from "@/lib/useEscape";
 
 const REASONS = [
   { value: "wrong_info", label: "The details are wrong" },
@@ -19,6 +20,9 @@ export function ReportModal({ subjectKind, subjectId, subjectLabel, onClose }: {
   subjectLabel: string;
   onClose: () => void;
 }) {
+  useEscape(onClose);
+  const panelRef = useRef<HTMLDivElement>(null);
+  useEffect(() => { panelRef.current?.focus(); }, []);
   const t = useCopy();
   const [reason, setReason] = useState<string | null>(null);
   const [note, setNote] = useState("");
@@ -42,16 +46,16 @@ export function ReportModal({ subjectKind, subjectId, subjectLabel, onClose }: {
 
   return (
     <div className="fixed inset-0 z-[1003] flex items-end justify-center bg-black/60 sm:items-center sm:p-6">
-      <div className="pixel-panel w-full max-w-md p-5">
+      <div ref={panelRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="report-modal-title" className="pixel-panel w-full max-w-md p-5">
         {sent ? (
           <>
-            <p className="font-mono text-[15px] uppercase tracking-widest text-brass">▸ Raven Sent</p>
+            <p id="report-modal-title" className="font-mono text-[15px] uppercase tracking-widest text-brass">▸ Raven Sent</p>
             <p className="mt-2 text-[15px] text-ink-soft">{t("reportDone")} {subjectLabel}.</p>
             <button type="button" onClick={onClose} className="pixel-btn mt-4 w-full py-2.5 font-display text-[10px]">Close</button>
           </>
         ) : (
           <>
-            <p className="font-mono text-[15px] uppercase tracking-widest text-brass">{t("reportTitle")}</p>
+            <p id="report-modal-title" className="font-mono text-[15px] uppercase tracking-widest text-brass">{t("reportTitle")}</p>
             <p className="mt-1 font-mono text-[13px] text-ink-faint">{subjectLabel}</p>
             <div className="mt-3 flex flex-col gap-2">
               {REASONS.map((r) => (

@@ -3,6 +3,7 @@
 import { HOUSE_BY_ID } from "@/lib/data";
 import { useCopy } from "@/lib/copy";
 import { fiefCardModel, type FiefControl } from "@/lib/selectors";
+import { useEscape } from "@/lib/useEscape";
 
 export function FiefCard({
   control,
@@ -11,13 +12,14 @@ export function FiefCard({
   control: FiefControl | null;
   onClose: () => void;
 }) {
+  useEscape(onClose);
   const t = useCopy();
   const model = fiefCardModel(control);
   const leader = model.leaderHouseId ? HOUSE_BY_ID[model.leaderHouseId] : null;
 
   return (
     <div className="pointer-events-none absolute inset-x-0 bottom-4 z-[900] flex justify-center px-4">
-      <div className="pixel-panel pointer-events-auto w-full max-w-md p-4">
+      <div role="region" aria-label={t("thisFief")} className="pixel-panel pointer-events-auto w-full max-w-md p-4">
         <div className="flex items-start justify-between gap-3">
           <div>
             <p className="font-mono text-[13px] uppercase tracking-widest text-brass">

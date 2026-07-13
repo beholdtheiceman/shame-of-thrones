@@ -21,7 +21,7 @@ export function ThemeToggle() {
       aria-label="Toggle Torchlit / Moonlit"
       className="pixel-chip flex h-8 w-8 items-center justify-center bg-vellum text-sm text-ink-soft"
     >
-      🔥
+      <span aria-hidden="true">🔥</span>
     </button>
   );
 }

@@ -74,6 +74,8 @@ export default function Home() {
               className="pixel-chip block h-7 w-7"
               style={{ background: house.colorVar }}
               title={house.name}
+              role="img"
+              aria-label={house.name}
             />
           )}
         </div>
@@ -154,7 +156,7 @@ export default function Home() {
         )}
       </main>
 
-      <TabBar active={activeTab} onChange={setActiveTab} />
+      <TabBar active={activeTab} onChange={(tab) => { setActiveTab(tab); setSelectedFiefId(null); }} />
 
       {selectedThrone && (
         <ThroneSheet throne={selectedThrone} onClose={() => setSelectedThroneId(null)} />

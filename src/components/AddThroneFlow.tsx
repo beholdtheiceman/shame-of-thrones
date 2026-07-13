@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ApiError } from "@/lib/api";
 import { THRONE_CATEGORY_LABEL } from "@/lib/data";
 import { useCopy } from "@/lib/copy";
 import { useStore } from "@/lib/store";
+import { useEscape } from "@/lib/useEscape";
 import type { Amenities, ThroneCategory } from "@/lib/types";
 
 const CATEGORIES: ThroneCategory[] = [
@@ -49,6 +50,9 @@ export function AddThroneForm({
   coords: { lat: number; lng: number };
   onClose: () => void;
 }) {
+  useEscape(onClose);
+  const panelRef = useRef<HTMLDivElement>(null);
+  useEffect(() => { panelRef.current?.focus(); }, []);
   const { addThrone } = useStore();
   const t = useCopy();
   const [name, setName] = useState("");
@@ -83,11 +87,11 @@ export function AddThroneForm({
 
   return (
     <div className="fixed inset-0 z-[1001] flex items-end justify-center bg-black/60 sm:items-center sm:p-6">
-      <div className="pixel-panel w-full max-w-md p-5">
+      <div ref={panelRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="add-throne-title" className="pixel-panel w-full max-w-md p-5">
         <p className="font-mono text-[15px] uppercase tracking-widest text-brass">
           ▸ Charting a New Throne
         </p>
-        <h2 className="mt-2 font-display text-[13px] leading-relaxed text-ink">
+        <h2 id="add-throne-title" className="mt-2 font-display text-[13px] leading-relaxed text-ink">
           Name the throne
         </h2>
 
