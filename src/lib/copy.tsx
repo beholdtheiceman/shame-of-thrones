@@ -31,6 +31,9 @@ export const COPY = {
   holdsThisLand: { themed: "holds this land", plain: "leads this area" },
   noHouseHolds: { themed: "No House holds this land", plain: "No team leads this area" },
   contested: { themed: "Contested", plain: "Contested" },
+  offlineBanner: { themed: "The ravens cannot fly — you see the Realm as it was", plain: "You're offline — showing saved data" },
+  ratingQueued: { themed: "Your deed will be sung when the ravens return.", plain: "Saved — your rating will submit when you're back online." },
+  queueDropped: { themed: "A queued deed was refused by the Maesters.", plain: "A saved rating couldn't be submitted." },
 } as const;
 
 export type CopyKey = keyof typeof COPY;

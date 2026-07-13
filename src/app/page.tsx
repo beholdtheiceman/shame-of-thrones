@@ -8,6 +8,7 @@ import { FiefCard } from "@/components/FiefCard";
 import { Ledger } from "@/components/Ledger";
 import { NearestWorthyButton } from "@/components/NearestWorthyButton";
 import { Onboarding } from "@/components/Onboarding";
+import { OfflineBanner } from "@/components/OfflineBanner";
 import { PlainSpeechToggle } from "@/components/PlainSpeechToggle";
 import { ProfilePanel } from "@/components/ProfilePanel";
 import { SignInGate } from "@/components/SignInGate";
@@ -85,6 +86,7 @@ export default function Home() {
       <main className="relative min-h-0 flex-1">
         {activeTab === "realm" && (
           <div className="relative h-full w-full">
+            <OfflineBanner />
             <RealmMap
               thrones={thrones}
               fiefs={state.realm?.fiefs ?? []}

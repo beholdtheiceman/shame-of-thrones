@@ -31,6 +31,7 @@ export function SittingFlow({
   const [proximity, setProximity] = useState<ProximityState>("checking");
   const [submitting, setSubmitting] = useState(false);
   const [influenceClaimed, setInfluenceClaimed] = useState(false);
+  const [ratingQueued, setRatingQueued] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -77,7 +78,11 @@ export function SittingFlow({
         verified: proximity === "verified",
       });
       if (result.testimonyBlocked) setBlockedNote(true);
-      setInfluenceClaimed(true);
+      if (result.queued) {
+        setRatingQueued(true);
+      } else {
+        setInfluenceClaimed(true);
+      }
       window.setTimeout(onSubmitted, 700);
     } catch (e) {
       setError(e instanceof ApiError ? e.message : e instanceof Error ? e.message : t("connectionError"));
@@ -182,6 +187,11 @@ export function SittingFlow({
       {influenceClaimed && (
         <p className="pixel-chip mt-4 animate-bounce bg-brass px-3 py-2 text-center font-mono text-[14px] text-on-brass">
           Influence claimed!
+        </p>
+      )}
+      {ratingQueued && (
+        <p className="pixel-chip mt-4 bg-vellum px-3 py-2 text-center font-mono text-[14px] text-ink-soft">
+          {t("ratingQueued")}
         </p>
       )}
       {blockedNote && (

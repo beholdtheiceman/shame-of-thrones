@@ -4,6 +4,7 @@ import {
   createContext, useCallback, useContext, useEffect, useMemo, useRef, useState,
 } from "react";
 import { api, ApiError, type MeDTO, type RealmDTO } from "./api";
+import { enqueue, flush, pending, type QueuedRating } from "./ratingQueue";
 import type { Amenities, HouseId, ThroneCategory } from "./types";
 
 export type AuthStatus = "loading" | "anonymous" | "needs_profile" | "ready";
@@ -15,6 +16,10 @@ export interface StoreState {
   ageGate: { confirmed: boolean; locked: boolean } | null;
   realm: RealmDTO | null;
   error: string | null;
+  offline: boolean;
+  snapshotSavedAt: number | null;
+  queuedCount: number;
+  queueDropped: boolean;
 }
 
 const POLL_MS = 30_000;
@@ -25,16 +30,34 @@ interface StoreContextValue {
   setProfile: (name: string, houseId: HouseId) => Promise<void>;
   switchHouse: (houseId: HouseId) => Promise<void>;
   submitAgeGate: (birthDate: string) => Promise<void>;
-  submitRating: (input: { throneId: string; verdict: 1 | 2 | 3 | 4 | 5; tags: string[]; testimony: string; verified: boolean }) => Promise<{ testimonyBlocked: boolean }>;
+  submitRating: (input: { throneId: string; verdict: 1 | 2 | 3 | 4 | 5; tags: string[]; testimony: string; verified: boolean }) => Promise<{ testimonyBlocked: boolean; queued: boolean }>;
   addThrone: (input: { name: string; lat: number; lng: number; category: ThroneCategory; amenities: Amenities; publicAccessAttested: boolean }) => Promise<void>;
   confirmThrone: (throneId: string) => Promise<void>;
 }
 
 const StoreContext = createContext<StoreContextValue | null>(null);
 
+const SNAPSHOT_KEY = "sot-realm-snapshot";
+
+function saveSnapshot(realm: RealmDTO): void {
+  try {
+    window.localStorage.setItem(SNAPSHOT_KEY, JSON.stringify({ savedAt: Date.now(), realm }));
+  } catch {}
+}
+
+function loadSnapshot(): { savedAt: number; realm: RealmDTO } | null {
+  try {
+    const parsed = JSON.parse(window.localStorage.getItem(SNAPSHOT_KEY) ?? "null");
+    return parsed && typeof parsed.savedAt === "number" && parsed.realm ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
 export function StoreProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<StoreState>({
     authStatus: "loading", profile: null, rank: null, ageGate: null, realm: null, error: null,
+    offline: false, snapshotSavedAt: null, queuedCount: pending().length, queueDropped: false,
   });
   const refreshing = useRef(false);
 
@@ -49,16 +72,32 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
           throw e;
         }),
       ]);
-      setState({
+      saveSnapshot(realm);
+      setState((s) => ({
+        ...s,
         realm,
         profile: me?.profile ?? null,
         rank: me?.rank ?? null,
         ageGate: me?.ageGate ?? null,
         authStatus: me === null ? "anonymous" : me.profile === null ? "needs_profile" : "ready",
         error: null,
-      });
+        offline: false,
+        snapshotSavedAt: null,
+      }));
     } catch (e) {
-      setState((s) => ({ ...s, error: e instanceof Error ? e.message : "the ravens were lost" }));
+      if (!(e instanceof ApiError)) {
+        const snap = loadSnapshot();
+        setState((s) => ({
+          ...s,
+          realm: s.realm ?? snap?.realm ?? null,
+          authStatus: s.authStatus === "loading" ? "anonymous" : s.authStatus, // cold offline start = read-only browsing (spec §3)
+          offline: true,
+          snapshotSavedAt: s.realm ? s.snapshotSavedAt : snap?.savedAt ?? null,
+          error: null,
+        }));
+      } else {
+        setState((s) => ({ ...s, error: e.message }));
+      }
     } finally {
       refreshing.current = false;
     }
@@ -74,6 +113,26 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       window.clearInterval(interval);
     };
   }, [refresh]);
+
+  const runFlush = useCallback(async () => {
+    const result = await flush(
+      async (r: QueuedRating) => {
+        await api.submitRating({ throneId: r.throneId, verdict: r.verdict, tags: r.tags, verified: r.verified, testimony: r.testimony });
+      },
+      (e) => e instanceof ApiError
+    );
+    if (result.submitted > 0 || result.dropped.length > 0) {
+      setState((s) => ({ ...s, queuedCount: pending().length, queueDropped: s.queueDropped || result.dropped.length > 0 }));
+      await refresh();
+    }
+  }, [refresh]);
+
+  useEffect(() => {
+    void runFlush();
+    const onOnline = () => { void runFlush(); };
+    window.addEventListener("online", onOnline);
+    return () => window.removeEventListener("online", onOnline);
+  }, [runFlush]);
 
   const mutate = useCallback(
     async (fn: () => Promise<unknown>) => {
@@ -94,16 +153,23 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       switchHouse: (houseId) => mutate(() => api.switchHouse(houseId)),
       submitAgeGate: (birthDate) => mutate(() => api.ageGate(birthDate)),
       submitRating: async (input) => {
-        let blocked = false;
-        await mutate(async () => {
-          const res = await api.submitRating({
-            throneId: input.throneId, verdict: input.verdict, tags: input.tags, verified: input.verified,
-            testimony: input.testimony.trim() || undefined,
-          });
-          blocked = !!res.testimonyBlocked;
-          return res;
-        });
-        return { testimonyBlocked: blocked };
+        const payload = {
+          throneId: input.throneId, verdict: input.verdict, tags: input.tags, verified: input.verified,
+          testimony: input.testimony.trim() || undefined,
+        };
+        try {
+          const res = await api.submitRating(payload);
+          await refresh();
+          return { testimonyBlocked: !!res.testimonyBlocked, queued: false };
+        } catch (e) {
+          if (e instanceof ApiError) {
+            await refresh();
+            throw e; // server rejections keep today's behavior
+          }
+          enqueue({ ...payload, queuedAt: Date.now() });
+          setState((s) => ({ ...s, offline: true, queuedCount: pending().length }));
+          return { testimonyBlocked: false, queued: true };
+        }
       },
       addThrone: (input) => mutate(() => api.addThrone(input)),
       confirmThrone: (throneId) => mutate(() => api.confirmThrone(throneId)),
