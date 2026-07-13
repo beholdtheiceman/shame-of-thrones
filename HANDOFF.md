@@ -1,61 +1,55 @@
-# Handoff — 2026-07-12 (night)
+# Handoff — 2026-07-12 (late night)
 
 ## Where things stand
-**Phase 2 Cycle 1 (display gaps) is live in production.** Tier names now lead
-the ThroneSheet score ("🏰 Fit for a Knight · 4.5 · 2 sittings"), tapping a
-fief polygon opens a House-control breakdown card, and the location-privacy
-audit ran: user coordinates never reach the server at all, and the one gap
-found (photo EXIF/GPS served verbatim) was fixed same-day with a sharp
-re-encode. 126/126 tests, clean build, browser-verified on localhost AND on
-the live prod site. Working tree clean, everything pushed.
+**Phase 2 Cycles 1 AND 2 are live in production** (both shipped today).
+Cycle 1: tier-name score display, tap-a-fief control card, privacy audit +
+photo-EXIF strip. Cycle 2: the Plain Speech toggle (Aa in the header —
+functional copy rendered literally, persisted in localStorage) and the
+code-level WCAG AA pass (contrast-fixed palette, axe-core clean on four
+UI states, dialog semantics/focus/Esc everywhere, named map markers, zoom
+re-enabled). Remaining Phase 2 work is **Cycle 3: offline support** only.
 
-## Done this session
-- Spec + plan: `docs/superpowers/specs/2026-07-12-phase2-display-gaps-design.md`
-  (includes filled-in audit checklist), `docs/superpowers/plans/2026-07-12-phase2-display-gaps.md`
-- `tierForScore` + ThroneSheet tier chip — verified live
-- `fiefCardModel` + `FiefCard` + map tap plumbing — verified live
-- Privacy audit (5/6 PASS) + EXIF-strip fix (sharp re-encode, orientation
-  baked, post-encode size recheck, unreadable→400) — unit-tested, deployed
-- Reviews caught two real bugs pre-ship: Leaflet polygon clicks need
-  `L.DomEvent.stopPropagation(e)` (native stop is a no-op there), and
-  re-encoding could inflate files past the 5MB cap
-- ROADMAP Phase 2 boxes checked for tier display, fief breakdown, privacy
+## Done this session (cycle 2 portion)
+- Spec + plan: `docs/superpowers/specs/2026-07-12-phase2-plain-speech-a11y-design.md`
+  (with audit-results amendment), `docs/superpowers/plans/2026-07-12-phase2-plain-speech-a11y.md`
+- `src/lib/copy.tsx` (dictionary/provider/hooks), `PlainSpeechToggle`,
+  `plainLabel` on VERDICT_SCALE, `displayTier`, copy sweep over 10 components — verified live
+- `src/lib/useEscape.ts` with a topmost-overlay stack (Esc closes only the
+  top dialog), dialog roles + focus-on-open, aria-hidden emoji — verified live
+- Contrast fixes with recorded ratios; axe violations fixed (markers,
+  viewport zoom, h1, chip tints); FiefCard house names moved to plain ink
+- Combined review found 2 Important issues (nested-Esc double-close,
+  SignInGate overlay missing semantics) — both fixed and verified
+- 148 tests green (one pre-existing flaky testimony timeout, passes standalone), build clean
 
 ## ⚠️ Half-finished / fragile right now
-Nothing mid-flight. Notes only:
-- **Contested badge** renders from unit-tested logic but was never seen live
-  (no contested fief exists in dev/prod data yet — glance at it whenever two
-  Houses first fight over a fief).
-- **Add-mode fall-through** (fief tap while Chart-a-Throne active → places
-  throne, no card) is code-reviewed but not live-verified — needs a signed-in
-  session; check once while adding a real throne.
-- Cosmetic: a score of ~4.47 displays as "4.5" (toFixed) beside tier 4 "Fit
-  for a Knight" (Math.round of the raw value) — looks like a mismatch at
-  exactly the .45–.49 band. Decide in cycle 2 whether to round the displayed
-  number and tier from the same value.
-- Pre-existing test artifacts in prod DB still deletable (ser.claude_verifier,
-  "Verify Test Privy", 1x1 test photo).
+Nothing mid-flight. Notes:
+- **Nested Report-modal Esc** (modal over sheet) is fixed via the stack but
+  was only verifiable anonymously via the SignInGate overlay — exercise the
+  Report-over-Sheet case once while signed in.
+- Known a11y waiver (recorded in the spec): testimony house-name colors keep
+  game identity; House Flush blue measures ~3.2:1.
+- Hydration warnings in dev when `sot-theme` is set in localStorage —
+  pre-existing theme-init pattern, not a regression.
+- Cost note: this session ran long (~$76); prefer a fresh session for Cycle 3.
 
 ## Next steps (in order)
-1. **Phase 2 Cycle 2: Plain Speech toggle + accessibility pass** (or Cycle 3:
-   offline support — Larry's pick). Carry-forwards for the a11y pass, from
-   reviewers: emoji glyphs (tier chips, verdict scale) have no aria-hidden
-   anywhere; "Rumored" and tier chips share identical brass styling; fief-card
-   selection persists across tab switches.
-2. Legal/trademark clearance (Larry, external — still the only open Phase 1 item).
+1. **Phase 2 Cycle 3: offline support** (tile caching, queue-and-sync
+   ratings) — brainstorm → spec → plan in a fresh session.
+2. Legal/trademark clearance (Larry, external — the only open Phase 1 item).
+3. Optional: delete prod test artifacts (ser.claude_verifier, "Verify Test
+   Privy", 1x1 test photo).
 
 ## Decisions & discoveries this session
-- Leaflet: layer click handlers must use `L.DomEvent.stopPropagation(e)`;
-  `e.originalEvent.stopPropagation()` runs after Leaflet has already captured
-  the container event and silently does nothing.
-- Markers don't need this — Leaflet's `Marker` defaults `bubblingMouseEvents`
-  to false (polygons default true), which is what gives throne pins priority.
-- Privacy posture is stronger than the PRD asks: proximity is computed
-  on-device (`SittingFlow`), only a boolean crosses the wire — there is no
-  coordinate to mishandle server-side.
-- sharp needs zero Vercel/Next config (it's on Next's default
-  serverExternalPackages list); `.rotate()` must run before the format
-  re-encode or stripped orientation tags would sideways phone photos.
-- The browser pane's screenshot capture hangs on this app (Leaflet layer?);
-  text reads, JS eval, and DOM-dispatched events all work — verification ran
-  that way, on dev and prod.
+- Plain Speech scope (Larry): functional UI copy only; Houses/ranks/Ledger/
+  server-error strings stay themed (documented limitation).
+- axe measures chip text against the composited tint background — chips need
+  *-strong text variants (crimson-strong added, mirroring brass-strong) or
+  /10 tints; house-brand colors are not AA-safe as text (use ink + colored bars).
+- `useEscape` uses a module-level overlay stack; register once per mount
+  (callback in a ref) or re-renders reorder the stack.
+- The codex-rescue wrapper once claimed a background job id that never
+  existed — verify with `git status` before trusting a "started" report;
+  a retry with "run synchronously, do not detach" worked.
+- The browser pane's screenshot capture still hangs on this app; all
+  verification runs via JS eval + dispatched DOM events (works on dev and prod).

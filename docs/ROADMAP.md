@@ -45,8 +45,8 @@ Smaller, but these are real product bugs against the PRD, not just polish.
 
 - [x] `ThroneSheet` currently shows a raw `4.2 / 5` score — **shipped**: tier chip (glyph + name, e.g. "🏰 Fit for a Knight") leads the chip row; the number is secondary (`tierForScore` in `selectors.ts`)
 - [x] Add a Fief control breakdown to the UI — **shipped**: tapping a fief polygon opens a bottom card with all four Houses' share bars + Contested badge (`FiefCard`, fed by `fiefCardModel`)
-- [ ] Build the "Plain Speech" accessibility toggle from PRD §6 — not implemented at all; functional info (hours, accessibility, access requirements) must already display plainly even in themed mode, so check that too while adding the toggle
-- [ ] Full VoiceOver/TalkBack pass + WCAG AA contrast audit (PRD §6 accessibility requirement)
+- [x] Build the "Plain Speech" accessibility toggle from PRD §6 — **shipped**: header Aa toggle, client copy dictionary (`src/lib/copy.tsx`), plain tier labels; game identity (Houses/ranks/Ledger) stays themed by design; functional info verified plain in both modes
+- [x] ~~Full VoiceOver/TalkBack pass +~~ WCAG AA contrast audit — **shipped at code level**: contrast-fixed palette (ratios in the cycle-2 spec), axe-core clean, dialog semantics/focus/Esc, named map markers, zoom re-enabled. Hardware VoiceOver/TalkBack pass deferred to Phase 4 (native)
 - [ ] Offline support: cache map tiles + last-known Throne data, queue-and-sync ratings when connectivity drops (PRD §7 — restrooms are basement-adjacent, connectivity will be bad)
 - [x] Privacy: confirm location handling stores only the proximity boolean + coarse geohash server-side, never a raw coordinate trail — **audited 2026-07-12** (findings in the phase2-display-gaps spec): user coordinates never reach the server at all (proximity computed on-device); the one gap found — photo EXIF/GPS surviving upload — was fixed the same day (sharp re-encode strips all metadata)
 
