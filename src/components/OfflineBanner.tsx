@@ -9,11 +9,11 @@ function age(ms: number): string {
 }
 
 export function OfflineBanner() {
-  const { state } = useStore();
+  const { state, clearQueueNotice } = useStore();
   const t = useCopy();
   if (!state.offline && state.queuedCount === 0 && !state.queueDropped) return null;
   return (
-    <div role="status" className="pointer-events-none absolute inset-x-0 top-16 z-[950] flex justify-center px-4">
+    <div role="status" className="pointer-events-none absolute inset-x-0 top-2 z-[950] flex justify-center px-4">
       <div className="pixel-chip pointer-events-auto bg-vellum-raised px-3 py-1.5 text-center font-mono text-[13px] text-ink-soft">
         {state.offline && (
           <span>
@@ -22,7 +22,19 @@ export function OfflineBanner() {
           </span>
         )}
         {state.queuedCount > 0 && <span>{state.offline ? " · " : ""}{state.queuedCount} ✉</span>}
-        {state.queueDropped && <span className="text-crimson-strong"> · {t("queueDropped")}</span>}
+        {state.queueDropped && (
+          <>
+            <span className="text-crimson-strong"> · {t("queueDropped")}</span>
+            <button
+              type="button"
+              onClick={clearQueueNotice}
+              aria-label="Dismiss notice"
+              className="ml-2 font-mono text-[12px] uppercase text-ink-faint underline"
+            >
+              ✕
+            </button>
+          </>
+        )}
       </div>
     </div>
   );

@@ -25,11 +25,13 @@ function defaultStorage(): StorageLike | null {
   }
 }
 
-function write(queue: QueuedRating[], storage: StorageLike): void {
+function write(queue: QueuedRating[], storage: StorageLike): boolean {
   try {
     storage.setItem(KEY, JSON.stringify(queue));
+    return true;
   } catch {
-    // quota/privacy failure — queue silently disabled (spec: degrade to online-only)
+    // quota/privacy failure — caller must fall back to online-only behavior
+    return false;
   }
 }
 
@@ -44,9 +46,11 @@ export function pending(storage: StorageLike | null = defaultStorage()): QueuedR
   }
 }
 
-export function enqueue(rating: QueuedRating, storage: StorageLike | null = defaultStorage()): void {
-  if (!storage) return;
-  write([...pending(storage), rating], storage);
+/** Returns false when the rating could NOT be persisted (no storage/quota) —
+ * callers must surface the original failure instead of claiming "queued". */
+export function enqueue(rating: QueuedRating, storage: StorageLike | null = defaultStorage()): boolean {
+  if (!storage) return false;
+  return write([...pending(storage), rating], storage);
 }
 
 let flushing = false;

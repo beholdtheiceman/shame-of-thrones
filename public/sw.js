@@ -18,11 +18,18 @@ self.addEventListener("activate", (event) => {
   );
 });
 
+let trimming = false;
 async function trimTiles() {
-  const cache = await caches.open(TILE_CACHE);
-  const keys = await cache.keys();
-  if (keys.length > TILE_CAP) {
-    await Promise.all(keys.slice(0, keys.length - TILE_CAP).map((k) => cache.delete(k)));
+  if (trimming) return; // fast pans schedule many trims; one at a time is enough
+  trimming = true;
+  try {
+    const cache = await caches.open(TILE_CACHE);
+    const keys = await cache.keys();
+    if (keys.length > TILE_CAP) {
+      await Promise.all(keys.slice(0, keys.length - TILE_CAP).map((k) => cache.delete(k)));
+    }
+  } finally {
+    trimming = false;
   }
 }
 
@@ -39,7 +46,9 @@ self.addEventListener("fetch", (event) => {
         const hit = await cache.match(event.request);
         if (hit) return hit;
         const res = await fetch(event.request);
-        if (res.ok) {
+        // Leaflet <img> tiles are no-cors: responses are opaque (ok=false, status 0)
+        // but still cacheable and renderable.
+        if (res.ok || res.type === "opaque") {
           await cache.put(event.request, res.clone());
           event.waitUntil(trimTiles());
         }
@@ -68,13 +77,17 @@ self.addEventListener("fetch", (event) => {
   }
 
   // App shell: network-first with cached fallback so the app opens offline.
+  // Only the home shell is cached — caching under a fixed "/" key for every
+  // path would let /moderation poison the fallback for anonymous users.
   if (event.request.mode === "navigate") {
     event.respondWith(
       (async () => {
         const cache = await caches.open(SHELL_CACHE);
         try {
           const res = await fetch(event.request);
-          if (res.ok) await cache.put("/", res.clone());
+          if (res.ok && !res.redirected && url.pathname === "/") {
+            await cache.put("/", res.clone());
+          }
           return res;
         } catch {
           return (await cache.match("/")) || Response.error();

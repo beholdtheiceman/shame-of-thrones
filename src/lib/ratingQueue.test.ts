@@ -64,6 +64,16 @@ describe("ratingQueue", () => {
     expect(pending(s)).toEqual([]);
   });
 
+  it("reports persistence failure so callers can fall back to online-only", () => {
+    const broken = {
+      getItem: () => null,
+      setItem: () => { throw new Error("quota exceeded"); },
+      removeItem: () => {},
+    };
+    expect(enqueue(rating(), broken)).toBe(false);
+    expect(enqueue(rating(), memStorage())).toBe(true);
+  });
+
   it("guards against concurrent flushes", async () => {
     const s = memStorage();
     enqueue(rating(), s);

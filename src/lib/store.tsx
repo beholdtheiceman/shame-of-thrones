@@ -27,6 +27,7 @@ const POLL_MS = 30_000;
 interface StoreContextValue {
   state: StoreState;
   refresh: () => Promise<void>;
+  clearQueueNotice: () => void;
   setProfile: (name: string, houseId: HouseId) => Promise<void>;
   switchHouse: (houseId: HouseId) => Promise<void>;
   submitAgeGate: (birthDate: string) => Promise<void>;
@@ -92,11 +93,13 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
           realm: s.realm ?? snap?.realm ?? null,
           authStatus: s.authStatus === "loading" ? "anonymous" : s.authStatus, // cold offline start = read-only browsing (spec §3)
           offline: true,
-          snapshotSavedAt: s.realm ? s.snapshotSavedAt : snap?.savedAt ?? null,
+          // the on-disk snapshot always carries the last successful fetch time
+          snapshotSavedAt: snap?.savedAt ?? s.snapshotSavedAt,
           error: null,
         }));
       } else {
-        setState((s) => ({ ...s, error: e.message }));
+        // an HTTP response means we are online again, whatever the status code
+        setState((s) => ({ ...s, error: e.message, offline: false, snapshotSavedAt: null }));
       }
     } finally {
       refreshing.current = false;
@@ -123,6 +126,11 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     );
     if (result.submitted > 0 || result.dropped.length > 0) {
       setState((s) => ({ ...s, queuedCount: pending().length, queueDropped: s.queueDropped || result.dropped.length > 0 }));
+      // refresh() no-ops while another refresh is in flight (mount race) —
+      // wait it out so the flushed ratings actually appear.
+      for (let i = 0; i < 20 && refreshing.current; i++) {
+        await new Promise((r) => setTimeout(r, 150));
+      }
       await refresh();
     }
   }, [refresh]);
@@ -149,6 +157,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     () => ({
       state,
       refresh,
+      clearQueueNotice: () => setState((s) => ({ ...s, queueDropped: false })),
       setProfile: (name, houseId) => mutate(() => api.createProfile(name, houseId)),
       switchHouse: (houseId) => mutate(() => api.switchHouse(houseId)),
       submitAgeGate: (birthDate) => mutate(() => api.ageGate(birthDate)),
@@ -166,7 +175,8 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
             await refresh();
             throw e; // server rejections keep today's behavior
           }
-          enqueue({ ...payload, queuedAt: Date.now() });
+          const persisted = enqueue({ ...payload, queuedAt: Date.now() });
+          if (!persisted) throw e; // no storage — behave exactly as online-only (spec)
           setState((s) => ({ ...s, offline: true, queuedCount: pending().length }));
           return { testimonyBlocked: false, queued: true };
         }

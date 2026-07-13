@@ -84,9 +84,9 @@ export default function Home() {
       </header>
 
       <main className="relative min-h-0 flex-1">
+        <OfflineBanner />
         {activeTab === "realm" && (
           <div className="relative h-full w-full">
-            <OfflineBanner />
             <RealmMap
               thrones={thrones}
               fiefs={state.realm?.fiefs ?? []}
