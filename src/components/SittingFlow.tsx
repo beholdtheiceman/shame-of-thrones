@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { ApiError } from "@/lib/api";
 import { VERDICT_SCALE } from "@/lib/data";
+import { useCopy, usePlainSpeech } from "@/lib/copy";
 import { haversineMeters } from "@/lib/geo";
 import { RATING_TAGS } from "@/lib/game/rules";
 import { useStore } from "@/lib/store";
@@ -21,6 +22,8 @@ export function SittingFlow({
   onSubmitted: () => void;
 }) {
   const { state, submitRating } = useStore();
+  const t = useCopy();
+  const { plain } = usePlainSpeech();
   const [verdict, setVerdict] = useState<1 | 2 | 3 | 4 | 5 | null>(null);
   const [tags, setTags] = useState<string[]>([]);
   const [testimony, setTestimony] = useState("");
@@ -77,7 +80,7 @@ export function SittingFlow({
       setInfluenceClaimed(true);
       window.setTimeout(onSubmitted, 700);
     } catch (e) {
-      setError(e instanceof ApiError ? e.message : e instanceof Error ? e.message : "the ravens were lost");
+      setError(e instanceof ApiError ? e.message : e instanceof Error ? e.message : t("connectionError"));
       setSubmitting(false);
     }
   }
@@ -139,7 +142,7 @@ export function SittingFlow({
                 verdict === v.value ? "text-brass" : "text-ink-faint"
               }`}
             >
-              {v.label}
+              {plain ? v.plainLabel : v.label}
             </span>
           </button>
         ))}

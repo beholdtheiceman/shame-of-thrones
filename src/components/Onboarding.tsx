@@ -3,12 +3,14 @@
 import { useState } from "react";
 import { ApiError } from "@/lib/api";
 import { HOUSES } from "@/lib/data";
+import { useCopy } from "@/lib/copy";
 import { useStore } from "@/lib/store";
 import type { HouseId } from "@/lib/types";
 import { SignInGate } from "./SignInGate";
 
 export function Onboarding() {
   const { state, setProfile } = useStore();
+  const t = useCopy();
   const [name, setName] = useState("");
   const [houseId, setHouseId] = useState<HouseId | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -28,7 +30,7 @@ export function Onboarding() {
           ? "that name is already sworn to another"
           : e instanceof Error
             ? e.message
-            : "the ravens were lost"
+            : t("connectionError")
       );
     } finally {
       setSubmitting(false);

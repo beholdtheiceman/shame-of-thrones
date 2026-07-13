@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { api, ApiError } from "@/lib/api";
+import { useCopy } from "@/lib/copy";
 
 const REASONS = [
   { value: "wrong_info", label: "The details are wrong" },
@@ -18,6 +19,7 @@ export function ReportModal({ subjectKind, subjectId, subjectLabel, onClose }: {
   subjectLabel: string;
   onClose: () => void;
 }) {
+  const t = useCopy();
   const [reason, setReason] = useState<string | null>(null);
   const [note, setNote] = useState("");
   const [sent, setSent] = useState(false);
@@ -32,7 +34,7 @@ export function ReportModal({ subjectKind, subjectId, subjectLabel, onClose }: {
       await api.report({ subjectKind, subjectId, reason, note: note.trim() || undefined });
       setSent(true);
     } catch (e) {
-      setError(e instanceof ApiError ? e.message : "the ravens were lost");
+      setError(e instanceof ApiError ? e.message : t("connectionError"));
     } finally {
       setSubmitting(false);
     }
@@ -44,12 +46,12 @@ export function ReportModal({ subjectKind, subjectId, subjectLabel, onClose }: {
         {sent ? (
           <>
             <p className="font-mono text-[15px] uppercase tracking-widest text-brass">▸ Raven Sent</p>
-            <p className="mt-2 text-[15px] text-ink-soft">The Maesters will review {subjectLabel}.</p>
+            <p className="mt-2 text-[15px] text-ink-soft">{t("reportDone")} {subjectLabel}.</p>
             <button type="button" onClick={onClose} className="pixel-btn mt-4 w-full py-2.5 font-display text-[10px]">Close</button>
           </>
         ) : (
           <>
-            <p className="font-mono text-[15px] uppercase tracking-widest text-brass">▸ Report to the Maesters</p>
+            <p className="font-mono text-[15px] uppercase tracking-widest text-brass">{t("reportTitle")}</p>
             <p className="mt-1 font-mono text-[13px] text-ink-faint">{subjectLabel}</p>
             <div className="mt-3 flex flex-col gap-2">
               {REASONS.map((r) => (
@@ -64,7 +66,7 @@ export function ReportModal({ subjectKind, subjectId, subjectLabel, onClose }: {
               ))}
             </div>
             <textarea value={note} onChange={(e) => setNote(e.target.value)} maxLength={280} rows={2}
-              placeholder="Anything the Maesters should know? (optional)"
+              placeholder={t("reportPlaceholder")}
               className="pixel-panel-flat mt-3 w-full resize-none px-3 py-2 font-mono text-[13px] text-ink outline-none placeholder:text-ink-faint" />
             {error && <p className="mt-2 font-mono text-[13px] text-crimson">{error}</p>}
             <div className="mt-4 flex gap-2">

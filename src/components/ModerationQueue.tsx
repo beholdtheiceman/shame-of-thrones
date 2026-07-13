@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { useCopy } from "@/lib/copy";
 
 interface ReviewItem {
   id: string;
@@ -25,6 +26,7 @@ const SEVERITY_BG: Record<string, string> = {
 };
 
 export function ModerationQueue() {
+  const t = useCopy();
   const [items, setItems] = useState<ReviewItem[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
@@ -37,9 +39,9 @@ export function ModerationQueue() {
       setItems((await res.json()).items);
       setError(null);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "the ravens were lost");
+      setError(e instanceof Error ? e.message : t("connectionError"));
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => { void load(); }, [load]);
 

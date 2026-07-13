@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { ApiError } from "@/lib/api";
 import { HOUSES, HOUSE_BY_ID } from "@/lib/data";
 import { HOUSE_SWITCH_WINDOW_MS } from "@/lib/game/rules";
+import { useCopy } from "@/lib/copy";
 import { useStore } from "@/lib/store";
 import { useNow } from "@/lib/useNow";
 import type { BadgeId, HouseId } from "@/lib/types";
@@ -23,6 +24,7 @@ const BADGE_META: Record<BadgeId, { icon: string; title: string; desc: string }>
 
 export function ProfilePanel() {
   const { state, switchHouse } = useStore();
+  const t = useCopy();
   const { profile } = state;
   const now = useNow();
   const [switchingHouse, setSwitchingHouse] = useState(false);
@@ -60,7 +62,7 @@ export function ProfilePanel() {
     try {
       await switchHouse(houseId);
     } catch (e) {
-      setSwitchError(e instanceof ApiError ? e.message : e instanceof Error ? e.message : "the ravens were lost");
+      setSwitchError(e instanceof ApiError ? e.message : e instanceof Error ? e.message : t("connectionError"));
     } finally {
       setSwitchingHouse(false);
     }

@@ -1,12 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { useCopy } from "@/lib/copy";
 import { useStore } from "@/lib/store";
 
 /** Neutral COPPA age screen: no mention of a cutoff. The server computes and
  * discards the date; the client never learns why a lock happened. */
 export function AgeGate() {
   const { state, submitAgeGate } = useStore();
+  const t = useCopy();
   const [birthDate, setBirthDate] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -31,7 +33,7 @@ export function AgeGate() {
     try {
       await submitAgeGate(birthDate);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "the ravens were lost");
+      setError(e instanceof Error ? e.message : t("connectionError"));
     } finally {
       setSubmitting(false);
     }

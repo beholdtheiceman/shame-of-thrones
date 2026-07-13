@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { ApiError } from "@/lib/api";
 import { THRONE_CATEGORY_LABEL } from "@/lib/data";
+import { useCopy } from "@/lib/copy";
 import { useStore } from "@/lib/store";
 import type { Amenities, ThroneCategory } from "@/lib/types";
 
@@ -25,6 +26,7 @@ export function AddThroneToggle({
   addMode: boolean;
   onToggle: () => void;
 }) {
+  const t = useCopy();
   return (
     <button
       type="button"
@@ -35,7 +37,7 @@ export function AddThroneToggle({
         color: addMode ? "var(--on-brass)" : "var(--ink-soft)",
       }}
     >
-      {addMode ? "Tap the map to place a pin ✕" : "+ Chart a Throne"}
+      {addMode ? "Tap the map to place a pin ✕" : t("chartThrone")}
     </button>
   );
 }
@@ -48,6 +50,7 @@ export function AddThroneForm({
   onClose: () => void;
 }) {
   const { addThrone } = useStore();
+  const t = useCopy();
   const [name, setName] = useState("");
   const [category, setCategory] = useState<ThroneCategory>("cafe");
   const [amenities, setAmenities] = useState<Amenities>({
@@ -73,7 +76,7 @@ export function AddThroneForm({
       await addThrone({ name: name.trim(), lat: coords.lat, lng: coords.lng, category, amenities, publicAccessAttested: true });
       onClose();
     } catch (e) {
-      setError(e instanceof ApiError ? e.message : e instanceof Error ? e.message : "the ravens were lost");
+      setError(e instanceof ApiError ? e.message : e instanceof Error ? e.message : t("connectionError"));
       setSubmitting(false);
     }
   }

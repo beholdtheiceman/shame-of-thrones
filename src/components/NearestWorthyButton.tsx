@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { REALM_CENTER } from "@/lib/data";
 import { haversineMeters } from "@/lib/geo";
+import { useCopy } from "@/lib/copy";
 import { useStore } from "@/lib/store";
 
 export function NearestWorthyButton({
@@ -11,6 +12,7 @@ export function NearestWorthyButton({
   onFound: (throneId: string, coords: [number, number]) => void;
 }) {
   const { state } = useStore();
+  const t = useCopy();
   const [notice, setNotice] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -67,9 +69,7 @@ export function NearestWorthyButton({
         {busy ? (
           "Scouting…"
         ) : (
-          <>
-            <span style={{ fontFamily: "system-ui" }}>⚔️</span> Nearest Worthy Throne
-          </>
+          t("nearestWorthy")
         )}
       </button>
       {notice && (

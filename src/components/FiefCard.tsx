@@ -1,6 +1,7 @@
 "use client";
 
 import { HOUSE_BY_ID } from "@/lib/data";
+import { useCopy } from "@/lib/copy";
 import { fiefCardModel, type FiefControl } from "@/lib/selectors";
 
 export function FiefCard({
@@ -10,6 +11,7 @@ export function FiefCard({
   control: FiefControl | null;
   onClose: () => void;
 }) {
+  const t = useCopy();
   const model = fiefCardModel(control);
   const leader = model.leaderHouseId ? HOUSE_BY_ID[model.leaderHouseId] : null;
 
@@ -19,22 +21,22 @@ export function FiefCard({
         <div className="flex items-start justify-between gap-3">
           <div>
             <p className="font-mono text-[13px] uppercase tracking-widest text-brass">
-              This Fief
+              {t("thisFief")}
             </p>
             {leader ? (
               <p className="mt-1 font-display text-[12px]" style={{ color: leader.colorVar }}>
-                {leader.name} holds this land
+                {leader.name} {t("holdsThisLand")}
               </p>
             ) : (
               <p className="mt-1 font-display text-[12px] text-ink-faint">
-                No House holds this land
+                {t("noHouseHolds")}
               </p>
             )}
           </div>
           <div className="flex shrink-0 items-center gap-2">
             {model.contested && (
               <span className="pixel-chip bg-crimson/20 px-2.5 py-1 font-mono text-[12px] uppercase tracking-wide text-crimson">
-                Contested
+                {t("contested")}
               </span>
             )}
             <button

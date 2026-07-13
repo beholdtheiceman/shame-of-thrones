@@ -3,7 +3,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { api, ApiError, type ThroneDTO } from "@/lib/api";
 import { HOUSE_BY_ID, THRONE_CATEGORY_LABEL } from "@/lib/data";
-import { tierForScore } from "@/lib/selectors";
+import { useCopy, usePlainSpeech } from "@/lib/copy";
+import { displayTier } from "@/lib/selectors";
 import { useStore } from "@/lib/store";
 import { haversineMeters } from "@/lib/geo";
 import { useNow } from "@/lib/useNow";
@@ -28,6 +29,8 @@ export function ThroneSheet({
   onClose: () => void;
 }) {
   const { state, confirmThrone } = useStore();
+  const t = useCopy();
+  const { plain } = usePlainSpeech();
   const [mode, setMode] = useState<"detail" | "sitting">("detail");
   const [showSignInGate, setShowSignInGate] = useState(false);
   const [confirmError, setConfirmError] = useState<string | null>(null);
@@ -50,7 +53,7 @@ export function ThroneSheet({
 
   const score = throne.score;
   const count = throne.ratingCount;
-  const tier = score !== null ? tierForScore(score) : null;
+  const tier = score !== null ? displayTier(score) : null;
 
   const recentRatings = useMemo(
     () =>
@@ -70,7 +73,7 @@ export function ThroneSheet({
     try {
       await confirmThrone(throne.id);
     } catch (e) {
-      setConfirmError(e instanceof ApiError ? e.message : e instanceof Error ? e.message : "the ravens were lost");
+      setConfirmError(e instanceof ApiError ? e.message : e instanceof Error ? e.message : t("connectionError"));
     }
   }
 
@@ -80,11 +83,11 @@ export function ThroneSheet({
     try {
       const result = await api.uploadPhoto(throne.id, file);
       setPhotoMessage(result.status === "rejected"
-        ? "The Maesters have refused this portrait."
-        : "This portrait awaits the Maesters' review.");
+        ? t("photoRefusedMsg")
+        : t("photoPendingMsg"));
       await loadPhotos();
     } catch (e) {
-      setPhotoMessage(e instanceof ApiError ? e.message : "the ravens were lost");
+      setPhotoMessage(e instanceof ApiError ? e.message : t("connectionError"));
     } finally {
       setPhotoUploading(false);
     }
@@ -136,29 +139,30 @@ export function ThroneSheet({
             <div className="mt-3 flex flex-wrap items-center gap-2">
               {throne.status === "rumored" ? (
                 <span className="pixel-chip bg-brass/20 px-2.5 py-1 font-mono text-[13px] uppercase tracking-wide text-brass-strong">
-                  Rumored
+                  {t("rumored")}
                 </span>
               ) : (
                 <span className="pixel-chip bg-emerald/20 px-2.5 py-1 font-mono text-[13px] uppercase tracking-wide text-emerald">
-                  ✓ Verified
+                  {t("verifiedChip")}
                 </span>
               )}
               {tier && (
                 <span className="pixel-chip bg-brass/20 px-2.5 py-1 font-mono text-[13px] uppercase tracking-wide text-brass-strong">
-                  {tier.glyph} {tier.label}
+                  <span aria-hidden="true">{tier.glyph}</span>{" "}
+                  {plain ? tier.plainLabel : tier.label}
                 </span>
               )}
               {forgotten && (
                 <span className="pixel-chip bg-crimson/20 px-2.5 py-1 font-mono text-[13px] uppercase tracking-wide text-crimson">
-                  Forgotten by the Realm
+                  {t("forgotten")}
                 </span>
               )}
               {score !== null ? (
                 <span className="font-mono text-[15px] tabular text-ink-soft">
-                  {score.toFixed(1)} · {count} sitting{count === 1 ? "" : "s"}
+                  {score.toFixed(1)} · {count} {count === 1 ? t("sittingSingular") : t("sittingPlural")}
                 </span>
               ) : (
-                <span className="font-mono text-[15px] text-ink-faint">Unrated</span>
+                <span className="font-mono text-[15px] text-ink-faint">{t("unrated")}</span>
               )}
             </div>
 
@@ -168,7 +172,7 @@ export function ThroneSheet({
                 onClick={handleConfirm}
                 className="pixel-btn mt-3 w-full py-2.5 font-mono text-[14px] uppercase tracking-wide"
               >
-                Confirm this throne is real (+3 Influence)
+                {t("confirmThrone")}
               </button>
             )}
             {showSignInGate && <SignInGate />}
@@ -192,7 +196,7 @@ export function ThroneSheet({
             {recentRatings.length > 0 && (
               <div className="mt-5">
                 <p className="font-mono text-[13px] uppercase tracking-wide text-ink-faint">
-                  Recent testimony
+                  {t("recentTestimony")}
                 </p>
                 <ul className="mt-2 space-y-2.5">
                   {recentRatings.map((r) => (
@@ -225,7 +229,7 @@ export function ThroneSheet({
 
             <div className="mt-5">
               <p className="font-mono text-[13px] uppercase tracking-wide text-ink-faint">
-                Offer a Portrait
+                {t("offerPortrait")}
               </p>
               {photos.some((p) => p.status === "approved") && (
                 <div className="mt-2 flex flex-wrap gap-2">
@@ -246,7 +250,7 @@ export function ThroneSheet({
                 <div className="mt-2 flex flex-wrap gap-1.5">
                   {photos.filter((p) => p.mine && p.status !== "approved").map((p) => (
                     <span key={p.id} className="pixel-chip bg-vellum px-2.5 py-1 font-mono text-[12px] text-ink-soft">
-                      {p.status === "pending" ? "awaits the Maesters' review" : "refused"}
+                      {p.status === "pending" ? t("photoPendingChip") : t("photoRefusedChip")}
                     </span>
                   ))}
                 </div>
@@ -254,7 +258,7 @@ export function ThroneSheet({
               {state.authStatus === "ready" && (
                 <div className="mt-3">
                   <p className="font-mono text-[12px] text-ink-faint">
-                    Entrances, signage, and sinks only. No people — any face means rejection.
+                    {t("photoRules")}
                   </p>
                   <input
                     type="file"
@@ -279,7 +283,7 @@ export function ThroneSheet({
               onClick={() => setMode("sitting")}
               className="pixel-btn mt-5 w-full py-3 text-center font-display text-[11px] tracking-wider"
             >
-              Sit Here
+              {t("sitHere")}
             </button>
           </div>
         )}
