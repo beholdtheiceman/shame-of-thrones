@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { AddThroneForm, AddThroneToggle } from "@/components/AddThroneFlow";
 import { AgeGate } from "@/components/AgeGate";
 import { FiefCard } from "@/components/FiefCard";
@@ -15,6 +15,7 @@ import { TabBar, type TabId } from "@/components/TabBar";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { ThroneSheet } from "@/components/ThroneSheet";
 import { HOUSE_BY_ID, REALM_NAME } from "@/lib/data";
+import { useEscape } from "@/lib/useEscape";
 import { useStore } from "@/lib/store";
 
 const RealmMap = dynamic(() => import("@/components/RealmMap"), {
@@ -167,19 +168,37 @@ export default function Home() {
       )}
 
       {showAddSignInGate && (
-        <div className="fixed inset-0 z-[1002] flex items-end justify-center bg-black/60 sm:items-center sm:p-6">
-          <div className="pixel-panel w-full max-w-md p-5">
-            <SignInGate />
-            <button
-              type="button"
-              onClick={() => setShowAddSignInGate(false)}
-              className="pixel-chip mt-4 w-full bg-vellum py-2.5 font-mono text-[13px] uppercase tracking-wide text-ink-soft"
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
+        <AddSignInGateOverlay onClose={() => setShowAddSignInGate(false)} />
       )}
+    </div>
+  );
+}
+
+function AddSignInGateOverlay({ onClose }: { onClose: () => void }) {
+  useEscape(onClose);
+  const panelRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    panelRef.current?.focus();
+  }, []);
+  return (
+    <div className="fixed inset-0 z-[1002] flex items-end justify-center bg-black/60 sm:items-center sm:p-6">
+      <div
+        ref={panelRef}
+        tabIndex={-1}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Sign in"
+        className="pixel-panel w-full max-w-md p-5"
+      >
+        <SignInGate />
+        <button
+          type="button"
+          onClick={onClose}
+          className="pixel-chip mt-4 w-full bg-vellum py-2.5 font-mono text-[13px] uppercase tracking-wide text-ink-soft"
+        >
+          Cancel
+        </button>
+      </div>
     </div>
   );
 }
