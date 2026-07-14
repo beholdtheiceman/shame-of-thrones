@@ -8,13 +8,15 @@ import { useStore } from "../lib/store";
 import { COLORS, HOUSE_COLOR } from "../lib/theme";
 import { AddThroneFlow } from "../components/AddThroneFlow";
 import { FiefCard } from "../components/FiefCard";
+import { NotificationBell } from "../components/NotificationInbox";
 import { OfflineBanner } from "../components/OfflineBanner";
 import RealmMap from "../components/RealmMap";
 import { ThroneSheet } from "../components/ThroneSheet";
 
 /** Header auth control — the Foundation screen's Google sign-in / Wandering
- * Peasant / sign-out affordances, relocated here per the task brief. */
-function AuthHeader() {
+ * Peasant / sign-out affordances, relocated here per the task brief. Also
+ * hosts the notification bell (web keeps it in the page header too). */
+function AuthHeader({ onOpenFief }: { onOpenFief: (fiefId: string) => void }) {
   const { state, refresh } = useStore();
   const [dismissed, setDismissed] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -47,11 +49,14 @@ function AuthHeader() {
     <View style={styles.header}>
       <View style={styles.headerRow}>
         <Text style={styles.headerTitle}>Shame of Thrones</Text>
-        {state.authStatus === "ready" || state.authStatus === "needs_profile" ? (
-          <Pressable onPress={handleSignOut} disabled={busy}>
-            <Text style={styles.headerLink}>Sign out</Text>
-          </Pressable>
-        ) : null}
+        <View style={styles.headerRight}>
+          <NotificationBell onOpenFief={onOpenFief} />
+          {state.authStatus === "ready" || state.authStatus === "needs_profile" ? (
+            <Pressable onPress={handleSignOut} disabled={busy}>
+              <Text style={styles.headerLink}>Sign out</Text>
+            </Pressable>
+          ) : null}
+        </View>
       </View>
       {state.authStatus === "anonymous" && !dismissed && (
         <View style={styles.authRow}>
@@ -161,7 +166,12 @@ export default function RealmScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
-      <AuthHeader />
+      <AuthHeader
+        onOpenFief={(fiefId) => {
+          setSelectedThroneId(null);
+          setSelectedFiefId(fiefId);
+        }}
+      />
       <View style={styles.mapArea}>
         <RealmMap
           thrones={thrones}
@@ -201,6 +211,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.vellum },
   header: { paddingHorizontal: 16, paddingVertical: 10, backgroundColor: COLORS.vellumRaised, borderBottomWidth: 2, borderBottomColor: COLORS.vellumLine, gap: 6 },
   headerRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+  headerRight: { flexDirection: "row", alignItems: "center", gap: 12 },
   headerTitle: { color: COLORS.brass, fontSize: 17, fontWeight: "700" },
   headerLink: { color: COLORS.inkFaint, fontSize: 12, textDecorationLine: "underline" },
   authRow: { flexDirection: "row", alignItems: "center", gap: 12, flexWrap: "wrap" },
