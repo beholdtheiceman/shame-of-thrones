@@ -9,6 +9,7 @@ import { fiefControl } from "@sot/core";
 import { realmHouseShares } from "@sot/core";
 import type { HouseId } from "@sot/core";
 import { toGameEvent } from "./mappers";
+import { sendPushToUser } from "./push";
 
 export interface SubmitRatingInput {
   throneId: string;
@@ -177,6 +178,13 @@ export async function submitRating(user: UserRow, input: SubmitRatingInput, now 
       });
       if (rows.length > 0) {
         await db.insert(notifications).values(rows.map((row) => ({ ...row, createdAt: new Date(now) })));
+        // Push is an additional, best-effort transport over the same rows —
+        // sendPushToUser never throws, so a send failure can't poison this block.
+        await Promise.all(
+          rows.map((row) =>
+            sendPushToUser(row.userId, { title: row.title, body: row.body, data: { link: row.link } })
+          )
+        );
       }
     }
     return ratingResult;

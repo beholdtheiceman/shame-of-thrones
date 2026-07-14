@@ -2,6 +2,7 @@ import { and, desc, eq, inArray, isNull, sql } from "drizzle-orm";
 import { db } from "@/db/client";
 import { notifications, users, type NotifyPrefs } from "@/db/schema";
 import { seasonWindow } from "@sot/core";
+import { sendPushToUser } from "./push";
 
 export const DEFAULT_NOTIFY_PREFS: NotifyPrefs = {
   contested: true,
@@ -33,14 +34,19 @@ export async function notificationsPayload(userId: string, now = Date.now()) {
       .limit(1);
     const season = seasonWindow(now);
     if (!latestSeasonStart || latestSeasonStart.createdAt.getTime() < season.start) {
+      const title = "A New Season Dawns";
+      const body = "The banners are raised anew. Take your House to the Porcelain Crown.";
       await db.insert(notifications).values({
         userId,
         category: "season_start",
-        title: "A New Season Dawns",
-        body: "The banners are raised anew. Take your House to the Porcelain Crown.",
+        title,
+        body,
         link: null,
         createdAt: new Date(now),
       });
+      // Push is an additional, best-effort transport over the same row —
+      // sendPushToUser never throws.
+      await sendPushToUser(userId, { title, body, data: { link: null } });
     }
   }
 

@@ -166,6 +166,18 @@ export const notifications = pgTable(
   ]
 );
 
+export const pushTokens = pgTable(
+  "push_tokens",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    token: text("token").notNull().unique(),
+    platform: text("platform"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("push_tokens_user_idx").on(t.userId)]
+);
+
 export type ReviewSignal =
   | { signal: "new_account"; accountAgeDays: number }
   | { signal: "rate_soft"; writesLastHour: number }
