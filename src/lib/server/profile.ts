@@ -6,6 +6,7 @@ import { HOUSE_SWITCH_WINDOW_MS } from "@/lib/game/rules";
 import { currentStreak, earnedBadges } from "@/lib/recognition";
 import { lifetimeXp, rankForXp } from "@/lib/selectors";
 import type { HouseId } from "@/lib/types";
+import { normalizedNotifyPrefs } from "./notifications";
 import { toGameEvent, toGameRating } from "./mappers";
 
 export class ProfileError extends Error {
@@ -76,6 +77,7 @@ export async function mePayload(userId: string) {
       houseId: user.houseId,
       joinedAt: user.joinedAt.getTime(),
       badges,
+      notifyPrefs: normalizedNotifyPrefs(user.notifyPrefs),
       lastHouseSwitchAt: user.lastHouseSwitchAt?.getTime() ?? null,
     },
     rank: rankForXp(xp),

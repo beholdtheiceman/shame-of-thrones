@@ -1,11 +1,13 @@
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, gte, inArray } from "drizzle-orm";
 import { db } from "@/db/client";
-import { influenceEvents, ledgerEntries, ratings, thrones, users } from "@/db/schema";
+import { influenceEvents, ledgerEntries, notifications, ratings, thrones, users } from "@/db/schema";
 import { HOUSE_BY_ID } from "@/lib/data";
 import { fiefIdForCoords } from "@/lib/geo";
 import { INFLUENCE, rampedPoints, RATING_UPDATE_WINDOW_MS, underdogMultiplier } from "@/lib/game/rules";
+import { notificationsFor } from "@/lib/notifications";
 import { fiefControl } from "@/lib/selectors";
 import { realmHouseShares } from "@/lib/standings";
+import type { HouseId } from "@/lib/types";
 import { toGameEvent } from "./mappers";
 
 export interface SubmitRatingInput {
@@ -25,7 +27,7 @@ export class RatingError extends Error {
 }
 
 export async function submitRating(user: UserRow, input: SubmitRatingInput, now = Date.now()) {
-  return db.transaction(async (tx) => {
+  const result = await db.transaction(async (tx) => {
     const throne = await tx.query.thrones.findFirst({ where: eq(thrones.id, input.throneId) });
     if (!throne || throne.hiddenAt) throw new RatingError("no such throne", 404);
 
@@ -116,6 +118,72 @@ export async function submitRating(user: UserRow, input: SubmitRatingInput, now 
       ratingId: insertedRating.id,
       throne: { id: throne.id, lat: throne.lat, lng: throne.lng },
       blessed,
+      notificationContext: {
+        before,
+        after,
+        flipped,
+        fiefId,
+        contributors: [...fiefEventRows, ...inserted].map((event) => ({
+          userId: event.userId,
+          houseId: event.houseId,
+        })),
+      },
     };
   });
+
+  if (result.updated) return result;
+
+  // This side effect deliberately runs after the rating transaction commits:
+  // a PostgreSQL statement error would otherwise poison the transaction even if caught.
+  try {
+    const { notificationContext, ...ratingResult } = result;
+    const contributorsByHouse: Partial<Record<HouseId, string[]>> = {};
+    for (const contributor of notificationContext.contributors) {
+      const houseContributors = contributorsByHouse[contributor.houseId] ??= [];
+      if (!houseContributors.includes(contributor.userId)) houseContributors.push(contributor.userId);
+    }
+
+    const recipientIds = [...new Set(Object.values(contributorsByHouse).flat())]
+      .filter((userId) => userId !== user.id);
+    if (recipientIds.length > 0) {
+      const [recipientRows, recentRows] = await Promise.all([
+        db.select({ id: users.id, notifyPrefs: users.notifyPrefs })
+          .from(users)
+          .where(inArray(users.id, recipientIds)),
+        db.select({
+          userId: notifications.userId,
+          category: notifications.category,
+          link: notifications.link,
+        })
+          .from(notifications)
+          .where(and(
+            inArray(notifications.userId, recipientIds),
+            eq(notifications.link, notificationContext.fiefId),
+            gte(notifications.createdAt, new Date(now - 86_400_000))
+          )),
+      ]);
+      const prefsByUser = Object.fromEntries(
+        recipientRows.map((recipient) => [recipient.id, recipient.notifyPrefs ?? {}])
+      );
+      const rows = notificationsFor({
+        before: notificationContext.before,
+        after: notificationContext.after,
+        flipped: notificationContext.flipped,
+        fiefId: notificationContext.fiefId,
+        contributorsByHouse,
+        actingUserId: user.id,
+        prefsByUser,
+        existingWithin24h: recentRows,
+      });
+      if (rows.length > 0) {
+        await db.insert(notifications).values(rows.map((row) => ({ ...row, createdAt: new Date(now) })));
+      }
+    }
+    return ratingResult;
+  } catch (error) {
+    console.error("notification generation failed after rating", error);
+    const { notificationContext: _notificationContext, ...ratingResult } = result;
+    void _notificationContext;
+    return ratingResult;
+  }
 }
