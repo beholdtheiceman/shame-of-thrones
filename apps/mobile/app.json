@@ -6,10 +6,13 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
+    "scheme": "shameofthrones",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.beholdtheiceman.shameofthrones"
     },
     "android": {
+      "package": "com.beholdtheiceman.shameofthrones",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/android-icon-foreground.png",
@@ -28,7 +31,18 @@
           "RNMapboxMapsDownloadToken": "REPLACE_WITH_MAPBOX_SECRET_DOWNLOAD_TOKEN"
         }
       ],
+      [
+        "@react-native-google-signin/google-signin",
+        {
+          "iosUrlScheme": "REPLACE_WITH_IOS_GOOGLE_REVERSED_CLIENT_ID"
+        }
+      ],
       "expo-notifications"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "REPLACE_WITH_EAS_PROJECT_ID"
+      }
+    }
   }
 }
