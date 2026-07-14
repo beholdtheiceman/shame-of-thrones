@@ -3,8 +3,9 @@ import { db } from "@/db/client";
 import { influenceEvents, ledgerEntries, ratings, thrones, users } from "@/db/schema";
 import { HOUSE_BY_ID } from "@/lib/data";
 import { fiefIdForCoords } from "@/lib/geo";
-import { INFLUENCE, rampedPoints, RATING_UPDATE_WINDOW_MS } from "@/lib/game/rules";
+import { INFLUENCE, rampedPoints, RATING_UPDATE_WINDOW_MS, underdogMultiplier } from "@/lib/game/rules";
 import { fiefControl } from "@/lib/selectors";
+import { realmHouseShares } from "@/lib/standings";
 import { toGameEvent } from "./mappers";
 
 export interface SubmitRatingInput {
@@ -42,7 +43,10 @@ export async function submitRating(user: UserRow, input: SubmitRatingInput, now 
           ...(input.testimony !== undefined ? { testimony: input.testimony.trim() || null } : {}),
         })
         .where(eq(ratings.id, latest.id));
-      return { updated: true as const, influence: 0, flipped: false, firstOfName: false, ratingId: latest.id };
+      return {
+        updated: true as const, influence: 0, flipped: false, firstOfName: false,
+        ratingId: latest.id, blessed: false,
+      };
     }
 
     const isFirstRating =
@@ -56,15 +60,23 @@ export async function submitRating(user: UserRow, input: SubmitRatingInput, now 
       createdAt: new Date(now),
     }).returning();
 
-    const fiefEventRows = await tx.select().from(influenceEvents).where(eq(influenceEvents.fiefId, fiefId));
+    const allEventRows = await tx.select().from(influenceEvents);
+    const fiefEventRows = allEventRows.filter((e) => e.fiefId === fiefId);
+    // No blessing on an empty Realm — nobody is trailing until influence exists.
+    const shares = realmHouseShares(allEventRows.map(toGameEvent), now);
+    const multiplier =
+      allEventRows.length === 0 ? 1 : underdogMultiplier(shares.get(user.houseId) ?? 0);
+    const blessed = multiplier !== 1;
     const before = fiefControl(fiefId, fiefEventRows.map(toGameEvent), now);
 
     const accountAgeMs = now - user.joinedAt.getTime();
-    const base = rampedPoints(
-      input.verified ? INFLUENCE.verifiedRating : INFLUENCE.hearsayRating,
-      accountAgeMs
+    const base = Math.ceil(
+      rampedPoints(
+        input.verified ? INFLUENCE.verifiedRating : INFLUENCE.hearsayRating,
+        accountAgeMs
+      ) * multiplier
     );
-    const firstBonus = rampedPoints(INFLUENCE.firstOfNameBonus, accountAgeMs);
+    const firstBonus = Math.ceil(rampedPoints(INFLUENCE.firstOfNameBonus, accountAgeMs) * multiplier);
     const newEvents = [
       {
         fiefId, houseId: user.houseId, userId: user.id, points: base,
@@ -103,6 +115,7 @@ export async function submitRating(user: UserRow, input: SubmitRatingInput, now 
       updated: false as const, influence: points, flipped, firstOfName: isFirstRating, fief: after,
       ratingId: insertedRating.id,
       throne: { id: throne.id, lat: throne.lat, lng: throne.lng },
+      blessed,
     };
   });
 }
