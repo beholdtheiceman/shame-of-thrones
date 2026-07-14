@@ -3,9 +3,9 @@
 import { useEffect, useMemo } from "react";
 import { MapContainer, Marker, Polygon, TileLayer, useMap, useMapEvents } from "react-leaflet";
 import L from "leaflet";
-import { HOUSE_BY_ID, REALM_CENTER, REALM_ZOOM } from "@/lib/data";
-import { fiefBoundary } from "@/lib/geo";
-import { scoreBand, type FiefControl } from "@/lib/selectors";
+import { HOUSE_BY_ID, REALM_CENTER, REALM_ZOOM } from "@sot/core";
+import { fiefBoundary } from "@sot/core";
+import { scoreBand, type FiefControl } from "@sot/core";
 import type { ThroneDTO } from "@/lib/api";
 
 const SCORE_BAND_VAR: Record<string, string> = {

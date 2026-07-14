@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { db } from "@/db/client";
 import { influenceEvents, ratings } from "@/db/schema";
 import { realmPayload } from "@/lib/server/realm";
-import { fiefIdForCoords } from "@/lib/geo";
+import { fiefIdForCoords } from "@sot/core";
 import { resetDb } from "./db";
 import { makeThrone, makeUser } from "./fixtures";
 

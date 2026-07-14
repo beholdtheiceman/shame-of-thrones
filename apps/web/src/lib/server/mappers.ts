@@ -1,4 +1,4 @@
-import type { InfluenceEvent, Rating } from "@/lib/types";
+import type { InfluenceEvent, Rating } from "@sot/core";
 import type { influenceEvents, ratings, users } from "@/db/schema";
 
 type RatingRow = typeof ratings.$inferSelect;

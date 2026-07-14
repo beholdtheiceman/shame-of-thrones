@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 import { api, type StandingsDTO } from "@/lib/api";
 import { useCopy } from "@/lib/copy";
-import { HOUSE_BY_ID } from "@/lib/data";
-import type { WindowKey } from "@/lib/standings";
+import { HOUSE_BY_ID } from "@sot/core";
+import type { WindowKey } from "@sot/core";
 import { useStore } from "@/lib/store";
 
 type Board = "council" | "houses";

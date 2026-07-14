@@ -1,8 +1,8 @@
 "use client";
 
-import { HOUSE_BY_ID } from "@/lib/data";
+import { HOUSE_BY_ID } from "@sot/core";
 import { useCopy } from "@/lib/copy";
-import { fiefCardModel, type FiefControl } from "@/lib/selectors";
+import { fiefCardModel, type FiefControl } from "@sot/core";
 import { useEscape } from "@/lib/useEscape";
 
 export function FiefCard({

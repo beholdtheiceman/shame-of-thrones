@@ -1,8 +1,8 @@
 import { and, desc, eq, gte, ne, sql } from "drizzle-orm";
 import { db } from "@/db/client";
 import { influenceEvents, ratings, reviewQueue, thrones, users, type ReviewSignal } from "@/db/schema";
-import { SAFETY } from "@/lib/game/rules";
-import { haversineMeters } from "@/lib/geo";
+import { SAFETY } from "@sot/core";
+import { haversineMeters } from "@sot/core";
 
 type UserRow = typeof users.$inferSelect;
 type ReviewRow = typeof reviewQueue.$inferSelect;

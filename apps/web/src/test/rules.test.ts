@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { rampedPoints, SAFETY } from "@/lib/game/rules";
+import { rampedPoints, SAFETY } from "@sot/core";
 
 const DAY = 86_400_000;
 

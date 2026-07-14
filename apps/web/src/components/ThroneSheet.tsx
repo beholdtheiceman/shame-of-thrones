@@ -2,14 +2,14 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { api, ApiError, type ThroneDTO } from "@/lib/api";
-import { HOUSE_BY_ID, THRONE_CATEGORY_LABEL } from "@/lib/data";
+import { HOUSE_BY_ID, THRONE_CATEGORY_LABEL } from "@sot/core";
 import { useCopy, usePlainSpeech } from "@/lib/copy";
-import { displayTier } from "@/lib/selectors";
+import { displayTier } from "@sot/core";
 import { useStore } from "@/lib/store";
-import { haversineMeters } from "@/lib/geo";
+import { haversineMeters } from "@sot/core";
 import { useNow } from "@/lib/useNow";
 import { useEscape } from "@/lib/useEscape";
-import type { Throne } from "@/lib/types";
+import type { Throne } from "@sot/core";
 import { ReportModal } from "./ReportModal";
 import { SignInGate } from "./SignInGate";
 import { SittingFlow } from "./SittingFlow";

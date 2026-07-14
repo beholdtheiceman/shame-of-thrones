@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { HOUSES } from "@/lib/data";
+import { HOUSES } from "@sot/core";
 import { AgeGateError, requireAgeGate } from "@/lib/server/ageGate";
 import { createProfile, ProfileError, switchHouse } from "@/lib/server/profile";
 import { updateNotifyPrefs } from "@/lib/server/notifications";
 import { sessionInfo } from "@/lib/server/session";
 import { requireGoodStanding, StandingError } from "@/lib/server/standing";
-import type { HouseId } from "@/lib/types";
+import type { HouseId } from "@sot/core";
 
 const houseIds = HOUSES.map((h) => h.id) as [HouseId, ...HouseId[]];
 

@@ -6,8 +6,7 @@ async function main() {
   // Imports deferred until after env is loaded, because db/client reads DATABASE_URL at import time.
   const { db, pool } = await import("./client");
   const { influenceEvents, ledgerEntries, ratings, thrones, users } = await import("./schema");
-  const { SEED_INFLUENCE, SEED_LEDGER, SEED_RATINGS, SEED_THRONES } = await import("../lib/data");
-  const { fiefIdForCoords } = await import("../lib/geo");
+  const { SEED_INFLUENCE, SEED_LEDGER, SEED_RATINGS, SEED_THRONES, fiefIdForCoords } = await import("@sot/core");
 
   const existing = await db.select({ id: users.id }).from(users).limit(1);
   if (existing.length > 0) {

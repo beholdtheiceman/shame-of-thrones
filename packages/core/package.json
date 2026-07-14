@@ -1,0 +1,10 @@
+{
+  "name": "@sot/core",
+  "version": "0.0.0",
+  "private": true,
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": { "test": "vitest run" },
+  "dependencies": { "h3-js": "^4.5.0" },
+  "devDependencies": { "vitest": "^4.1.10", "typescript": "^5" }
+}

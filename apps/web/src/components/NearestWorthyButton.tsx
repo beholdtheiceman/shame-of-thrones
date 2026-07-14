@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { REALM_CENTER } from "@/lib/data";
-import { haversineMeters } from "@/lib/geo";
+import { REALM_CENTER } from "@sot/core";
+import { haversineMeters } from "@sot/core";
 import { useCopy } from "@/lib/copy";
 import { useStore } from "@/lib/store";
 

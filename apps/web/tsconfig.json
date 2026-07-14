@@ -20,7 +20,8 @@
       }
     ],
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@sot/core": ["../../packages/core/src/index.ts"]
     }
   },
   "include": [

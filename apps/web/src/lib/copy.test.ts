@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { COPY, copyFor } from "./copy";
-import { VERDICT_SCALE } from "./data";
+import { VERDICT_SCALE } from "@sot/core";
 
 describe("copyFor", () => {
   it("resolves themed and plain variants", () => {

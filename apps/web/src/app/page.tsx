@@ -17,8 +17,8 @@ import { Standings } from "@/components/Standings";
 import { TabBar, type TabId } from "@/components/TabBar";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { ThroneSheet } from "@/components/ThroneSheet";
-import { HOUSE_BY_ID, REALM_NAME } from "@/lib/data";
-import { fiefCenter } from "@/lib/geo";
+import { HOUSE_BY_ID, REALM_NAME } from "@sot/core";
+import { fiefCenter } from "@sot/core";
 import { useEscape } from "@/lib/useEscape";
 import { useStore } from "@/lib/store";
 

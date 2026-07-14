@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
-import { HOUSES } from "@/lib/data";
+import { HOUSES } from "@sot/core";
 import { sessionInfo } from "@/lib/server/session";
 import { standingsPayload } from "@/lib/server/standings";
-import type { WindowKey } from "@/lib/standings";
-import type { HouseId } from "@/lib/types";
+import type { WindowKey } from "@sot/core";
+import type { HouseId } from "@sot/core";
 
 export const dynamic = "force-dynamic";
 

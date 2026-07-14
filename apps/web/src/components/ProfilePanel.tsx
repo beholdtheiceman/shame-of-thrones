@@ -2,13 +2,13 @@
 
 import { useMemo, useState } from "react";
 import { ApiError } from "@/lib/api";
-import { HOUSES, HOUSE_BY_ID } from "@/lib/data";
-import { HOUSE_SWITCH_WINDOW_MS } from "@/lib/game/rules";
+import { HOUSES, HOUSE_BY_ID } from "@sot/core";
+import { HOUSE_SWITCH_WINDOW_MS } from "@sot/core";
 import { useCopy } from "@/lib/copy";
 import { useStore } from "@/lib/store";
 import { useNow } from "@/lib/useNow";
 import type { NotifyPrefsDTO } from "@/lib/api";
-import type { BadgeId, HouseId } from "@/lib/types";
+import type { BadgeId, HouseId } from "@sot/core";
 
 const BADGE_META: Record<BadgeId, { icon: string; title: string; desc: string }> = {
   first_of_their_name: {

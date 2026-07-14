@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { db } from "@/db/client";
 import { reviewQueue } from "@/db/schema";
-import { RATING_TAGS } from "@/lib/game/rules";
+import { RATING_TAGS } from "@sot/core";
 import { AgeGateError, requireAgeGate } from "@/lib/server/ageGate";
 import { RatingError, submitRating } from "@/lib/server/ratings";
 import { sessionInfo } from "@/lib/server/session";

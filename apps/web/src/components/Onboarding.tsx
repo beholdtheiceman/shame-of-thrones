@@ -2,10 +2,10 @@
 
 import { useState } from "react";
 import { ApiError } from "@/lib/api";
-import { HOUSES } from "@/lib/data";
+import { HOUSES } from "@sot/core";
 import { useCopy } from "@/lib/copy";
 import { useStore } from "@/lib/store";
-import type { HouseId } from "@/lib/types";
+import type { HouseId } from "@sot/core";
 import { SignInGate } from "./SignInGate";
 
 export function Onboarding() {

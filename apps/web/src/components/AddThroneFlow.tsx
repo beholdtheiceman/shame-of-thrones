@@ -2,11 +2,11 @@
 
 import { useEffect, useRef, useState } from "react";
 import { ApiError } from "@/lib/api";
-import { THRONE_CATEGORY_LABEL } from "@/lib/data";
+import { THRONE_CATEGORY_LABEL } from "@sot/core";
 import { useCopy } from "@/lib/copy";
 import { useStore } from "@/lib/store";
 import { useEscape } from "@/lib/useEscape";
-import type { Amenities, ThroneCategory } from "@/lib/types";
+import type { Amenities, ThroneCategory } from "@sot/core";
 
 const CATEGORIES: ThroneCategory[] = [
   "cafe",

@@ -1,11 +1,11 @@
 import { eq, sql } from "drizzle-orm";
 import { db } from "@/db/client";
 import { influenceEvents, ledgerEntries, ratings, thrones, users } from "@/db/schema";
-import { HOUSE_BY_ID } from "@/lib/data";
-import { HOUSE_SWITCH_WINDOW_MS } from "@/lib/game/rules";
-import { currentStreak, earnedBadges } from "@/lib/recognition";
-import { lifetimeXp, rankForXp } from "@/lib/selectors";
-import type { HouseId } from "@/lib/types";
+import { HOUSE_BY_ID } from "@sot/core";
+import { HOUSE_SWITCH_WINDOW_MS } from "@sot/core";
+import { currentStreak, earnedBadges } from "@sot/core";
+import { lifetimeXp, rankForXp } from "@sot/core";
+import type { HouseId } from "@sot/core";
 import { normalizedNotifyPrefs } from "./notifications";
 import { toGameEvent, toGameRating } from "./mappers";
 

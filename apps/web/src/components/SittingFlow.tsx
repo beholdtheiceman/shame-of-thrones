@@ -2,12 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { ApiError } from "@/lib/api";
-import { VERDICT_SCALE } from "@/lib/data";
+import { VERDICT_SCALE } from "@sot/core";
 import { useCopy, usePlainSpeech } from "@/lib/copy";
-import { haversineMeters } from "@/lib/geo";
-import { RATING_TAGS } from "@/lib/game/rules";
+import { haversineMeters } from "@sot/core";
+import { RATING_TAGS } from "@sot/core";
 import { useStore } from "@/lib/store";
-import type { Throne } from "@/lib/types";
+import type { Throne } from "@sot/core";
 import { SignInGate } from "./SignInGate";
 
 type ProximityState = "checking" | "verified" | "hearsay" | "denied";

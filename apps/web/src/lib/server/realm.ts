@@ -1,8 +1,8 @@
 import { desc, eq, isNull, sql } from "drizzle-orm";
 import { db } from "@/db/client";
 import { influenceEvents, ledgerEntries, photos, ratings, thrones, users } from "@/db/schema";
-import { fiefIdForCoords } from "@/lib/geo";
-import { fiefControl, throneScore } from "@/lib/selectors";
+import { fiefIdForCoords } from "@sot/core";
+import { fiefControl, throneScore } from "@sot/core";
 import { toGameEvent, toGameRating } from "./mappers";
 
 export async function realmPayload(now = Date.now()) {

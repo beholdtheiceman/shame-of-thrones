@@ -1,10 +1,10 @@
 import { eq } from "drizzle-orm";
 import { db } from "@/db/client";
 import { influenceEvents, ledgerEntries, thrones, users } from "@/db/schema";
-import { HOUSE_BY_ID } from "@/lib/data";
-import { fiefIdForCoords } from "@/lib/geo";
-import { INFLUENCE, rampedPoints } from "@/lib/game/rules";
-import type { Amenities, ThroneCategory } from "@/lib/types";
+import { HOUSE_BY_ID } from "@sot/core";
+import { fiefIdForCoords } from "@sot/core";
+import { INFLUENCE, rampedPoints } from "@sot/core";
+import type { Amenities, ThroneCategory } from "@sot/core";
 
 type UserRow = typeof users.$inferSelect;
 

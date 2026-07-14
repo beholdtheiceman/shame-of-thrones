@@ -9,8 +9,8 @@ import {
   type HouseStandingRow,
   type SmallCouncilResult,
   type WindowKey,
-} from "@/lib/standings";
-import type { HouseId } from "@/lib/types";
+} from "@sot/core";
+import type { HouseId } from "@sot/core";
 import { toGameEvent } from "./mappers";
 
 export interface StandingsPayload {

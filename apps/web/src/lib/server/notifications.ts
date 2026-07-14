@@ -1,7 +1,7 @@
 import { and, desc, eq, inArray, isNull, sql } from "drizzle-orm";
 import { db } from "@/db/client";
 import { notifications, users, type NotifyPrefs } from "@/db/schema";
-import { seasonWindow } from "@/lib/standings";
+import { seasonWindow } from "@sot/core";
 
 export const DEFAULT_NOTIFY_PREFS: NotifyPrefs = {
   contested: true,

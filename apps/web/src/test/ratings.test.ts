@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { eq } from "drizzle-orm";
 import { db } from "@/db/client";
 import { influenceEvents, notifications, ratings, users } from "@/db/schema";
-import { fiefIdForCoords } from "@/lib/geo";
+import { fiefIdForCoords } from "@sot/core";
 import { mePayload } from "@/lib/server/profile";
 import { submitRating } from "@/lib/server/ratings";
 import { resetDb } from "./db";

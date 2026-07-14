@@ -4,9 +4,9 @@ import { db } from "@/db/client";
 import { influenceEvents, ledgerEntries, ratings, thrones } from "@/db/schema";
 import { EnforcementError, hideRating, hideTestimony, hideThrone } from "@/lib/server/enforcement";
 import { submitRating } from "@/lib/server/ratings";
-import { fiefControl } from "@/lib/selectors";
+import { fiefControl } from "@sot/core";
 import { toGameEvent } from "@/lib/server/mappers";
-import { fiefIdForCoords } from "@/lib/geo";
+import { fiefIdForCoords } from "@sot/core";
 import { resetDb } from "./db";
 import { makeThrone, makeUser } from "./fixtures";
 

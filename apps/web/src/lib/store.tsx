@@ -4,8 +4,8 @@ import {
   createContext, useCallback, useContext, useEffect, useMemo, useRef, useState,
 } from "react";
 import { api, ApiError, type MeDTO, type NotificationsDTO, type NotifyPrefsDTO, type RealmDTO } from "./api";
-import { enqueue, flush, pending, type QueuedRating } from "./ratingQueue";
-import type { Amenities, HouseId, ThroneCategory } from "./types";
+import { enqueue, flush, pending, type QueuedRating } from "@sot/core";
+import type { Amenities, HouseId, ThroneCategory } from "@sot/core";
 
 export type AuthStatus = "loading" | "anonymous" | "needs_profile" | "ready";
 

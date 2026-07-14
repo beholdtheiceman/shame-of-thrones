@@ -1,13 +1,13 @@
 import { and, desc, eq, gte, inArray } from "drizzle-orm";
 import { db } from "@/db/client";
 import { influenceEvents, ledgerEntries, notifications, ratings, thrones, users } from "@/db/schema";
-import { HOUSE_BY_ID } from "@/lib/data";
-import { fiefIdForCoords } from "@/lib/geo";
-import { INFLUENCE, rampedPoints, RATING_UPDATE_WINDOW_MS, underdogMultiplier } from "@/lib/game/rules";
-import { notificationsFor } from "@/lib/notifications";
-import { fiefControl } from "@/lib/selectors";
-import { realmHouseShares } from "@/lib/standings";
-import type { HouseId } from "@/lib/types";
+import { HOUSE_BY_ID } from "@sot/core";
+import { fiefIdForCoords } from "@sot/core";
+import { INFLUENCE, rampedPoints, RATING_UPDATE_WINDOW_MS, underdogMultiplier } from "@sot/core";
+import { notificationsFor } from "@sot/core";
+import { fiefControl } from "@sot/core";
+import { realmHouseShares } from "@sot/core";
+import type { HouseId } from "@sot/core";
 import { toGameEvent } from "./mappers";
 
 export interface SubmitRatingInput {
