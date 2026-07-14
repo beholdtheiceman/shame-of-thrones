@@ -36,6 +36,15 @@ export const photoStatusEnum = pgEnum("photo_status", ["pending", "approved", "r
 export const reportReasonEnum = pgEnum("report_reason", [
   "wrong_info", "closed", "inappropriate", "not_public_restroom", "harassment", "spam",
 ]);
+export const notificationCategoryEnum = pgEnum("notification_category", [
+  "contested", "banner_fallen", "season_start",
+]);
+
+export interface NotifyPrefs {
+  contested: boolean;
+  banner_fallen: boolean;
+  season_start: boolean;
+}
 
 export const users = pgTable("users", {
   id: uuid("id").defaultRandom().primaryKey(),
@@ -44,6 +53,11 @@ export const users = pgTable("users", {
   houseId: houseEnum("house_id").notNull(),
   role: userRoleEnum("role").notNull().default("user"),
   badges: jsonb("badges").$type<string[]>().notNull().default([]),
+  notifyPrefs: jsonb("notify_prefs").$type<NotifyPrefs>().notNull().default({
+    contested: true,
+    banner_fallen: true,
+    season_start: true,
+  }),
   joinedAt: timestamp("joined_at", { withTimezone: true }).notNull().defaultNow(),
   lastHouseSwitchAt: timestamp("last_house_switch_at", { withTimezone: true }),
   suspendedUntil: timestamp("suspended_until", { withTimezone: true }),
@@ -128,6 +142,29 @@ export const ledgerEntries = pgTable("ledger_entries", {
   text: text("text").notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
+
+export const notifications = pgTable(
+  "notifications",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: uuid("user_id").notNull().references(() => users.id),
+    category: notificationCategoryEnum("category").notNull(),
+    title: text("title").notNull(),
+    body: text("body").notNull(),
+    link: text("link"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    readAt: timestamp("read_at", { withTimezone: true }),
+  },
+  (t) => [
+    index("notifications_user_read_idx").on(t.userId, t.readAt),
+    index("notifications_user_category_link_created_idx").on(
+      t.userId,
+      t.category,
+      t.link,
+      t.createdAt
+    ),
+  ]
+);
 
 export type ReviewSignal =
   | { signal: "new_account"; accountAgeDays: number }
