@@ -1,4 +1,4 @@
-import { cellToBoundary, latLngToCell } from "h3-js";
+import { cellToBoundary, cellToLatLng, latLngToCell } from "h3-js";
 
 // Resolution 9 (~0.1-0.2km edge) — tuned so a few city blocks of seed
 // data span several distinct Fiefs. The PRD spec'd resolution 7
@@ -13,6 +13,10 @@ export function fiefIdForCoords(lat: number, lng: number): string {
 /** Returns [lat, lng] pairs for react-leaflet Polygon `positions`. */
 export function fiefBoundary(fiefId: string): [number, number][] {
   return cellToBoundary(fiefId) as [number, number][];
+}
+
+export function fiefCenter(fiefId: string): [number, number] {
+  return cellToLatLng(fiefId) as [number, number];
 }
 
 export function haversineMeters(
