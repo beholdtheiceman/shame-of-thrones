@@ -1,4 +1,5 @@
 import { HOUSES } from "./data";
+import { underdogMultiplier } from "./game/rules";
 import { fiefControl } from "./selectors";
 import type { HouseId, InfluenceEvent } from "./types";
 
@@ -114,6 +115,22 @@ export interface HouseStandingRow {
   influence: number;
   share: number;
   fiefsLed: number;
+  blessed: boolean;
+}
+
+/** Each House's current decayed Realm-influence share (0..1), summing to 1
+ * (or all 0 when the Realm has no influence). Lean — no per-fief work. */
+export function realmHouseShares(events: InfluenceEvent[], now: number): Map<HouseId, number> {
+  const influence = new Map<HouseId, number>();
+  for (const h of HOUSES) influence.set(h.id, 0);
+  for (const ev of events) {
+    const days = Math.max(0, (now - ev.createdAt) / DAY);
+    influence.set(ev.houseId, (influence.get(ev.houseId) ?? 0) + ev.points * Math.pow(0.98, days));
+  }
+  const total = [...influence.values()].reduce((a, b) => a + b, 0);
+  const shares = new Map<HouseId, number>();
+  for (const h of HOUSES) shares.set(h.id, total > 0 ? (influence.get(h.id) ?? 0) / total : 0);
+  return shares;
 }
 
 /** Houses ranked by current realm-wide Influence (same 0.98^days decay as the
@@ -121,6 +138,7 @@ export interface HouseStandingRow {
 export function houseStandings(events: InfluenceEvent[], now: number): HouseStandingRow[] {
   const influence = new Map<HouseId, number>();
   const led = new Map<HouseId, number>();
+  const shares = realmHouseShares(events, now);
   for (const h of HOUSES) {
     influence.set(h.id, 0);
     led.set(h.id, 0);
@@ -139,14 +157,17 @@ export function houseStandings(events: InfluenceEvent[], now: number): HouseStan
     }
   }
 
+  // No House is an "underdog" on an empty Realm — there is no leader to trail.
   const total = [...influence.values()].reduce((a, b) => a + b, 0);
   return HOUSES.map((h) => {
     const inf = influence.get(h.id) ?? 0;
+    const share = shares.get(h.id) ?? 0;
     return {
       houseId: h.id,
       influence: inf,
-      share: total > 0 ? inf / total : 0,
+      share,
       fiefsLed: led.get(h.id) ?? 0,
+      blessed: total > 0 && underdogMultiplier(share) !== 1,
     };
   }).sort((a, b) => b.influence - a.influence);
 }

@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
+import { UNDERDOG, underdogMultiplier } from "./game/rules";
 import type { HouseId, InfluenceEvent } from "./types";
 import {
   houseStandings,
+  realmHouseShares,
   seasonWindow,
   smallCouncil,
   weekWindow,
@@ -169,5 +171,46 @@ describe("houseStandings", () => {
     const rows = houseStandings([], NOW);
     expect(rows).toHaveLength(4);
     expect(rows.every((r) => r.influence === 0 && r.share === 0 && r.fiefsLed === 0)).toBe(true);
+  });
+});
+
+describe("underdogMultiplier", () => {
+  it("boosts a House below the share threshold", () => {
+    expect(underdogMultiplier(0.149)).toBe(UNDERDOG.multiplier);
+  });
+  it("does not boost at or above the threshold", () => {
+    expect(underdogMultiplier(UNDERDOG.shareThreshold)).toBe(1);
+    expect(underdogMultiplier(0.30)).toBe(1);
+  });
+});
+
+describe("realmHouseShares", () => {
+  it("returns each House's decayed share, summing to 1", () => {
+    const events = [
+      event({ houseId: "flush", points: 100, createdAt: NOW }),
+      event({ houseId: "bidet", points: 300, createdAt: NOW }),
+    ];
+    const shares = realmHouseShares(events, NOW);
+    expect(shares.get("flush")).toBeCloseTo(0.25, 5);
+    expect(shares.get("bidet")).toBeCloseTo(0.75, 5);
+    const total = [...shares.values()].reduce((a, b) => a + b, 0);
+    expect(total).toBeCloseTo(1, 5);
+  });
+  it("is all zero on empty input", () => {
+    const shares = realmHouseShares([], NOW);
+    expect([...shares.values()].every((s) => s === 0)).toBe(true);
+  });
+});
+
+describe("houseStandings blessed flag", () => {
+  it("marks a sub-threshold House blessed and a dominant House not", () => {
+    const events = [
+      event({ houseId: "bidet", fiefId: "f1", points: 1000, createdAt: NOW }),
+      event({ houseId: "flush", fiefId: "f1", points: 10, createdAt: NOW }),
+    ];
+    const rows = houseStandings(events, NOW);
+    const byId = Object.fromEntries(rows.map((r) => [r.houseId, r]));
+    expect(byId.flush.blessed).toBe(true);
+    expect(byId.bidet.blessed).toBe(false);
   });
 });

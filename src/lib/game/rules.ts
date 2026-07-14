@@ -9,6 +9,15 @@ export const INFLUENCE = {
   confirmAction: 3,              // to the confirming user (PRD §5.5 freshness check)
 } as const;
 
+/** Underdog Blessing (PRD §5.6): a House trailing in the Realm earns a
+ * temporary Influence multiplier. Self-correcting — earning more lifts the
+ * House's share back over the threshold and the blessing ends. */
+export const UNDERDOG = { shareThreshold: 0.15, multiplier: 1.25 } as const;
+
+export function underdogMultiplier(share: number): number {
+  return share < UNDERDOG.shareThreshold ? UNDERDOG.multiplier : 1;
+}
+
 export const RATING_TAGS = [
   "Clean",
   "Stocked",
