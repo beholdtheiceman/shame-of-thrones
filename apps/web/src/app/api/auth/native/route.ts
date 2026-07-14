@@ -10,6 +10,12 @@ function audiences(): string[] {
 }
 
 export async function POST(req: Request) {
+  if (!process.env.NATIVE_JWT_SECRET || audiences().length === 0) {
+    return NextResponse.json(
+      { error: "native auth not configured" },
+      { status: 500 },
+    );
+  }
   const body = await req.json().catch(() => null);
   const idToken = body?.idToken;
   if (typeof idToken !== "string") {
