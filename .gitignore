@@ -1,7 +1,10 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # dependencies
-/node_modules
+# unanchored so this also covers node_modules in apps/*/ and packages/*/
+# (npm workspaces hoists most deps to the root, but per-workspace
+# node_modules can still appear)
+node_modules
 /.pnp
 .pnp.*
 .yarn/*
@@ -11,14 +14,15 @@
 !.yarn/versions
 
 # testing
-/coverage
+coverage
 
 # next.js
-/.next/
-/out/
+# unanchored so this also covers apps/web/.next, apps/web/out, etc.
+.next/
+out/
 
 # production
-/build
+build/
 
 # misc
 .DS_Store
