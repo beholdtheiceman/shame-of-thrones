@@ -85,6 +85,10 @@ export const api = {
     request<{ ok: true }>(`/api/thrones/${throneId}/confirm`, { method: "POST" }),
   standings: (window: WindowKey, house: HouseId | "all") =>
     request<StandingsDTO>(`/api/standings?window=${window}&house=${house}`),
+  registerPush: (token: string, platform: string) =>
+    request<{ ok: true }>("/api/push/register", {
+      method: "POST", body: JSON.stringify({ token, platform }),
+    }),
 };
 
 /** React Native multipart file descriptor (from expo-image-picker / camera). */

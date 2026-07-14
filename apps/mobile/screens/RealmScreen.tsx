@@ -12,6 +12,7 @@ import { NotificationBell } from "../components/NotificationInbox";
 import { OfflineBanner } from "../components/OfflineBanner";
 import RealmMap from "../components/RealmMap";
 import { ThroneSheet } from "../components/ThroneSheet";
+import { registerForPush } from "../lib/push";
 
 /** Header auth control — the Foundation screen's Google sign-in / Wandering
  * Peasant / sign-out affordances, relocated here per the task brief. Also
@@ -28,6 +29,7 @@ function AuthHeader({ onOpenFief }: { onOpenFief: (fiefId: string) => void }) {
     try {
       await signInWithGoogle();
       await refresh();
+      void registerForPush();
     } catch (e) {
       setAuthError(e instanceof Error ? e.message : "sign-in failed");
     } finally {

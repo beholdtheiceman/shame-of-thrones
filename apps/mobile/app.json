@@ -27,7 +27,8 @@
         {
           "RNMapboxMapsDownloadToken": "REPLACE_WITH_MAPBOX_SECRET_DOWNLOAD_TOKEN"
         }
-      ]
+      ],
+      "expo-notifications"
     ]
   }
 }

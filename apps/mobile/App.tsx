@@ -2,7 +2,8 @@ import { useEffect } from "react";
 import { DarkTheme, NavigationContainer, type Theme } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { configureGoogle } from "./lib/auth";
+import { configureGoogle, getToken } from "./lib/auth";
+import { registerForPush } from "./lib/push";
 import { StoreProvider } from "./lib/store";
 import { COLORS } from "./lib/theme";
 import RealmScreen from "./screens/RealmScreen";
@@ -27,6 +28,13 @@ const navTheme: Theme = {
 export default function App() {
   useEffect(() => {
     configureGoogle();
+    // App-ready push registration for a returning, already-signed-in user
+    // (the post-sign-in registration lives in the sign-in handlers). Both
+    // are fire-and-forget and soft-fail — see lib/push.ts.
+    void (async () => {
+      const token = await getToken().catch(() => null);
+      if (token) void registerForPush();
+    })();
   }, []);
 
   return (

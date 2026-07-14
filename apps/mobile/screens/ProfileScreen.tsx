@@ -5,6 +5,7 @@ import { HOUSES, HOUSE_BY_ID, HOUSE_SWITCH_WINDOW_MS, type BadgeId, type HouseId
 import type { NotifyPrefsDTO } from "../lib/api";
 import { ApiError } from "../lib/api";
 import { signInWithGoogle, signOut } from "../lib/auth";
+import { registerForPush } from "../lib/push";
 import { useStore } from "../lib/store";
 import { COLORS, HOUSE_COLOR } from "../lib/theme";
 
@@ -36,6 +37,7 @@ export default function ProfileScreen() {
     try {
       await signInWithGoogle();
       await refresh();
+      void registerForPush();
     } catch (e) {
       setAuthError(e instanceof Error ? e.message : "sign-in failed");
     } finally {
