@@ -11,25 +11,26 @@ const HOUR = 3_600_000;
 describe("submitRating", () => {
   beforeEach(resetDb);
 
-  it("awards 10+15 for a first verified rating and grants the badge", async () => {
+  it("awards 10+15 for a first verified rating and grants the badge (no blessing on an empty Realm)", async () => {
     const user = await makeUser();
     const throne = await makeThrone(user.id);
     const result = await submitRating(user, { throneId: throne.id, verdict: 5, tags: ["Clean"], verified: true });
 
-    expect(result).toMatchObject({ influence: 25, firstOfName: true, updated: false });
+    expect(result).toMatchObject({ influence: 25, firstOfName: true, updated: false, blessed: false });
     const events = await db.select().from(influenceEvents);
-    expect(events.map((e) => e.points).sort()).toEqual([10, 15]);
+    expect(events.map((e) => e.points).sort((a, b) => a - b)).toEqual([10, 15]);
     const me = await mePayload(user.id);
     expect(me.profile.badges).toContain("first_of_their_name");
   });
 
-  it("awards 2 for hearsay, no first bonus after someone else rated", async () => {
+  it("awards blessed 3 for hearsay, no first bonus after someone else rated", async () => {
     const alice = await makeUser();
     const bob = await makeUser({ houseId: "bidet" });
     const throne = await makeThrone(alice.id);
     await submitRating(alice, { throneId: throne.id, verdict: 4, tags: [], verified: true });
     const result = await submitRating(bob, { throneId: throne.id, verdict: 2, tags: [], verified: false });
-    expect(result.influence).toBe(2);
+    expect(result.influence).toBe(3);
+    expect(result.blessed).toBe(true);
     expect(result.firstOfName).toBe(false);
   });
 
@@ -64,12 +65,12 @@ describe("submitRating", () => {
     const bob = await makeUser({ houseId: "bidet" });
     const throne = await makeThrone(alice.id);
     const t0 = Date.now();
-    await submitRating(alice, { throneId: throne.id, verdict: 3, tags: [], verified: false }, t0); // 2+15=17 flush
-    const result = await submitRating(bob, { throneId: throne.id, verdict: 3, tags: [], verified: true }, t0 + HOUR); // 10 bidet — no flip
+    await submitRating(alice, { throneId: throne.id, verdict: 3, tags: [], verified: false }, t0); // 2+15=17 flush (empty Realm → unblessed)
+    const result = await submitRating(bob, { throneId: throne.id, verdict: 3, tags: [], verified: true }, t0 + HOUR); // bidet 0% → blessed 13 — no flip (17>13)
     expect(result.flipped).toBe(false);
 
     const carol = await makeUser({ houseId: "bidet", displayName: `Carol-${Math.random().toString(36).slice(2, 8)}` });
-    const flip = await submitRating(carol, { throneId: throne.id, verdict: 3, tags: [], verified: true }, t0 + 2 * HOUR); // bidet 20 > 17
+    const flip = await submitRating(carol, { throneId: throne.id, verdict: 3, tags: [], verified: true }, t0 + 2 * HOUR); // bidet ~43% → unblessed 10 → bidet 23 > 17
     expect(flip.flipped).toBe(true);
   });
 
@@ -78,6 +79,33 @@ describe("submitRating", () => {
     await expect(
       submitRating(user, { throneId: "00000000-0000-0000-0000-000000000000", verdict: 3, tags: [], verified: true })
     ).rejects.toThrow(/no such throne/);
+  });
+
+  it("applies the Underdog Blessing when the House is below the share threshold", async () => {
+    // Pile Realm influence onto bidet so flush sits well under 15% share.
+    const bidet = await makeUser({ houseId: "bidet" });
+    for (let i = 0; i < 6; i++) {
+      const t = await makeThrone(bidet.id);
+      await submitRating(bidet, { throneId: t.id, verdict: 5, tags: [], verified: true });
+    }
+    const flush = await makeUser({ houseId: "flush" });
+    const throne = await makeThrone(flush.id);
+    const result = await submitRating(flush, { throneId: throne.id, verdict: 4, tags: [], verified: true });
+
+    // First rating on a fresh throne: base 10 + first bonus 15, each ×1.25 → 13 + 19 = 32.
+    expect(result.blessed).toBe(true);
+    expect(result.influence).toBe(Math.ceil(10 * 1.25) + Math.ceil(15 * 1.25));
+  });
+
+  it("does not bless a House at or above the threshold", async () => {
+    const flush = await makeUser({ houseId: "flush" });
+    const throne = await makeThrone(flush.id);
+    // Seed one flush rating so the Realm isn't empty; the second rating then sees
+    // flush holding ~100% share (not an underdog).
+    await submitRating(flush, { throneId: throne.id, verdict: 5, tags: [], verified: true });
+    const throne2 = await makeThrone(flush.id);
+    const result = await submitRating(flush, { throneId: throne2.id, verdict: 5, tags: [], verified: true });
+    expect(result.blessed).toBe(false);
   });
 });
 
