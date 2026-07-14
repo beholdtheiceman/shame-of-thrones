@@ -2,8 +2,23 @@
 
 ## Where things stand
 **Phase 2 complete & pushed.** **Phase 3 Cycles A (Standings) and B
-(Recognition) are both built, reviewed, and PUSHED to prod**
-(`feat/phase0-backend` → Vercel, through commit `35c044d`).
+(Recognition) are built, reviewed, and PUSHED to prod** (`feat/phase0-backend`
+→ Vercel, through commit `35c044d`). **Cycle C — Underdog Blessing is built,
+reviewed, COMMITTED locally, NOT pushed** (commits `a1789e5..0141976`).
+Push = prod deploy → needs Larry's OK.
+
+## Cycle C — Underdog Blessing (built, UNPUSHED)
+A House with current Realm influence share < 15% earns ×1.25 on rating
+Influence (`UNDERDOG` in `rules.ts` → `underdogMultiplier`, applied to
+already-ramped points, `Math.ceil`). `realmHouseShares` in `standings.ts` is the
+single source of truth (reused by `houseStandings`, which gained `blessed`).
+Transparent: "Blessed ×1.25" tag on House Standings + a note in the rating
+feedback (`SittingFlow`). **No blessing on an empty Realm** — reviewer-added
+guard (`allEventRows.length === 0` in ratings.ts; `total > 0` in houseStandings),
+because there's no leader to trail; this also keeps the ramp/first-award tests
+at their natural unblessed values. Confirmation-award blessing + hysteresis
+deferred. Spec/plan: `docs/superpowers/{specs,plans}/2026-07-13-phase3-underdog-blessing*`.
+Verified: 172/172 tests on real Neon DB; build clean.
 
 ## Cycle A — Standings (SHIPPED, on prod)
 "Standings" tab: The Small Council (individual board; Week/Season/All-Time ×
