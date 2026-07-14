@@ -43,6 +43,12 @@ export const COPY = {
   streakAtRisk: { themed: "at risk — rate this week to keep it", plain: "at risk — rate this week to keep it" },
   blessed: { themed: "⭐ Blessed ×1.25", plain: "Boosted ×1.25" },
   underdogApplied: { themed: "Underdog Blessing applied (+25% Influence)", plain: "Underdog boost applied (+25%)" },
+  notificationBell: { themed: "Raven dispatches", plain: "Notifications" },
+  notificationEmpty: { themed: "No ravens have arrived.", plain: "No notifications yet." },
+  notificationSettings: { themed: "Raven alerts", plain: "Notification settings" },
+  notifyContested: { themed: "A fief becomes contested", plain: "An area becomes contested" },
+  notifyBannerFallen: { themed: "My House loses a fief", plain: "My team loses an area" },
+  notifySeasonStart: { themed: "A new Season begins", plain: "A new season begins" },
 } as const;
 
 export type CopyKey = keyof typeof COPY;

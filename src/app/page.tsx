@@ -7,6 +7,7 @@ import { AgeGate } from "@/components/AgeGate";
 import { FiefCard } from "@/components/FiefCard";
 import { Ledger } from "@/components/Ledger";
 import { NearestWorthyButton } from "@/components/NearestWorthyButton";
+import { NotificationInbox } from "@/components/NotificationInbox";
 import { Onboarding } from "@/components/Onboarding";
 import { OfflineBanner } from "@/components/OfflineBanner";
 import { PlainSpeechToggle } from "@/components/PlainSpeechToggle";
@@ -17,6 +18,7 @@ import { TabBar, type TabId } from "@/components/TabBar";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { ThroneSheet } from "@/components/ThroneSheet";
 import { HOUSE_BY_ID, REALM_NAME } from "@/lib/data";
+import { fiefCenter } from "@/lib/geo";
 import { useEscape } from "@/lib/useEscape";
 import { useStore } from "@/lib/store";
 
@@ -72,6 +74,12 @@ export default function Home() {
         <div className="flex items-center gap-2.5">
           <PlainSpeechToggle />
           <ThemeToggle />
+          <NotificationInbox onOpenFief={(fiefId) => {
+            setActiveTab("realm");
+            setSelectedThroneId(null);
+            setSelectedFiefId(fiefId);
+            setFlyTarget(fiefCenter(fiefId));
+          }} />
           {house && (
             <span
               className="pixel-chip block h-7 w-7"

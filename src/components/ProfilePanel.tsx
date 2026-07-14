@@ -7,6 +7,7 @@ import { HOUSE_SWITCH_WINDOW_MS } from "@/lib/game/rules";
 import { useCopy } from "@/lib/copy";
 import { useStore } from "@/lib/store";
 import { useNow } from "@/lib/useNow";
+import type { NotifyPrefsDTO } from "@/lib/api";
 import type { BadgeId, HouseId } from "@/lib/types";
 
 const BADGE_META: Record<BadgeId, { icon: string; title: string; desc: string }> = {
@@ -33,12 +34,14 @@ const BADGE_META: Record<BadgeId, { icon: string; title: string; desc: string }>
 };
 
 export function ProfilePanel() {
-  const { state, switchHouse } = useStore();
+  const { state, switchHouse, updateNotifyPrefs } = useStore();
   const t = useCopy();
   const { profile } = state;
   const now = useNow();
   const [switchingHouse, setSwitchingHouse] = useState(false);
   const [switchError, setSwitchError] = useState<string | null>(null);
+  const [savingPrefs, setSavingPrefs] = useState(false);
+  const [prefsError, setPrefsError] = useState<string | null>(null);
 
   const standings = useMemo(() => {
     const totals = new Map<HouseId, { influence: number; fiefsHeld: number }>();
@@ -75,6 +78,18 @@ export function ProfilePanel() {
       setSwitchError(e instanceof ApiError ? e.message : e instanceof Error ? e.message : t("connectionError"));
     } finally {
       setSwitchingHouse(false);
+    }
+  }
+
+  async function togglePref(key: keyof NotifyPrefsDTO) {
+    setSavingPrefs(true);
+    setPrefsError(null);
+    try {
+      await updateNotifyPrefs({ ...profile!.notifyPrefs, [key]: !profile!.notifyPrefs[key] });
+    } catch (e) {
+      setPrefsError(e instanceof ApiError ? e.message : e instanceof Error ? e.message : t("connectionError"));
+    } finally {
+      setSavingPrefs(false);
     }
   }
 
@@ -138,6 +153,29 @@ export function ProfilePanel() {
           {!canSwitch && " — you've already switched recently"}.
         </p>
         {switchError && <p className="mt-2 font-mono text-[13px] text-crimson">{switchError}</p>}
+      </div>
+
+      <div className="pixel-panel mt-4 p-4">
+        <p className="font-mono text-[13px] uppercase tracking-wide text-ink-faint">{t("notificationSettings")}</p>
+        <div className="mt-2.5 space-y-2">
+          {([
+            ["contested", "notifyContested"],
+            ["banner_fallen", "notifyBannerFallen"],
+            ["season_start", "notifySeasonStart"],
+          ] as const).map(([key, label]) => (
+            <label key={key} className="flex items-center justify-between gap-3 font-mono text-[14px] text-ink-soft">
+              <span>{t(label)}</span>
+              <input
+                type="checkbox"
+                checked={profile.notifyPrefs[key]}
+                disabled={savingPrefs}
+                onChange={() => void togglePref(key)}
+                className="h-4 w-4 accent-brass"
+              />
+            </label>
+          ))}
+        </div>
+        {prefsError && <p className="mt-2 font-mono text-[13px] text-crimson">{prefsError}</p>}
       </div>
 
       {profile.badges.length > 0 && (

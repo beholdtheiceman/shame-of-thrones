@@ -3,7 +3,7 @@
 import {
   createContext, useCallback, useContext, useEffect, useMemo, useRef, useState,
 } from "react";
-import { api, ApiError, type MeDTO, type RealmDTO } from "./api";
+import { api, ApiError, type MeDTO, type NotificationsDTO, type NotifyPrefsDTO, type RealmDTO } from "./api";
 import { enqueue, flush, pending, type QueuedRating } from "./ratingQueue";
 import type { Amenities, HouseId, ThroneCategory } from "./types";
 
@@ -16,6 +16,7 @@ export interface StoreState {
   streak: MeDTO["streak"] | null;
   ageGate: { confirmed: boolean; locked: boolean } | null;
   realm: RealmDTO | null;
+  notifications: NotificationsDTO;
   error: string | null;
   offline: boolean;
   snapshotSavedAt: number | null;
@@ -31,6 +32,8 @@ interface StoreContextValue {
   clearQueueNotice: () => void;
   setProfile: (name: string, houseId: HouseId) => Promise<void>;
   switchHouse: (houseId: HouseId) => Promise<void>;
+  updateNotifyPrefs: (prefs: NotifyPrefsDTO) => Promise<void>;
+  markNotificationsRead: (ids?: string[]) => Promise<void>;
   submitAgeGate: (birthDate: string) => Promise<void>;
   submitRating: (input: { throneId: string; verdict: 1 | 2 | 3 | 4 | 5; tags: string[]; testimony: string; verified: boolean }) => Promise<{ testimonyBlocked: boolean; queued: boolean; blessed: boolean }>;
   addThrone: (input: { name: string; lat: number; lng: number; category: ThroneCategory; amenities: Amenities; publicAccessAttested: boolean }) => Promise<void>;
@@ -59,6 +62,7 @@ function loadSnapshot(): { savedAt: number; realm: RealmDTO } | null {
 export function StoreProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<StoreState>({
     authStatus: "loading", profile: null, rank: null, streak: null, ageGate: null, realm: null, error: null,
+    notifications: { notifications: [], unreadCount: 0 },
     offline: false, snapshotSavedAt: null, queuedCount: pending().length, queueDropped: false,
   });
   const refreshing = useRef(false);
@@ -67,9 +71,13 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     if (refreshing.current) return;
     refreshing.current = true;
     try {
-      const [realm, me] = await Promise.all([
+      const [realm, me, notificationData] = await Promise.all([
         api.realm(),
         api.me().catch((e) => {
+          if (e instanceof ApiError && e.status === 401) return null;
+          throw e;
+        }),
+        api.notifications().catch((e) => {
           if (e instanceof ApiError && e.status === 401) return null;
           throw e;
         }),
@@ -82,6 +90,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         rank: me?.rank ?? null,
         streak: me?.streak ?? null,
         ageGate: me?.ageGate ?? null,
+        notifications: notificationData ?? { notifications: [], unreadCount: 0 },
         authStatus: me === null ? "anonymous" : me.profile === null ? "needs_profile" : "ready",
         error: null,
         offline: false,
@@ -162,6 +171,12 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       clearQueueNotice: () => setState((s) => ({ ...s, queueDropped: false })),
       setProfile: (name, houseId) => mutate(() => api.createProfile(name, houseId)),
       switchHouse: (houseId) => mutate(() => api.switchHouse(houseId)),
+      updateNotifyPrefs: (prefs) => mutate(() => api.updateNotifyPrefs(prefs)),
+      markNotificationsRead: async (ids) => {
+        await api.markNotificationsRead(ids);
+        const latest = await api.notifications();
+        setState((s) => ({ ...s, notifications: latest }));
+      },
       submitAgeGate: (birthDate) => mutate(() => api.ageGate(birthDate)),
       submitRating: async (input) => {
         const payload = {

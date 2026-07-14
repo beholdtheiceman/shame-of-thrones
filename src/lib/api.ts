@@ -2,6 +2,27 @@ import type { FiefControl, RankInfo } from "./selectors";
 import type { CouncilRow, HouseStandingRow, WindowKey } from "./standings";
 import type { Amenities, HouseId, LedgerEntry, Rating, ThroneCategory } from "./types";
 
+export interface NotifyPrefsDTO {
+  contested: boolean;
+  banner_fallen: boolean;
+  season_start: boolean;
+}
+
+export interface NotificationDTO {
+  id: string;
+  category: "contested" | "banner_fallen" | "season_start";
+  title: string;
+  body: string;
+  link: string | null;
+  createdAt: number;
+  readAt: number | null;
+}
+
+export interface NotificationsDTO {
+  notifications: NotificationDTO[];
+  unreadCount: number;
+}
+
 export interface ThroneDTO {
   id: string; name: string; lat: number; lng: number;
   category: ThroneCategory; status: "rumored" | "verified";
@@ -19,7 +40,7 @@ export interface RealmDTO {
 export interface MeDTO {
   profile: {
     name: string; houseId: HouseId; joinedAt: number;
-    badges: string[]; lastHouseSwitchAt: number | null;
+    badges: string[]; notifyPrefs: NotifyPrefsDTO; lastHouseSwitchAt: number | null;
   } | null;
   rank?: RankInfo;
   streak?: { weeks: number; thisWeekActive: boolean };
@@ -57,6 +78,15 @@ export const api = {
     request<{ ok: true }>("/api/profile", { method: "POST", body: JSON.stringify({ name, houseId }) }),
   switchHouse: (houseId: HouseId) =>
     request<{ ok: true }>("/api/profile", { method: "POST", body: JSON.stringify({ houseId }) }),
+  updateNotifyPrefs: (notifyPrefs: NotifyPrefsDTO) =>
+    request<{ ok: true; notifyPrefs: NotifyPrefsDTO }>("/api/profile", {
+      method: "POST", body: JSON.stringify({ notifyPrefs }),
+    }),
+  notifications: () => request<NotificationsDTO>("/api/notifications"),
+  markNotificationsRead: (ids?: string[]) =>
+    request<{ ok: true }>("/api/notifications/read", {
+      method: "POST", body: JSON.stringify(ids ? { ids } : {}),
+    }),
   ageGate: (birthDate: string) =>
     request<{ confirmed: boolean; locked: boolean }>("/api/age-gate", {
       method: "POST", body: JSON.stringify({ birthDate }),
