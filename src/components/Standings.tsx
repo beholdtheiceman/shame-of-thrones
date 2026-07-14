@@ -191,6 +191,7 @@ function Row({
 }
 
 function HouseList({ data }: { data: StandingsDTO | null }) {
+  const t = useCopy();
   if (!data) return <p className="font-mono text-[13px] text-ink-faint">Counting the banners…</p>;
   return (
     <div className="flex flex-col gap-2">
@@ -202,6 +203,11 @@ function HouseList({ data }: { data: StandingsDTO | null }) {
               <span className="flex items-center gap-2">
                 <Chip houseId={h.houseId} />
                 {house?.name ?? h.houseId}
+                {h.blessed && (
+                  <span className="pixel-chip bg-brass px-1.5 py-0.5 text-[10px] text-on-brass">
+                    {t("blessed")}
+                  </span>
+                )}
               </span>
               <span className="tabular-nums">
                 {Math.round(h.share * 100)}% · {h.fiefsLed} {h.fiefsLed === 1 ? "fief" : "fiefs"}

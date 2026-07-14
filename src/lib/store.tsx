@@ -32,7 +32,7 @@ interface StoreContextValue {
   setProfile: (name: string, houseId: HouseId) => Promise<void>;
   switchHouse: (houseId: HouseId) => Promise<void>;
   submitAgeGate: (birthDate: string) => Promise<void>;
-  submitRating: (input: { throneId: string; verdict: 1 | 2 | 3 | 4 | 5; tags: string[]; testimony: string; verified: boolean }) => Promise<{ testimonyBlocked: boolean; queued: boolean }>;
+  submitRating: (input: { throneId: string; verdict: 1 | 2 | 3 | 4 | 5; tags: string[]; testimony: string; verified: boolean }) => Promise<{ testimonyBlocked: boolean; queued: boolean; blessed: boolean }>;
   addThrone: (input: { name: string; lat: number; lng: number; category: ThroneCategory; amenities: Amenities; publicAccessAttested: boolean }) => Promise<void>;
   confirmThrone: (throneId: string) => Promise<void>;
 }
@@ -171,7 +171,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         try {
           const res = await api.submitRating(payload);
           await refresh();
-          return { testimonyBlocked: !!res.testimonyBlocked, queued: false };
+          return { testimonyBlocked: !!res.testimonyBlocked, queued: false, blessed: !!res.blessed };
         } catch (e) {
           if (e instanceof ApiError) {
             await refresh();
@@ -180,7 +180,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
           const persisted = enqueue({ ...payload, queuedAt: Date.now() });
           if (!persisted) throw e; // no storage — behave exactly as online-only (spec)
           setState((s) => ({ ...s, offline: true, queuedCount: pending().length }));
-          return { testimonyBlocked: false, queued: true };
+          return { testimonyBlocked: false, queued: true, blessed: false };
         }
       },
       addThrone: (input) => mutate(() => api.addThrone(input)),

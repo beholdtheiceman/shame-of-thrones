@@ -62,7 +62,7 @@ export const api = {
       method: "POST", body: JSON.stringify({ birthDate }),
     }),
   submitRating: (input: { throneId: string; verdict: number; tags: string[]; verified: boolean; testimony?: string }) =>
-    request<{ updated: boolean; influence: number; flipped: boolean; testimonyBlocked?: boolean }>("/api/ratings", {
+    request<{ updated: boolean; influence: number; flipped: boolean; testimonyBlocked?: boolean; blessed?: boolean }>("/api/ratings", {
       method: "POST", body: JSON.stringify(input),
     }),
   report: (input: { subjectKind: "throne" | "rating" | "photo"; subjectId: string; reason: string; note?: string }) =>

@@ -41,6 +41,8 @@ export const COPY = {
   noStandingsDeeds: { themed: "No deeds recorded here yet — be the first.", plain: "No contributions here yet — be the first." },
   standingsSignIn: { themed: "Sign in to take your seat on the Small Council.", plain: "Sign in to appear on the contributor list." },
   streakAtRisk: { themed: "at risk — rate this week to keep it", plain: "at risk — rate this week to keep it" },
+  blessed: { themed: "⭐ Blessed ×1.25", plain: "Boosted ×1.25" },
+  underdogApplied: { themed: "Underdog Blessing applied (+25% Influence)", plain: "Underdog boost applied (+25%)" },
 } as const;
 
 export type CopyKey = keyof typeof COPY;

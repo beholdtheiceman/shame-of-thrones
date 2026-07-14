@@ -31,6 +31,7 @@ export function SittingFlow({
   const [proximity, setProximity] = useState<ProximityState>("checking");
   const [submitting, setSubmitting] = useState(false);
   const [influenceClaimed, setInfluenceClaimed] = useState(false);
+  const [blessingApplied, setBlessingApplied] = useState(false);
   const [ratingQueued, setRatingQueued] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -82,6 +83,7 @@ export function SittingFlow({
         setRatingQueued(true);
       } else {
         setInfluenceClaimed(true);
+        setBlessingApplied(result.blessed);
       }
       window.setTimeout(onSubmitted, 700);
     } catch (e) {
@@ -185,9 +187,14 @@ export function SittingFlow({
 
       {error && <p className="mt-4 font-mono text-[14px] text-crimson">{error}</p>}
       {influenceClaimed && (
-        <p className="pixel-chip mt-4 animate-bounce bg-brass px-3 py-2 text-center font-mono text-[14px] text-on-brass">
-          Influence claimed!
-        </p>
+        <>
+          <p className="pixel-chip mt-4 animate-bounce bg-brass px-3 py-2 text-center font-mono text-[14px] text-on-brass">
+            Influence claimed!
+          </p>
+          {blessingApplied && (
+            <p className="font-mono text-[12px] text-brass">{t("underdogApplied")}</p>
+          )}
+        </>
       )}
       {ratingQueued && (
         <p className="pixel-chip mt-4 bg-vellum px-3 py-2 text-center font-mono text-[14px] text-ink-soft">
