@@ -39,3 +39,6 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# local env (owner-provided EXPO_PUBLIC_* values)
+.env
