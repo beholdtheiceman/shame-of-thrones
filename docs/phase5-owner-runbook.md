@@ -1,50 +1,61 @@
 # Phase 5 — Owner Runbook (ship mobile to production)
 
-Do these in order. Each maps to a placeholder in code or a Vercel/Neon setting.
-Nothing here is reversible-blind; the prod cutover (last section) is gated on your OK.
+Status legend: ✅ done · 🔶 needs you (login/secret/CLI) · ⏳ gated cutover.
+Last updated 2026-07-15 after Claude set up everything automatable.
 
-## 1. Google Cloud OAuth clients
-In Google Cloud Console → APIs & Services → Credentials, create THREE OAuth client IDs
-for the same project:
-- **Web application** — this client's ID is the *audience* the backend validates.
-- **iOS** — bundle id `com.beholdtheiceman.shameofthrones`.
-- **Android** — package `com.beholdtheiceman.shameofthrones` + your signing SHA-1.
+## What Claude already did
+- ✅ Reused the existing **web** OAuth client as the native audience.
+- ✅ Created the **iOS** OAuth client (`shame-of-thrones-ios`, GCP project `personal-os`).
+- ✅ Wired `app.json` `iosUrlScheme`, and `eas.json` + local `.env` with the client IDs + prod API URL.
+- ✅ Set Vercel envs `GOOGLE_NATIVE_CLIENT_IDS` (web+ios) and confirmed `NATIVE_JWT_SECRET` present (both Production + Preview).
+- ✅ Verified prod DB is in the clean pre-`0006` state (push_tokens absent, journal at 0005).
+- ✅ Proved the monorepo builds green on Vercel and `/api/health` responds correctly.
 
-Then:
-- Vercel env `GOOGLE_NATIVE_CLIENT_IDS` = the **Web** client ID (add the iOS/Android
-  client IDs too, comma-separated, if the mobile lib sends them as audience).
-- Mobile: set `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` / `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID`
-  in the mobile build env (EAS secrets or `.env`).
-- From the **iOS** client, copy the *reversed client ID* into `app.json` →
-  google-signin `iosUrlScheme` (replaces `REPLACE_WITH_IOS_GOOGLE_REVERSED_CLIENT_ID`).
+Reference values (client IDs are public, safe to keep here):
+- Web client ID: `112554886763-p6nipif6hp7gr56foio0erhre8ck8ab7.apps.googleusercontent.com`
+- iOS client ID: `112554886763-sos23msr1bbntpou7ojhrrva2gn5rqg8.apps.googleusercontent.com`
 
-## 2. NATIVE_JWT_SECRET
-Generate a strong secret: `openssl rand -base64 48`.
-Add it as Vercel env `NATIVE_JWT_SECRET` for **Production** and any **Preview** the app
-targets. (Without it, `/api/auth/native` now returns 500 by design.)
+## 1. 🔶 Prod Neon migration `0006` (one command)
+PowerShell (your `&&` isn't supported — two lines):
+```powershell
+cd apps/web
+npm run db:migrate
+```
+Applies only `0006_push-tokens` (creates the `push_tokens` table). Claude verified prod
+is in the exact clean state for this; the auto-mode safety guard blocked Claude from
+running it, so it's yours.
 
-## 3. Mapbox tokens
-- **Secret (downloads) token** with the `DOWNLOADS:READ` scope → `app.json`
-  `RNMapboxMapsDownloadToken` (replaces `REPLACE_WITH_MAPBOX_SECRET_DOWNLOAD_TOKEN`).
-- **Public token** → mobile build env `EXPO_PUBLIC_MAPBOX_TOKEN`.
+## 2. 🔶 Mapbox tokens (needs your Mapbox account)
+- **Public token** (`pk.*`) → set as Vercel/EAS build env `EXPO_PUBLIC_MAPBOX_TOKEN`
+  and in `apps/mobile/eas.json` (currently `REPLACE_WITH_MAPBOX_PUBLIC_TOKEN`) + local `.env`.
+- **Secret download token** (`sk.*`, scope `DOWNLOADS:READ`) → `app.json`
+  `RNMapboxMapsDownloadToken` (currently `REPLACE_WITH_MAPBOX_SECRET_DOWNLOAD_TOKEN`).
+  ⚠️ Do NOT commit the real `sk.*` token. Set it locally / in EAS secrets, or export
+  `RNMAPBOX_MAPS_DOWNLOAD_TOKEN` and reference it — keep it out of git.
 
-## 4. Expo / EAS
-- `cd apps/mobile && eas init` → copies the project id into `app.json`
-  `extra.eas.projectId` (replaces `REPLACE_WITH_EAS_PROJECT_ID`).
-- Configure push credentials: `eas credentials` → APNs key (iOS) + FCM key (Android).
-- Build the dev client: `eas build --profile development --platform ios` (and/or android).
+## 3. 🔶 Expo / EAS (needs `eas login` — you weren't logged in)
+```
+cd apps/mobile
+eas login
+eas init            # writes your real projectId into app.json extra.eas.projectId
+eas credentials     # APNs key (iOS) + FCM key (Android) for push
+eas build --profile development --platform ios   # (and/or android)
+```
+`eas.json` build profiles already carry the Google client IDs + API base URL, so builds
+are configured apart from the Mapbox token above.
 
-## 5. Prod Neon migration
-Confirm `push_tokens` is absent in prod, then apply `0006_push-tokens`:
-- Compare against the migrations in `apps/web/drizzle/` (0006 is the newest).
-- Apply via the prod `DATABASE_URL` (Drizzle migrate or the SQL editor).
+## 4. 🔶 Android OAuth client (after your first EAS build)
+Needs the app-signing **SHA-1**, which only exists once EAS generates a keystore:
+`eas credentials` → Android → copy the SHA-1 → GCP Console → create an **Android** OAuth
+client (package `com.beholdtheiceman.shameofthrones` + that SHA-1). Then append its client
+ID to `GOOGLE_NATIVE_CLIENT_IDS` on Vercel. (iOS sign-in works without this.)
 
-## 6. Production cutover (do WITH Claude, each step gated)
-1. Verify `/api/health` on a `feat/phase4-foundation` preview reports every env `true`.
-2. Merge `feat/phase4-foundation` (incl. `feat/phase5-ship-mobile`) → `main`.
+## 5. ⏳ Production cutover (do WITH Claude, each step gated)
+1. Confirm `/api/health` on the phase5 preview shows `NATIVE_JWT_SECRET` + `GOOGLE_NATIVE_CLIENT_IDS` = `true` (redeploy the preview after the env-var add).
+2. Merge `feat/phase4-foundation` (incl. `feat/phase5-ship-mobile`) → `main` — verified a clean fast-forward (no conflicts).
 3. Vercel → Settings → Git → Production Branch = `main`.
 4. Deploy; confirm prod `/api/health` `ok: true` and the site is Ready.
 
-## 7. Device QA (see spec WS4)
-Sign-in → `/api/auth/native` → `/api/me`; map render; fief-tap guard; rating + offline
-queue; push delivery.
+## 6. 🔶 Device QA (needs your hardware; see spec WS4)
+On a dev build: Google sign-in → `/api/auth/native` → `/api/me`; Mapbox render;
+fief-tap-vs-background guard; rating flow + offline queue; push delivery.
