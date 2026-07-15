@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "mobile",
-    "slug": "mobile",
+    "name": "Shame of Thrones",
+    "slug": "shame-of-thrones",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -25,12 +25,7 @@
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      [
-        "@rnmapbox/maps",
-        {
-          "RNMapboxMapsDownloadToken": "REPLACE_WITH_MAPBOX_SECRET_DOWNLOAD_TOKEN"
-        }
-      ],
+      "@rnmapbox/maps",
       [
         "@react-native-google-signin/google-signin",
         {
@@ -41,7 +36,9 @@
     ],
     "owner": "shameofthrones_admin",
     "extra": {
-      "eas": {}
+      "eas": {
+        "projectId": "abdbf99f-2451-4283-b33b-2cd17dcdb9f0"
+      }
     }
   }
 }
