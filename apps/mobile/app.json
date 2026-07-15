@@ -39,10 +39,9 @@
       ],
       "expo-notifications"
     ],
+    "owner": "shameofthrones_admin",
     "extra": {
-      "eas": {
-        "projectId": "REPLACE_WITH_EAS_PROJECT_ID"
-      }
+      "eas": {}
     }
   }
 }
