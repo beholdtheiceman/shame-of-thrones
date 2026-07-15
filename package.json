@@ -5,6 +5,7 @@
   "workspaces": ["apps/*", "packages/*"],
   "scripts": {
     "test": "npm run test --workspaces --if-present",
-    "build:web": "npm run build --workspace apps/web"
+    "build:web": "npm run build --workspace apps/web",
+    "check": "npm run test && npm run build:web"
   }
 }
