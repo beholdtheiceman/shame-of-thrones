@@ -1,3 +1,6 @@
+// MUST be first: installs the TextDecoder polyfill before h3-js (via App) loads.
+import './polyfills';
+
 import { registerRootComponent } from 'expo';
 
 import App from './App';
