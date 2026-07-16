@@ -32,7 +32,9 @@
           "iosUrlScheme": "com.googleusercontent.apps.112554886763-sos23msr1bbntpou7ojhrrva2gn5rqg8"
         }
       ],
-      "expo-notifications"
+      "expo-notifications",
+      "expo-secure-store",
+      "expo-status-bar"
     ],
     "owner": "shameofthrones_admin",
     "extra": {
