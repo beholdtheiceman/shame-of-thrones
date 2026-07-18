@@ -1,10 +1,9 @@
 import { cellToBoundary, cellToLatLng, latLngToCell } from "h3-js";
 
-// Resolution 9 (~0.1-0.2km edge) — tuned so a few city blocks of seed
-// data span several distinct Fiefs. The PRD spec'd resolution 7
-// (~1-2km) for full-city coverage; this demo trades that for visible
-// territory contests within a single neighborhood.
-export const FIEF_RESOLUTION = 9;
+// Resolution 7 (~1-2km edge) — the PRD target for full-city coverage.
+// Fiefs are computed from H3, not stored, so this constant alone tunes
+// fief granularity. (Was res-9 for the single-neighborhood demo seed.)
+export const FIEF_RESOLUTION = 7;
 
 export function fiefIdForCoords(lat: number, lng: number): string {
   return latLngToCell(lat, lng, FIEF_RESOLUTION);
