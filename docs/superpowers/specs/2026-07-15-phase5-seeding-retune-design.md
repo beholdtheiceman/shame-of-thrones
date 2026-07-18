@@ -1,9 +1,8 @@
 # Phase 5 · Sub-project A — Real-data seeding pipeline + hex re-tune (DRAFT design)
 
 **Date:** 2026-07-15
-**Status:** DRAFT — brainstorm started, paused on session cost before completion.
-Two foundational decisions locked; remaining decisions have proposed defaults to
-confirm next session. **Do not implement until this is finalized + approved.**
+**Status:** SUPERSEDED by `2026-07-18-phase5-seeding-retune-design.md` (FINAL,
+approved 2026-07-18). Kept for history only — see the FINAL for the approved design.
 
 This is the first buildable sub-project of ROADMAP "Phase 5 — Data seeding & launch
 ops": turn the empty gray map into a real one for a launch city, and land the deferred
