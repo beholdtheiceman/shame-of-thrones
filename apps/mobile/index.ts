@@ -1,5 +1,7 @@
 // MUST be first: installs the TextDecoder polyfill before h3-js (via App) loads.
 import './polyfills';
+// Set the Mapbox token before the map screen mounts (fixes gray tiles on first launch).
+import './lib/mapboxInit';
 
 import { registerRootComponent } from 'expo';
 

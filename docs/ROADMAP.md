@@ -61,13 +61,26 @@ Smaller, but these are real product bugs against the PRD, not just polish.
 
 ## Phase 4 — Ship on mobile
 
-The prototype is a Next.js web app; the PRD calls for native iOS + Android.
+**BUILT + SHIPPED TO PRODUCTION (2026-07-15).** React Native + Expo app (monorepo:
+`apps/web` + `apps/mobile` + `@sot/core`) — native Google auth, Mapbox map + the
+~20s rating loop, Standings/Profile/notification-inbox, Expo push. Merged to `main`;
+prod (`shame-of-thrones.vercel.app`) now serves the monorepo, `/api/health` green,
+prod migration `0006` applied. A standalone Android build installs, launches, and runs.
 
-- [ ] Decide: React Native/Flutter port (PRD's recommendation, one team both platforms) vs. shipping the existing web app as an installable PWA for longer and delaying native — worth a real build-vs-buy conversation before committing engineering time
-- [ ] Mapbox migration if going native — PRD specifically calls for Mapbox over the prototype's Leaflet/OSM setup because custom fantasy map styling is a stated brand requirement
-- [ ] Re-tune Fief hex resolution for real launch-city density — prototype uses H3 res-9 (~150m cells) tuned for a demo neighborhood; PRD target is res-7 (~1-2km); PRD open question #2 (fixed resolution vs. density-adaptive) needs an answer before this is locked
+- [x] Decide RN vs Flutter vs PWA → **React Native + Expo (SDK 57)**, full monorepo, one codebase both platforms
+- [x] Mapbox migration → **`@rnmapbox/maps`** (dark-v11 style, throne markers + fief polygons)
+- [ ] Re-tune Fief hex resolution res-9 → res-7 for launch-city density — **still deferred**; it's a data migration that invalidates existing prod fief data, so pair it with seeding in Phase 5 (PRD open question #2: fixed vs. density-adaptive still needs an answer)
+
+**Open QA bugs (on-device, both config/code — no architecture left):**
+- [ ] Map tiles gray on the **first** cold launch, fine on relaunch — token is valid (200 from Mapbox), first-run init race; fix set the token at app entry, pending on-device verify
+- [ ] Android Google sign-in `DEVELOPER_ERROR` — needs an **Android OAuth client** created with the EAS keystore SHA-1 (config-only, no rebuild)
+- [ ] iOS build not yet attempted (needs a paid Apple Developer account)
 
 ## Phase 5 — Data seeding & launch ops
+
+**Not started.** (Naming note: the `docs/phase5-*` / session "Phase 5" refers to
+*deploying* the Phase 4 mobile app — that's done. This roadmap phase — real restroom
+data + closed beta — is the next real body of work, still ahead.)
 
 - [ ] Phase 0 seeding per PRD §8: import Refuge Restrooms API, city open-data portals, OSM `amenity=toilets` for each launch city — an empty map kills the utility on day one, so this has to land before any real users show up
 - [ ] Closed beta ("The Small Council"): 1 city, ~500 users, 4 Houses — validate the 20s rating flow and moderation pipeline under real load
