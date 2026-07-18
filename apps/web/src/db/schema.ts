@@ -1,3 +1,4 @@
+import { sql } from "drizzle-orm";
 import {
   boolean,
   customType,
@@ -64,26 +65,36 @@ export const users = pgTable("users", {
   bannedAt: timestamp("banned_at", { withTimezone: true }),
 });
 
-export const thrones = pgTable("thrones", {
-  id: uuid("id").defaultRandom().primaryKey(),
-  name: text("name").notNull(),
-  lat: doublePrecision("lat").notNull(),
-  lng: doublePrecision("lng").notNull(),
-  category: throneCategoryEnum("category").notNull(),
-  status: throneStatusEnum("status").notNull().default("rumored"),
-  publicAccessAttested: boolean("public_access_attested").notNull().default(false),
-  amenities: jsonb("amenities")
-    .$type<{
-      accessible: boolean; babyChanging: boolean; genderNeutral: boolean;
-      freeAccess: boolean; open24h: boolean;
-    }>()
-    .notNull(),
-  addedBy: uuid("added_by").notNull().references(() => users.id),
-  addedAt: timestamp("added_at", { withTimezone: true }).notNull().defaultNow(),
-  lastConfirmedAt: timestamp("last_confirmed_at", { withTimezone: true }).notNull().defaultNow(),
-  hiddenAt: timestamp("hidden_at", { withTimezone: true }),
-  hiddenBy: uuid("hidden_by").references(() => users.id),
-});
+export const thrones = pgTable(
+  "thrones",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    name: text("name").notNull(),
+    lat: doublePrecision("lat").notNull(),
+    lng: doublePrecision("lng").notNull(),
+    category: throneCategoryEnum("category").notNull(),
+    status: throneStatusEnum("status").notNull().default("rumored"),
+    publicAccessAttested: boolean("public_access_attested").notNull().default(false),
+    amenities: jsonb("amenities")
+      .$type<{
+        accessible: boolean; babyChanging: boolean; genderNeutral: boolean;
+        freeAccess: boolean; open24h: boolean;
+      }>()
+      .notNull(),
+    addedBy: uuid("added_by").notNull().references(() => users.id),
+    addedAt: timestamp("added_at", { withTimezone: true }).notNull().defaultNow(),
+    lastConfirmedAt: timestamp("last_confirmed_at", { withTimezone: true }).notNull().defaultNow(),
+    hiddenAt: timestamp("hidden_at", { withTimezone: true }),
+    hiddenBy: uuid("hidden_by").references(() => users.id),
+    source: text("source"),          // "refuge" | "osm"; NULL = user-added
+    sourceId: text("source_id"),     // upstream record id
+  },
+  (t) => [
+    uniqueIndex("thrones_source_unique")
+      .on(t.source, t.sourceId)
+      .where(sql`${t.source} is not null`),
+  ]
+);
 
 export const photos = pgTable(
   "photos",
