@@ -1,4 +1,5 @@
 import type { ThroneCategory, Amenities } from "./types";
+import { haversineMeters } from "./geo";
 
 export type ThroneSource = "refuge" | "osm";
 
@@ -46,7 +47,7 @@ export function normalizeRefuge(raw: RefugeRaw): SeededThrone {
 
 // --- OSM Overpass node (amenity=toilets) ---
 export interface OsmNode {
-  type: "node";
+  type: string; // Overpass node discriminator; not branched on here, so kept non-literal to avoid literal-widening tsc errors on plain object literals
   id: number;
   lat: number;
   lon: number;
@@ -71,4 +72,36 @@ export function normalizeOsm(node: OsmNode): SeededThrone {
     source: "osm",
     sourceId: String(node.id),
   };
+}
+
+export const DEDUP_RADIUS_M = 25;
+
+const SOURCE_RANK: Record<ThroneSource, number> = { refuge: 0, osm: 1 }; // lower = preferred
+
+/**
+ * Collapse records that describe the same physical restroom (within
+ * DEDUP_RADIUS_M) across sources. On a merge, the Refuge record wins
+ * (purpose-built metadata); OSM is the fallback.
+ */
+export function dedupeCrossSource(records: SeededThrone[]): SeededThrone[] {
+  const kept: SeededThrone[] = [];
+  for (const rec of records) {
+    const dupeIdx = kept.findIndex(
+      (k) => haversineMeters({ lat: k.lat, lng: k.lng }, { lat: rec.lat, lng: rec.lng }) <= DEDUP_RADIUS_M
+    );
+    if (dupeIdx === -1) {
+      kept.push(rec);
+    } else if (SOURCE_RANK[rec.source] < SOURCE_RANK[kept[dupeIdx].source]) {
+      kept[dupeIdx] = rec;
+    }
+  }
+  return kept;
+}
+
+/** True if `candidate` sits within DEDUP_RADIUS_M of any already-present throne. */
+export function isDuplicate(
+  candidate: { lat: number; lng: number },
+  existing: { lat: number; lng: number }[]
+): boolean {
+  return existing.some((e) => haversineMeters(e, candidate) <= DEDUP_RADIUS_M);
 }

@@ -37,3 +37,33 @@ describe("normalizeOsm", () => {
     expect(normalizeOsm(node).name).toBe("Public restroom");
   });
 });
+
+import { dedupeCrossSource, isDuplicate, DEDUP_RADIUS_M } from "./seeding";
+
+describe("dedup", () => {
+  const refuge: SeededThrone = {
+    name: "Refuge WC", lat: 40.7128, lng: -74.006, category: "other",
+    amenities: { accessible: true, babyChanging: false, genderNeutral: true, freeAccess: false, open24h: false },
+    source: "refuge", sourceId: "1",
+  };
+  const osmClose: SeededThrone = { ...refuge, name: "OSM WC", lat: 40.71289, lng: -74.006, source: "osm", sourceId: "2" };
+  const osmFar: SeededThrone = { ...refuge, name: "Far WC", lat: 40.7146, lng: -74.006, source: "osm", sourceId: "3" };
+
+  it("exposes a 25m radius constant", () => {
+    expect(DEDUP_RADIUS_M).toBe(25);
+  });
+
+  it("merges cross-source records within the radius, preferring Refuge metadata", () => {
+    const out = dedupeCrossSource([refuge, osmClose, osmFar]);
+    expect(out).toHaveLength(2);
+    const merged = out.find((t) => t.lat === refuge.lat)!;
+    expect(merged.source).toBe("refuge");
+    expect(out.some((t) => t.sourceId === "3")).toBe(true);
+  });
+
+  it("isDuplicate is true only within the radius of an existing throne", () => {
+    const existing = [{ lat: 40.7128, lng: -74.006 }];
+    expect(isDuplicate({ lat: 40.71289, lng: -74.006 }, existing)).toBe(true);
+    expect(isDuplicate({ lat: 40.7146, lng: -74.006 }, existing)).toBe(false);
+  });
+});

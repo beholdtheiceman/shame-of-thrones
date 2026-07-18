@@ -8,3 +8,4 @@ export * from "./recognition";
 export * from "./notifications";
 export * from "./ratingQueue";
 export * from "./dto";
+export * from "./seeding";
