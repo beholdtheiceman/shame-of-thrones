@@ -131,6 +131,18 @@ export default function RealmMap({
     [onSelectFief]
   );
 
+  const handleThronePress = useCallback(
+    (id: string) => {
+      // Same guard as fiefs: a MarkerView tap can also register as a map
+      // background tap on iOS, which would immediately deselect the throne
+      // (so it "opens then closes" and needs several taps). Stamp the tap so
+      // the trailing handleMapPress background press is ignored.
+      lastFeatureTapAt.current = Date.now();
+      onSelectThrone(id);
+    },
+    [onSelectThrone]
+  );
+
   const handleMapPress = useCallback(() => {
     if (Date.now() - lastFeatureTapAt.current < 150) return;
     onBackgroundClick();
@@ -156,7 +168,7 @@ export default function RealmMap({
         />
       ))}
       {thrones.map((t) => (
-        <ThroneMarker key={t.id} throne={t} selected={t.id === selectedThroneId} onPress={() => onSelectThrone(t.id)} />
+        <ThroneMarker key={t.id} throne={t} selected={t.id === selectedThroneId} onPress={() => handleThronePress(t.id)} />
       ))}
     </MapView>
   );

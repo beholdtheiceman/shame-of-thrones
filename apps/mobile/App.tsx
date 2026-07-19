@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { View } from "react-native";
 import { DarkTheme, NavigationContainer, type Theme } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { SafeAreaProvider } from "react-native-safe-area-context";
@@ -64,6 +65,11 @@ export default function App() {
               tabBarActiveTintColor: COLORS.brass,
               tabBarInactiveTintColor: COLORS.inkFaint,
               tabBarStyle: { backgroundColor: COLORS.vellumRaised, borderTopColor: COLORS.vellumLine },
+              // View-based icon (no font glyph) so it always renders — the tabs
+              // had no icon, which showed as a .notdef box on iOS.
+              tabBarIcon: ({ color }) => (
+                <View style={{ width: 14, height: 14, backgroundColor: color }} />
+              ),
             }}
           >
             <Tab.Screen name="Realm" component={RealmScreen} />
