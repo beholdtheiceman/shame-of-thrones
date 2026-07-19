@@ -90,10 +90,18 @@ app — that's done. This roadmap phase is real restroom data + closed beta.)
 - [x] Closed-beta **system** ("The Small Council"): **invite/cohort infrastructure BUILT (2026-07-18, not deployed)** — `invites` table + `users.cohort` (migration 0009), single-use `SOT-XXXX-XXXX` codes, flag-gated (`BETA_INVITE_REQUIRED`, off by default) gate in `createProfile`, moderator `POST/GET /api/invites`, onboarding invite field. **Actually running the beta (1 city, ~500 users, validate 20s flow + moderation under load) is still ahead** and needs deploy + real users. Known follow-up: invite-redeem race can leave a phantom user row (wrap insert+redeem in a tx).
 - [ ] Pick the 2-3 launch cities (dense, walkable — PRD suggests NYC/Chicago/Austin) — **product decision, still open**. The seeding pipeline is city-agnostic (`--city`/`--bbox`), so this only blocks the actual seed run, not the code.
 
-## Phase 6 — Monetization (P2 — design only, don't build yet)
+## Phase 6 — Monetization (P2)
 
-- [ ] Spec cosmetics (Banner styles, sigils, map themes) and the Maester's Pass seasonal track
-- [ ] Hold the line from PRD §5.10: no Influence multipliers for money, no ads in the panic-button flow, no venue-paid score boosts — these are brand-integrity constraints, not just nice-to-haves, worth keeping visible so a future roadmap pass doesn't quietly cross them
+**Scope change (2026-07-19):** owner elected to **design + build with payments** rather than
+design-only. Spec + M1a plan: `docs/superpowers/{specs,plans}/2026-07-19-phase6-*`. Payment
+rail = **RevenueCat + native IAP**; flagship = **Banner styles**; **no virtual currency**;
+staged as M1 (banner styles à la carte) → M2 (Maester's Pass).
+
+- [x] Spec cosmetics (Banner styles, sigils, map themes) and the Maester's Pass seasonal track — **spec written**; M1 ships banner styles, other categories scaffolded in `@sot/core` (no SKUs yet)
+- [x] **M1a — cosmetics foundation BUILT & green (276 tests), merged to LOCAL main 2026-07-19, NOT pushed.** `@sot/core` catalog + equip logic; `entitlements` table + `users.equipped` (migration `0010`, applied to dev+test Neon only); RevenueCat webhook (idempotent grant/revoke, auth-gated); ownership-gated equip route + moderator grant route; `mePayload.cosmetics`; web `BannerCrest` + `/treasury` store + Profile render. ⚠️ Prod cutover owner-gated: apply migration `0010` to prod, set up RevenueCat project + App Store/Play products + `REVENUECAT_WEBHOOK_AUTH`, then push.
+- [ ] **M1b (pending owner deps)** — mobile RevenueCat SDK purchase UI (`react-native-purchases`); banner render on Standings / ThroneSheet / rating-strike; constant-time webhook-auth compare (currently `===`)
+- [ ] **M2 — Maester's Pass** — free + paid ($4.99/season) track over the existing 56-day `seasonWindow`, cosmetic-only progression; designed (spec §6), not built
+- [x] Hold the line from PRD §5.10: no Influence multipliers for money, no ads in the panic-button flow, no venue-paid score boosts — **enforced with a guardrail test** (no cosmetic SKU maps to an influence reason; the entitlement path writes zero `influence_events`; no store/upsell in any rating or crisis flow)
 
 ---
 
