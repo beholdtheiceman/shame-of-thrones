@@ -1,3 +1,4 @@
+import type { Equipped } from "./cosmetics";
 import type { FiefControl, RankInfo } from "./selectors";
 import type { CouncilRow, HouseStandingRow, WindowKey } from "./standings";
 import type { Amenities, HouseId, LedgerEntry, Rating, ThroneCategory } from "./types";
@@ -45,6 +46,7 @@ export interface MeDTO {
   rank?: RankInfo;
   streak?: { weeks: number; thisWeekActive: boolean };
   ageGate?: { confirmed: boolean; locked: boolean };
+  cosmetics?: { owned: string[]; equipped: Equipped };
 }
 
 export interface StandingsDTO {

@@ -11,3 +11,4 @@ export * from "./dto";
 export * from "./seeding";
 export * from "./analytics";
 export * from "./invites";
+export * from "./cosmetics";
