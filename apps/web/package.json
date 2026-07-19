@@ -12,7 +12,8 @@
     "db:migrate": "drizzle-kit migrate",
     "db:seed": "tsx src/db/seed.ts",
     "seed:city": "tsx src/db/seedCity.ts",
-    "seed:reset": "tsx src/db/seedReset.ts"
+    "seed:reset": "tsx src/db/seedReset.ts",
+    "invites:generate": "tsx src/db/generateInvites.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.111.0",
