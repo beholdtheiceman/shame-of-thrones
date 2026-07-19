@@ -30,7 +30,7 @@ interface StoreContextValue {
   state: StoreState;
   refresh: () => Promise<void>;
   clearQueueNotice: () => void;
-  setProfile: (name: string, houseId: HouseId) => Promise<void>;
+  setProfile: (name: string, houseId: HouseId, inviteCode?: string) => Promise<void>;
   switchHouse: (houseId: HouseId) => Promise<void>;
   updateNotifyPrefs: (prefs: NotifyPrefsDTO) => Promise<void>;
   markNotificationsRead: (ids?: string[]) => Promise<void>;
@@ -169,7 +169,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       state,
       refresh,
       clearQueueNotice: () => setState((s) => ({ ...s, queueDropped: false })),
-      setProfile: (name, houseId) => mutate(() => api.createProfile(name, houseId)),
+      setProfile: (name, houseId, inviteCode) => mutate(() => api.createProfile(name, houseId, inviteCode)),
       switchHouse: (houseId) => mutate(() => api.switchHouse(houseId)),
       updateNotifyPrefs: (prefs) => mutate(() => api.updateNotifyPrefs(prefs)),
       markNotificationsRead: async (ids) => {

@@ -25,8 +25,11 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 export const api = {
   realm: () => request<RealmDTO>("/api/realm"),
   me: () => request<MeDTO>("/api/me"),
-  createProfile: (name: string, houseId: HouseId) =>
-    request<{ ok: true }>("/api/profile", { method: "POST", body: JSON.stringify({ name, houseId }) }),
+  createProfile: (name: string, houseId: HouseId, inviteCode?: string) =>
+    request<{ ok: true }>("/api/profile", {
+      method: "POST",
+      body: JSON.stringify({ name, houseId, ...(inviteCode ? { inviteCode } : {}) }),
+    }),
   switchHouse: (houseId: HouseId) =>
     request<{ ok: true }>("/api/profile", { method: "POST", body: JSON.stringify({ houseId }) }),
   updateNotifyPrefs: (notifyPrefs: NotifyPrefsDTO) =>

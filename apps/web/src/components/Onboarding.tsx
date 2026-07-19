@@ -12,6 +12,7 @@ export function Onboarding() {
   const { state, setProfile } = useStore();
   const t = useCopy();
   const [name, setName] = useState("");
+  const [inviteCode, setInviteCode] = useState("");
   const [houseId, setHouseId] = useState<HouseId | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -23,7 +24,7 @@ export function Onboarding() {
     setSubmitting(true);
     setError(null);
     try {
-      await setProfile(name.trim(), houseId);
+      await setProfile(name.trim(), houseId, inviteCode.trim() || undefined);
     } catch (e) {
       setError(
         e instanceof ApiError && e.status === 409
@@ -107,6 +108,18 @@ export function Onboarding() {
             </button>
           ))}
         </div>
+
+        <label className="mt-5 block font-mono text-[13px] uppercase tracking-wide text-ink-faint">
+          Invite code (if you have one)
+        </label>
+        <input
+          value={inviteCode}
+          onChange={(e) => setInviteCode(e.target.value)}
+          placeholder="Present your token of passage — SOT-XXXX-XXXX"
+          maxLength={40}
+          autoCapitalize="characters"
+          className="pixel-panel-flat mt-1.5 w-full px-3 py-2.5 font-mono text-[16px] uppercase text-ink outline-none placeholder:text-ink-faint placeholder:normal-case"
+        />
 
         <button
           type="button"
