@@ -72,6 +72,11 @@ export const api = {
     request<{ ok: true }>(`/api/thrones/${throneId}/confirm`, { method: "POST" }),
   standings: (window: WindowKey, house: HouseId | "all") =>
     request<StandingsDTO>(`/api/standings?window=${window}&house=${house}`),
+  equipCosmetic: (category: string, sku: string | null) =>
+    request<{ equipped: Record<string, string> }>("/api/cosmetics/equip", {
+      method: "POST",
+      body: JSON.stringify({ category, sku }),
+    }),
 };
 
 /** Fire-and-forget instrumentation. Never throws — must never break the UX. */

@@ -14,6 +14,7 @@ export interface StoreState {
   profile: MeDTO["profile"];
   rank: MeDTO["rank"] | null;
   streak: MeDTO["streak"] | null;
+  cosmetics: MeDTO["cosmetics"] | null;
   ageGate: { confirmed: boolean; locked: boolean } | null;
   realm: RealmDTO | null;
   notifications: NotificationsDTO;
@@ -38,6 +39,7 @@ interface StoreContextValue {
   submitRating: (input: { throneId: string; verdict: 1 | 2 | 3 | 4 | 5; tags: string[]; testimony: string; verified: boolean }) => Promise<{ testimonyBlocked: boolean; queued: boolean; blessed: boolean }>;
   addThrone: (input: { name: string; lat: number; lng: number; category: ThroneCategory; amenities: Amenities; publicAccessAttested: boolean }) => Promise<void>;
   confirmThrone: (throneId: string) => Promise<void>;
+  equipCosmetic: (category: string, sku: string | null) => Promise<void>;
 }
 
 const StoreContext = createContext<StoreContextValue | null>(null);
@@ -61,7 +63,7 @@ function loadSnapshot(): { savedAt: number; realm: RealmDTO } | null {
 
 export function StoreProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<StoreState>({
-    authStatus: "loading", profile: null, rank: null, streak: null, ageGate: null, realm: null, error: null,
+    authStatus: "loading", profile: null, rank: null, streak: null, cosmetics: null, ageGate: null, realm: null, error: null,
     notifications: { notifications: [], unreadCount: 0 },
     offline: false, snapshotSavedAt: null, queuedCount: pending().length, queueDropped: false,
   });
@@ -89,6 +91,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         profile: me?.profile ?? null,
         rank: me?.rank ?? null,
         streak: me?.streak ?? null,
+        cosmetics: me?.cosmetics ?? null,
         ageGate: me?.ageGate ?? null,
         notifications: notificationData ?? { notifications: [], unreadCount: 0 },
         authStatus: me === null ? "anonymous" : me.profile === null ? "needs_profile" : "ready",
@@ -200,6 +203,13 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       },
       addThrone: (input) => mutate(() => api.addThrone(input)),
       confirmThrone: (throneId) => mutate(() => api.confirmThrone(throneId)),
+      equipCosmetic: async (category: string, sku: string | null) => {
+        const { equipped } = await api.equipCosmetic(category, sku);
+        setState((s) => ({
+          ...s,
+          cosmetics: s.cosmetics ? { ...s.cosmetics, equipped } : { owned: [], equipped },
+        }));
+      },
     }),
     [state, refresh, mutate]
   );
