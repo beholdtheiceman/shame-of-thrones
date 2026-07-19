@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { ApiError } from "@/lib/api";
+import { useEffect, useRef, useState } from "react";
+import { ApiError, recordMetric } from "@/lib/api";
 import { VERDICT_SCALE } from "@sot/core";
 import { useCopy, usePlainSpeech } from "@/lib/copy";
 import { haversineMeters } from "@sot/core";
@@ -34,6 +34,8 @@ export function SittingFlow({
   const [blessingApplied, setBlessingApplied] = useState(false);
   const [ratingQueued, setRatingQueued] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Time-to-rate starts when the Sitting flow opens (component mount).
+  const flowStart = useRef(Date.now());
 
   useEffect(() => {
     if (state.authStatus === "anonymous") return;
@@ -78,6 +80,7 @@ export function SittingFlow({
         testimony,
         verified: proximity === "verified",
       });
+      void recordMetric("time_to_rate", { ms: Date.now() - flowStart.current });
       if (result.testimonyBlocked) setBlockedNote(true);
       if (result.queued) {
         setRatingQueued(true);

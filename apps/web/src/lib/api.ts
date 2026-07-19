@@ -70,3 +70,19 @@ export const api = {
   standings: (window: WindowKey, house: HouseId | "all") =>
     request<StandingsDTO>(`/api/standings?window=${window}&house=${house}`),
 };
+
+/** Fire-and-forget instrumentation. Never throws — must never break the UX. */
+export async function recordMetric(
+  name: "time_to_rate" | "nwt_outcome",
+  meta: Record<string, unknown>
+): Promise<void> {
+  try {
+    await fetch("/api/metrics/event", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, meta }),
+    });
+  } catch {
+    // swallow — instrumentation is best-effort
+  }
+}

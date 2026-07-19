@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { REALM_CENTER } from "@sot/core";
 import { haversineMeters } from "@sot/core";
+import { recordMetric } from "@/lib/api";
 import { useCopy } from "@/lib/copy";
 import { useStore } from "@/lib/store";
 
@@ -30,7 +31,13 @@ export function NearestWorthyButton({
         best = t;
       }
     }
-    if (!best) return;
+    if (!best) {
+      // No throne to send the user to — the NWT could not succeed.
+      void recordMetric("nwt_outcome", { success: false });
+      setBusy(false);
+      return;
+    }
+    void recordMetric("nwt_outcome", { success: true });
     setNotice(
       usedFallback
         ? "Location unavailable — showing the Realm's most acclaimed throne instead."
