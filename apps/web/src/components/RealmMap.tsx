@@ -18,12 +18,15 @@ const SCORE_BAND_VAR: Record<string, string> = {
 function throneIcon(band: string, selected: boolean, status: ThroneDTO["status"]) {
   const color = SCORE_BAND_VAR[band];
   const size = selected ? 22 : 16;
+  // The visible marker stays small, but the tappable box is expanded so finger
+  // taps on touch devices land reliably (a 16px target is too small for a thumb).
+  const hit = 34;
   const dashed = status === "rumored" ? "border-style:dashed;" : "";
   return L.divIcon({
     className: "",
-    iconSize: [size, size],
-    iconAnchor: [size / 2, size / 2],
-    html: `<span style="display:block;width:${size}px;height:${size}px;background:${color};border:2px solid var(--vellum-line);${dashed}box-shadow:2px 2px 0 0 rgba(0,0,0,0.5)${selected ? ",0 0 0 2px var(--brass)" : ""};"></span>`,
+    iconSize: [hit, hit],
+    iconAnchor: [hit / 2, hit / 2],
+    html: `<span style="display:flex;align-items:center;justify-content:center;width:${hit}px;height:${hit}px;"><span style="display:block;width:${size}px;height:${size}px;background:${color};border:2px solid var(--vellum-line);${dashed}box-shadow:2px 2px 0 0 rgba(0,0,0,0.5)${selected ? ",0 0 0 2px var(--brass)" : ""};"></span></span>`,
   });
 }
 

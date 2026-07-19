@@ -96,9 +96,9 @@
   --color-house-bidet: var(--house-bidet);
   --color-house-plunger: var(--house-plunger);
   --color-house-porcelain: var(--house-porcelain);
-  --font-display: var(--font-press-start);
-  --font-body: var(--font-pixelify);
-  --font-mono: var(--font-vt323);
+  --font-display: var(--font-press-start), "Segoe UI Emoji", "Noto Color Emoji", "Apple Color Emoji", sans-serif;
+  --font-body: var(--font-pixelify), "Segoe UI Emoji", "Noto Color Emoji", "Apple Color Emoji", sans-serif;
+  --font-mono: var(--font-vt323), "Segoe UI Emoji", "Noto Color Emoji", "Apple Color Emoji", sans-serif;
 }
 
 html,
