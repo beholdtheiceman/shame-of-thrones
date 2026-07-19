@@ -69,7 +69,7 @@ prod migration `0006` applied. A standalone Android build installs, launches, an
 
 - [x] Decide RN vs Flutter vs PWA → **React Native + Expo (SDK 57)**, full monorepo, one codebase both platforms
 - [x] Mapbox migration → **`@rnmapbox/maps`** (dark-v11 style, throne markers + fief polygons)
-- [ ] Re-tune Fief hex resolution res-9 → res-7 for launch-city density — **still deferred**; it's a data migration that invalidates existing prod fief data, so pair it with seeding in Phase 5 (PRD open question #2: fixed vs. density-adaptive still needs an answer)
+- [x] Re-tune Fief hex resolution res-9 → res-7 for launch-city density — **DONE (2026-07-18, on `main` local, not deployed)**: `FIEF_RESOLUTION` 9→7 in `packages/core/src/geo.ts`. Paired with the Phase-5 seeding pipeline as planned. PRD open Q2 resolved as **res-7 fixed** (not density-adaptive). ⚠️ Deploying this to prod requires wiping+reseeding demo fiefs (existing prod influence is res-9) — part of the owner-gated cutover.
 
 **Open QA bugs (on-device, both config/code — no architecture left):**
 - [ ] Map tiles gray on the **first** cold launch, fine on relaunch — token is valid (200 from Mapbox), first-run init race; fix set the token at app entry, pending on-device verify
@@ -78,14 +78,17 @@ prod migration `0006` applied. A standalone Android build installs, launches, an
 
 ## Phase 5 — Data seeding & launch ops
 
-**Not started.** (Naming note: the `docs/phase5-*` / session "Phase 5" refers to
-*deploying* the Phase 4 mobile app — that's done. This roadmap phase — real restroom
-data + closed beta — is the next real body of work, still ahead.)
+**Engineering largely built (2026-07-18), NOT deployed.** Three of the four
+workstreams are code-complete on `main` (local, 21 commits ahead of origin);
+what remains is owner-gated ops (prod migrations + deploy + reseed), a product
+call (launch city), legal (trademark), and running the actual beta. (Naming note:
+the `docs/phase5-*` / session "Phase 5" referred to *deploying* the Phase 4 mobile
+app — that's done. This roadmap phase is real restroom data + closed beta.)
 
-- [ ] Phase 0 seeding per PRD §8: import Refuge Restrooms API, city open-data portals, OSM `amenity=toilets` for each launch city — an empty map kills the utility on day one, so this has to land before any real users show up
-- [ ] Closed beta ("The Small Council"): 1 city, ~500 users, 4 Houses — validate the 20s rating flow and moderation pipeline under real load
-- [ ] Pick the 2-3 launch cities (dense, walkable — PRD suggests NYC/Chicago/Austin) — territory games need density, so this isn't just a marketing choice
-- [ ] Instrument the PRD §9 success metrics from day one of beta (verified ratings/Throne/month, time-to-rate, contributor %, D30 retention by House, Nearest-Worthy-Throne success rate, Fiefs changing hands per season) — these need to be measurable before beta starts, not bolted on after
+- [x] Phase 0 seeding per PRD §8: import Refuge Restrooms API + OSM `amenity=toilets` — **pipeline BUILT + verified (green gate + live Austin dry-run), not yet run on prod**. CLI `seed:city` (Refuge+OSM fetch → 25m dedup → idempotent upsert) + `seed:reset` (guarded demo wipe). Spec/plan: `docs/superpowers/{specs,plans}/2026-07-18-phase5-seeding-retune*`. City open-data portals deferred (Refuge+OSM cover the launch cities). ⚠️ Going live is owner-gated: apply migration 0007 to prod, pick a city, `seed:reset --yes` + `seed:city`.
+- [x] Instrument the PRD §9 success metrics — **BUILT (2026-07-18, not deployed)**: 6 pure selectors in `@sot/core/analytics.ts` (verified ratings/Throne/month, contributor %, D30 retention by House, Fiefs changing hands/season computed from existing data; time-to-rate + Nearest-Worthy-Throne success from a new `metrics_events` table). Moderator-only `GET /api/metrics`; fail-soft `POST /api/metrics/event`; web client capture wired (mobile capture is a documented fast-follow, same endpoint). Migration 0008. Plan: `docs/superpowers/plans/2026-07-18-phase5-metrics-and-beta.md`.
+- [x] Closed-beta **system** ("The Small Council"): **invite/cohort infrastructure BUILT (2026-07-18, not deployed)** — `invites` table + `users.cohort` (migration 0009), single-use `SOT-XXXX-XXXX` codes, flag-gated (`BETA_INVITE_REQUIRED`, off by default) gate in `createProfile`, moderator `POST/GET /api/invites`, onboarding invite field. **Actually running the beta (1 city, ~500 users, validate 20s flow + moderation under load) is still ahead** and needs deploy + real users. Known follow-up: invite-redeem race can leave a phantom user row (wrap insert+redeem in a tx).
+- [ ] Pick the 2-3 launch cities (dense, walkable — PRD suggests NYC/Chicago/Austin) — **product decision, still open**. The seeding pipeline is city-agnostic (`--city`/`--bbox`), so this only blocks the actual seed run, not the code.
 
 ## Phase 6 — Monetization (P2 — design only, don't build yet)
 
