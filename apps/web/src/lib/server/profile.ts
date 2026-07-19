@@ -36,24 +36,27 @@ export async function createProfile(
   }
 
   try {
-    const [user] = await db
-      .insert(users)
-      .values({ googleSubject, displayName, houseId, cohort: invite?.cohort ?? null })
-      .returning();
-    if (invite) {
-      // Guarded redeem — if the row was claimed between lookup and now, 0 rows
-      // update and we treat the code as already taken.
-      const redeemed = await db
-        .update(invites)
-        .set({ redeemedBy: user.id, redeemedAt: new Date() })
-        .where(and(eq(invites.id, invite.id), isNull(invites.redeemedBy)))
+    return await db.transaction(async (tx) => {
+      const [user] = await tx
+        .insert(users)
+        .values({ googleSubject, displayName, houseId, cohort: invite?.cohort ?? null })
         .returning();
-      if (redeemed.length === 0) throw new ProfileError("that invite has already been claimed", 409);
-    }
-    await db.insert(ledgerEntries).values({
-      text: `**${displayName}** pledges the oath to **${HOUSE_BY_ID[houseId].name}**.`,
+      if (invite) {
+        // Guarded redeem — if the row was claimed between lookup and now, 0 rows
+        // update and we treat the code as already taken. Throwing here rolls
+        // back the user insert above, so a losing race leaves no phantom user.
+        const redeemed = await tx
+          .update(invites)
+          .set({ redeemedBy: user.id, redeemedAt: new Date() })
+          .where(and(eq(invites.id, invite.id), isNull(invites.redeemedBy)))
+          .returning();
+        if (redeemed.length === 0) throw new ProfileError("that invite has already been claimed", 409);
+      }
+      await tx.insert(ledgerEntries).values({
+        text: `**${displayName}** pledges the oath to **${HOUSE_BY_ID[houseId].name}**.`,
+      });
+      return user;
     });
-    return user;
   } catch (e) {
     if (e instanceof ProfileError) throw e;
     // Drizzle wraps the PG unique-violation; the constraint name is on error.cause.
