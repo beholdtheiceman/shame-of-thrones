@@ -38,6 +38,8 @@ export interface Rating {
   testimony: string;
   verified: boolean; // proximity-passed vs. hearsay
   createdAt: number;
+  /** Rater's equipped banner_style cosmetic sku, if any. Populated server-side. */
+  bannerStyle?: string;
 }
 
 export interface Throne {

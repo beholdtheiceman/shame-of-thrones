@@ -42,6 +42,9 @@ export interface CouncilRow {
   houseId: HouseId;
   points: number;
   position: number;
+  /** Equipped banner_style cosmetic sku, if any. Populated server-side (the
+   * pure selector leaves it undefined). */
+  bannerStyle?: string;
 }
 
 export interface SmallCouncilResult {
