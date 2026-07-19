@@ -1,6 +1,6 @@
-import { eq, sql } from "drizzle-orm";
+import { and, eq, isNull, sql } from "drizzle-orm";
 import { db } from "@/db/client";
-import { influenceEvents, ledgerEntries, ratings, thrones, users } from "@/db/schema";
+import { influenceEvents, invites, ledgerEntries, ratings, thrones, users } from "@/db/schema";
 import { HOUSE_BY_ID } from "@sot/core";
 import { HOUSE_SWITCH_WINDOW_MS } from "@sot/core";
 import { currentStreak, earnedBadges } from "@sot/core";
@@ -15,16 +15,47 @@ export class ProfileError extends Error {
   }
 }
 
-export async function createProfile(googleSubject: string, displayName: string, houseId: HouseId) {
+export async function createProfile(
+  googleSubject: string,
+  displayName: string,
+  houseId: HouseId,
+  inviteCode?: string
+) {
   const existing = await db.query.users.findFirst({ where: eq(users.googleSubject, googleSubject) });
   if (existing) throw new ProfileError("profile already exists", 409);
+
+  // Closed-beta gate: a no-op unless BETA_INVITE_REQUIRED === "true", so open
+  // signup keeps working exactly as before.
+  const betaRequired = process.env.BETA_INVITE_REQUIRED === "true";
+  let invite: typeof invites.$inferSelect | undefined;
+  if (betaRequired) {
+    invite = await db.query.invites.findFirst({
+      where: and(eq(invites.code, inviteCode ?? ""), isNull(invites.redeemedBy)),
+    });
+    if (!invite) throw new ProfileError("a valid invite is required for the closed beta", 403);
+  }
+
   try {
-    const [user] = await db.insert(users).values({ googleSubject, displayName, houseId }).returning();
+    const [user] = await db
+      .insert(users)
+      .values({ googleSubject, displayName, houseId, cohort: invite?.cohort ?? null })
+      .returning();
+    if (invite) {
+      // Guarded redeem — if the row was claimed between lookup and now, 0 rows
+      // update and we treat the code as already taken.
+      const redeemed = await db
+        .update(invites)
+        .set({ redeemedBy: user.id, redeemedAt: new Date() })
+        .where(and(eq(invites.id, invite.id), isNull(invites.redeemedBy)))
+        .returning();
+      if (redeemed.length === 0) throw new ProfileError("that invite has already been claimed", 409);
+    }
     await db.insert(ledgerEntries).values({
       text: `**${displayName}** pledges the oath to **${HOUSE_BY_ID[houseId].name}**.`,
     });
     return user;
   } catch (e) {
+    if (e instanceof ProfileError) throw e;
     // Drizzle wraps the PG unique-violation; the constraint name is on error.cause.
     const text = `${(e as { cause?: unknown })?.cause ?? ""}${e instanceof Error ? e.message : ""}`;
     if (text.includes("users_display_name_unique")) {
