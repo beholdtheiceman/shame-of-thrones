@@ -5,8 +5,10 @@ import { HOUSE_BY_ID } from "@sot/core";
 import { HOUSE_SWITCH_WINDOW_MS } from "@sot/core";
 import { currentStreak, earnedBadges } from "@sot/core";
 import { lifetimeXp, rankForXp } from "@sot/core";
+import { normalizeEquipped, type Equipped } from "@sot/core";
 import type { HouseId } from "@sot/core";
 import { normalizedNotifyPrefs } from "./notifications";
+import { ownedSkus } from "./entitlements";
 import { toGameEvent, toGameRating } from "./mappers";
 
 export class ProfileError extends Error {
@@ -105,6 +107,8 @@ export async function mePayload(userId: string) {
     now,
   });
   const xp = Math.max(0, lifetimeXp(userId, events.map(toGameEvent)));
+  const owned = await ownedSkus(userId);
+  const equipped = normalizeEquipped((user.equipped ?? {}) as Equipped, owned);
   return {
     profile: {
       name: user.displayName,
@@ -116,5 +120,6 @@ export async function mePayload(userId: string) {
     },
     rank: rankForXp(xp),
     streak,
+    cosmetics: { owned, equipped },
   };
 }

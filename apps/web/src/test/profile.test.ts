@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { createProfile, mePayload, ProfileError, switchHouse } from "@/lib/server/profile";
+import { grantEntitlement, setEquipped } from "@/lib/server/entitlements";
 import { resetDb } from "./db";
 import { makeUser } from "./fixtures";
 
@@ -27,5 +28,17 @@ describe("profiles", () => {
     const me = await mePayload(user.id);
     expect(me.rank.name).toBe("Peasant");
     expect(me.profile.name).toBe(user.displayName);
+  });
+
+  it("mePayload reports owned + equipped cosmetics", async () => {
+    const user = await makeUser();
+    let me = await mePayload(user.id);
+    expect(me.cosmetics).toEqual({ owned: [], equipped: {} });
+
+    await grantEntitlement({ userId: user.id, sku: "banner.gilded", source: "grant", platform: "admin" });
+    await setEquipped(user.id, "banner_style", "banner.gilded");
+
+    me = await mePayload(user.id);
+    expect(me.cosmetics).toEqual({ owned: ["banner.gilded"], equipped: { banner_style: "banner.gilded" } });
   });
 });
