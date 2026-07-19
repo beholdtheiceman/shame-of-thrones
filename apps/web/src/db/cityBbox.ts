@@ -7,6 +7,7 @@ export const CITY_BBOX: Record<string, Bbox> = {
   nyc: [40.700, -74.020, 40.788, -73.940],      // Manhattan (lower/mid)
   chicago: [41.850, -87.660, 41.920, -87.600],  // Loop + near north
   austin: [30.240, -97.760, 30.300, -97.720],   // Downtown
+  raleigh: [35.750, -78.680, 35.820, -78.600],  // Downtown + inner ring (launch city)
 };
 
 export interface SeedOptions {
