@@ -7,7 +7,9 @@
       "env": {
         "EXPO_PUBLIC_API_BASE_URL": "https://shame-of-thrones.vercel.app",
         "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "112554886763-p6nipif6hp7gr56foio0erhre8ck8ab7.apps.googleusercontent.com",
-        "EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID": "112554886763-sos23msr1bbntpou7ojhrrva2gn5rqg8.apps.googleusercontent.com"
+        "EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID": "112554886763-sos23msr1bbntpou7ojhrrva2gn5rqg8.apps.googleusercontent.com",
+        "EXPO_PUBLIC_REVENUECAT_IOS_KEY": "",
+        "EXPO_PUBLIC_REVENUECAT_ANDROID_KEY": ""
       }
     },
     "preview": {
@@ -15,14 +17,18 @@
       "env": {
         "EXPO_PUBLIC_API_BASE_URL": "https://shame-of-thrones.vercel.app",
         "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "112554886763-p6nipif6hp7gr56foio0erhre8ck8ab7.apps.googleusercontent.com",
-        "EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID": "112554886763-sos23msr1bbntpou7ojhrrva2gn5rqg8.apps.googleusercontent.com"
+        "EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID": "112554886763-sos23msr1bbntpou7ojhrrva2gn5rqg8.apps.googleusercontent.com",
+        "EXPO_PUBLIC_REVENUECAT_IOS_KEY": "",
+        "EXPO_PUBLIC_REVENUECAT_ANDROID_KEY": ""
       }
     },
     "production": {
       "env": {
         "EXPO_PUBLIC_API_BASE_URL": "https://shame-of-thrones.vercel.app",
         "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "112554886763-p6nipif6hp7gr56foio0erhre8ck8ab7.apps.googleusercontent.com",
-        "EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID": "112554886763-sos23msr1bbntpou7ojhrrva2gn5rqg8.apps.googleusercontent.com"
+        "EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID": "112554886763-sos23msr1bbntpou7ojhrrva2gn5rqg8.apps.googleusercontent.com",
+        "EXPO_PUBLIC_REVENUECAT_IOS_KEY": "",
+        "EXPO_PUBLIC_REVENUECAT_ANDROID_KEY": ""
       }
     }
   },
