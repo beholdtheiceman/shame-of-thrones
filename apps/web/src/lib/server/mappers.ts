@@ -1,11 +1,14 @@
-import type { InfluenceEvent, Rating } from "@sot/core";
+import type { Equipped, InfluenceEvent, Rating } from "@sot/core";
 import type { influenceEvents, ratings, users } from "@/db/schema";
 
 type RatingRow = typeof ratings.$inferSelect;
 type EventRow = typeof influenceEvents.$inferSelect;
 type UserRow = typeof users.$inferSelect;
 
-export function toGameRating(row: RatingRow, author: Pick<UserRow, "displayName" | "houseId">): Rating {
+export function toGameRating(
+  row: RatingRow,
+  author: Pick<UserRow, "displayName" | "houseId"> & { equipped?: unknown }
+): Rating {
   return {
     id: row.id,
     throneId: row.throneId,
@@ -16,6 +19,7 @@ export function toGameRating(row: RatingRow, author: Pick<UserRow, "displayName"
     testimony: row.testimonyHiddenAt ? "" : (row.testimony ?? ""),
     verified: row.verified,
     createdAt: row.createdAt.getTime(),
+    bannerStyle: (author.equipped as Equipped | null | undefined)?.banner_style,
   };
 }
 

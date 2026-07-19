@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { hideRating, hideTestimony, hideThrone } from "@/lib/server/enforcement";
+import { grantEntitlement, setEquipped } from "@/lib/server/entitlements";
 import { mePayload } from "@/lib/server/profile";
 import { realmPayload } from "@/lib/server/realm";
 import { RatingError, submitRating } from "@/lib/server/ratings";
@@ -65,5 +66,17 @@ describe("realm filtering of hidden content", () => {
     const me = await mePayload(rater.id);
     expect(me.rank.xp).toBe(0);
     expect(me.rank.name).toBe("Peasant");
+  });
+
+  it("stamps a rating with the rater's equipped banner_style", async () => {
+    const rater = await makeUser();
+    await grantEntitlement({ userId: rater.id, sku: "banner.gilded", source: "grant", platform: "admin" });
+    await setEquipped(rater.id, "banner_style", "banner.gilded");
+    const throne = await makeThrone(rater.id);
+    await submitRating(rater, { throneId: throne.id, verdict: 4, tags: [], verified: true });
+
+    const realm = await realmPayload();
+    const dto = realm.ratings.find((r) => r.throneId === throne.id)!;
+    expect(dto.bannerStyle).toBe("banner.gilded");
   });
 });

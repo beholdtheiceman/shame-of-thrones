@@ -9,7 +9,7 @@ export async function realmPayload(now = Date.now()) {
   const [throneRows, ratingRows, eventRows, ledgerRows, photoCounts] = await Promise.all([
     db.select().from(thrones).where(isNull(thrones.hiddenAt)),
     db
-      .select({ rating: ratings, displayName: users.displayName, houseId: users.houseId })
+      .select({ rating: ratings, displayName: users.displayName, houseId: users.houseId, equipped: users.equipped })
       .from(ratings)
       .innerJoin(users, eq(ratings.userId, users.id))
       .where(isNull(ratings.hiddenAt)),
@@ -22,7 +22,7 @@ export async function realmPayload(now = Date.now()) {
   const visibleThroneIds = new Set(throneRows.map((t) => t.id));
   const gameRatings = ratingRows
     .filter((r) => visibleThroneIds.has(r.rating.throneId))
-    .map((r) => toGameRating(r.rating, { displayName: r.displayName, houseId: r.houseId }));
+    .map((r) => toGameRating(r.rating, { displayName: r.displayName, houseId: r.houseId, equipped: r.equipped }));
   const gameEvents = eventRows.map(toGameEvent);
   const photoCountByThrone = new Map(photoCounts.map((p) => [p.throneId, p.n]));
 
