@@ -4,7 +4,8 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { configureGoogle, getToken } from "./lib/auth";
 import { registerForPush } from "./lib/push";
-import { StoreProvider } from "./lib/store";
+import { configurePurchases, identifyUser } from "./lib/purchases";
+import { StoreProvider, useStore } from "./lib/store";
 import { COLORS } from "./lib/theme";
 import RealmScreen from "./screens/RealmScreen";
 import StandingsScreen from "./screens/StandingsScreen";
@@ -26,9 +27,23 @@ const navTheme: Theme = {
   },
 };
 
+// Identifies the signed-in user to RevenueCat once their id is known. Lives
+// inside StoreProvider (it needs useStore) — App() itself renders
+// StoreProvider, so this effect can't live there. No-ops when RevenueCat
+// isn't configured (see lib/purchases.ts).
+function RevenueCatIdentity() {
+  const { state } = useStore();
+  const userId = state.profile?.id ?? null;
+  useEffect(() => {
+    if (userId) void identifyUser(userId);
+  }, [userId]);
+  return null;
+}
+
 export default function App() {
   useEffect(() => {
     configureGoogle();
+    configurePurchases();
     // App-ready push registration for a returning, already-signed-in user
     // (the post-sign-in registration lives in the sign-in handlers). Both
     // are fire-and-forget and soft-fail — see lib/push.ts.
@@ -41,6 +56,7 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <StoreProvider>
+        <RevenueCatIdentity />
         <NavigationContainer theme={navTheme}>
           <Tab.Navigator
             screenOptions={{
