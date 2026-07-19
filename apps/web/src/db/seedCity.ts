@@ -40,7 +40,7 @@ async function fetchOsm(bbox: Bbox) {
 async function main() {
   const { db, pool } = await import("./client");
   const { thrones, users } = await import("./schema");
-  const { eq } = await import("drizzle-orm");
+  const { eq, sql } = await import("drizzle-orm");
   const {
     normalizeRefuge, normalizeOsm, dedupeCrossSource, isDuplicate,
   } = await import("@sot/core");
@@ -90,6 +90,9 @@ async function main() {
     })
       .onConflictDoUpdate({
         target: [thrones.source, thrones.sourceId],
+        // Partial unique index (WHERE source IS NOT NULL) — Postgres needs the
+        // predicate to infer it as the arbiter for ON CONFLICT.
+        targetWhere: sql`source is not null`,
         set: { name: t.name, category: t.category, amenities: t.amenities },
       });
     count++;
