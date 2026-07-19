@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Pressable, StyleSheet, Switch, Text, TextInput, View } from "react-native";
 import { RATING_TAGS, VERDICT_SCALE, type Throne } from "@sot/core";
-import { ApiError } from "../lib/api";
+import { ApiError, recordMetric } from "../lib/api";
 import { useStore } from "../lib/store";
 import { COLORS } from "../lib/theme";
 
@@ -32,6 +32,9 @@ export function SittingFlow({
   const [blessingApplied, setBlessingApplied] = useState(false);
   const [ratingQueued, setRatingQueued] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Time-to-rate starts when the Sitting flow opens (component mount) —
+  // mirrors apps/web/src/components/SittingFlow.tsx.
+  const flowStart = useRef(Date.now());
 
   function toggleTag(tag: string) {
     setTags((prev) => (prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]));
@@ -43,6 +46,7 @@ export function SittingFlow({
     setError(null);
     try {
       const result = await submitRating({ throneId: throne.id, verdict, tags, testimony, verified });
+      void recordMetric("time_to_rate", { ms: Date.now() - flowStart.current });
       if (result.testimonyBlocked) setBlockedNote(true);
       if (result.queued) {
         setRatingQueued(true);

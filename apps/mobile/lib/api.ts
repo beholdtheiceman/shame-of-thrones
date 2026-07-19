@@ -99,6 +99,32 @@ export interface PhotoUpload {
 }
 
 /**
+ * Fire-and-forget instrumentation. Mirrors apps/web/src/lib/api.ts's
+ * `recordMetric` — never throws, so telemetry can never break the UX.
+ * Attaches the bearer token the same way `request` does when one is
+ * available; the endpoint also accepts anonymous calls, so a missing token
+ * is not an error here.
+ */
+export async function recordMetric(
+  name: "time_to_rate" | "nwt_outcome",
+  meta: Record<string, unknown>
+): Promise<void> {
+  try {
+    const token = await getToken();
+    await fetch(`${API_BASE_URL}/api/metrics/event`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({ name, meta }),
+    });
+  } catch {
+    // swallow — instrumentation is best-effort
+  }
+}
+
+/**
  * Back-compat shim for the Foundation App.tsx which imports `fetchMe`.
  * Folds into `api.me()`; on 401 it clears the stored token (as the original did).
  */
