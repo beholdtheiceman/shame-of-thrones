@@ -1,0 +1,48 @@
+# PR check workflow.
+#
+# Runs the checks that DON'T require a live database: the apps/web build,
+# the packages/core unit tests, and a mobile typecheck. apps/web also has
+# DB integration tests (vitest hitting a real Neon branch via DATABASE_URL
+# in .env.test) that are intentionally NOT run here — CI has no secret
+# wired up for that yet.
+#
+# To enable them:
+#   1. Create a dedicated Neon branch for CI (do not reuse dev/test/prod).
+#   2. Add its connection string as a repo secret named DATABASE_URL
+#      (Settings -> Secrets and variables -> Actions -> New repository secret).
+#   3. Add a step below:
+#        - name: Test apps/web (DB integration)
+#          run: npm run test --workspace apps/web
+#          env:
+#            DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build apps/web
+        run: npm run build --workspace apps/web
+
+      - name: Test packages/core
+        run: npm run test --workspace packages/core
+
+      - name: Typecheck apps/mobile
+        run: npx tsc --noEmit -p apps/mobile/tsconfig.json
