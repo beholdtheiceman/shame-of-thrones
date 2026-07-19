@@ -17,7 +17,11 @@ const notifyPrefsSchema = z.object({
 }).strict();
 
 const bodySchema = z.union([
-  z.object({ name: z.string().trim().min(2).max(24).optional(), houseId: z.enum(houseIds) }).strict(),
+  z.object({
+    name: z.string().trim().min(2).max(24).optional(),
+    houseId: z.enum(houseIds),
+    inviteCode: z.string().trim().min(1).max(40).optional(),
+  }).strict(),
   z.object({ notifyPrefs: notifyPrefsSchema }).strict(),
 ]);
 
@@ -35,7 +39,12 @@ export async function POST(req: Request) {
       if (!("houseId" in parsed.data) || !parsed.data.name) {
         return NextResponse.json({ error: "name required" }, { status: 400 });
       }
-      const user = await createProfile(info.googleSubject, parsed.data.name, parsed.data.houseId);
+      const user = await createProfile(
+        info.googleSubject,
+        parsed.data.name,
+        parsed.data.houseId,
+        "inviteCode" in parsed.data ? parsed.data.inviteCode : undefined
+      );
       return NextResponse.json({ ok: true, userId: user.id }, { status: 201 });
     }
     if ("notifyPrefs" in parsed.data) {
