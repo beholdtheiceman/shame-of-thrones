@@ -8,8 +8,8 @@ import type {
 } from "./types";
 import { fiefIdForCoords } from "./geo";
 
-export const REALM_NAME = "King's Landing — Flatiron & Midtown";
-export const REALM_CENTER: [number, number] = [40.746, -73.9895];
+export const REALM_NAME = "Raleigh — Downtown";
+export const REALM_CENTER: [number, number] = [35.785, -78.64];
 export const REALM_ZOOM = 14;
 
 export const HOUSES: House[] = [
