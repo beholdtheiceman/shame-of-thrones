@@ -1,6 +1,6 @@
 import type {
   MeDTO, RealmDTO, StandingsDTO, NotificationsDTO, NotifyPrefsDTO, ThroneDTO,
-  HouseId, Amenities, ThroneCategory, WindowKey,
+  HouseId, Amenities, ThroneCategory, WindowKey, Equipped,
 } from "@sot/core";
 import { API_BASE_URL } from "./config";
 import { getToken, signOut } from "./auth";
@@ -88,6 +88,11 @@ export const api = {
   registerPush: (token: string, platform: string) =>
     request<{ ok: true }>("/api/push/register", {
       method: "POST", body: JSON.stringify({ token, platform }),
+    }),
+  equipCosmetic: (category: string, sku: string | null) =>
+    request<{ equipped: Equipped }>("/api/cosmetics/equip", {
+      method: "POST",
+      body: JSON.stringify({ category, sku }),
     }),
 };
 
