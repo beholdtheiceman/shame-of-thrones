@@ -2,11 +2,12 @@
 
 import { useMemo, useState } from "react";
 import { ApiError } from "@/lib/api";
-import { HOUSES, HOUSE_BY_ID } from "@sot/core";
+import { HOUSES, HOUSE_BY_ID, equippedFor } from "@sot/core";
 import { HOUSE_SWITCH_WINDOW_MS } from "@sot/core";
 import { useCopy } from "@/lib/copy";
 import { useStore } from "@/lib/store";
 import { useNow } from "@/lib/useNow";
+import { BannerCrest } from "@/components/BannerCrest";
 import type { NotifyPrefsDTO } from "@/lib/api";
 import type { BadgeId, HouseId } from "@sot/core";
 
@@ -65,6 +66,9 @@ export function ProfilePanel() {
   const rank = state.rank;
   if (!rank) return null;
   const house = HOUSE_BY_ID[profile.houseId];
+  const bannerStyle = state.cosmetics
+    ? equippedFor(state.cosmetics.equipped, "banner_style")
+    : undefined;
 
   const canSwitch =
     !profile.lastHouseSwitchAt || now - profile.lastHouseSwitchAt > HOUSE_SWITCH_WINDOW_MS;
@@ -126,13 +130,7 @@ export function ProfilePanel() {
       <div className="pixel-panel mt-4 p-4">
         <p className="font-mono text-[13px] uppercase tracking-wide text-ink-faint">Sworn to</p>
         <div className="mt-2 flex items-center gap-2.5">
-          <span
-            className="h-4 w-7"
-            style={{
-              background: house.colorVar,
-              clipPath: "polygon(0 0,100% 0,100% 70%,50% 100%,0 70%)",
-            }}
-          />
+          <BannerCrest colorVar={house.colorVar} style={bannerStyle} />
           <span className="font-display text-[11px] text-ink">{house.name}</span>
         </div>
         <div className="mt-3 grid grid-cols-2 gap-1.5">
