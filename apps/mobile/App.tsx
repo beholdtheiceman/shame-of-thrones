@@ -9,6 +9,7 @@ import { COLORS } from "./lib/theme";
 import RealmScreen from "./screens/RealmScreen";
 import StandingsScreen from "./screens/StandingsScreen";
 import ProfileScreen from "./screens/ProfileScreen";
+import TreasuryScreen from "./screens/TreasuryScreen";
 
 const Tab = createBottomTabNavigator();
 
@@ -52,6 +53,7 @@ export default function App() {
             <Tab.Screen name="Realm" component={RealmScreen} />
             <Tab.Screen name="Standings" component={StandingsScreen} />
             <Tab.Screen name="Profile" component={ProfileScreen} />
+            <Tab.Screen name="Treasury" component={TreasuryScreen} />
           </Tab.Navigator>
         </NavigationContainer>
       </StoreProvider>
