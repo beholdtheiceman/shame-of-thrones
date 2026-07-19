@@ -63,7 +63,22 @@ export const users = pgTable("users", {
   lastHouseSwitchAt: timestamp("last_house_switch_at", { withTimezone: true }),
   suspendedUntil: timestamp("suspended_until", { withTimezone: true }),
   bannedAt: timestamp("banned_at", { withTimezone: true }),
+  cohort: text("cohort"), // closed-beta launch city; NULL when open signup
 });
+
+export const invites = pgTable(
+  "invites",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    code: text("code").notNull().unique(),
+    cohort: text("cohort").notNull(), // launch city
+    createdBy: uuid("created_by").notNull().references(() => users.id),
+    redeemedBy: uuid("redeemed_by").references(() => users.id),
+    redeemedAt: timestamp("redeemed_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("invites_redeemed_idx").on(t.redeemedBy)]
+);
 
 export const thrones = pgTable(
   "thrones",
