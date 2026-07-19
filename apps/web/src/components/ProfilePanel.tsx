@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import { ApiError } from "@/lib/api";
 import { HOUSES, HOUSE_BY_ID, equippedFor } from "@sot/core";
 import { HOUSE_SWITCH_WINDOW_MS } from "@sot/core";
@@ -151,6 +152,12 @@ export function ProfilePanel() {
           {!canSwitch && " — you've already switched recently"}.
         </p>
         {switchError && <p className="mt-2 font-mono text-[13px] text-crimson">{switchError}</p>}
+        <Link
+          href="/treasury"
+          className="pixel-chip mt-3 inline-block bg-brass px-3 py-1.5 font-mono text-[13px] text-on-brass transition"
+        >
+          ⚜ Manage Banners →
+        </Link>
       </div>
 
       <div className="pixel-panel mt-4 p-4">
