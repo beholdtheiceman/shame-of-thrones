@@ -71,6 +71,13 @@
       "when": 1784420353408,
       "tag": "0009_empty_sabretooth",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1784438814356,
+      "tag": "0010_same_chronomancer",
+      "breakpoints": true
     }
   ]
 }

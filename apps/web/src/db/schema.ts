@@ -37,6 +37,7 @@ export const photoStatusEnum = pgEnum("photo_status", ["pending", "approved", "r
 export const reportReasonEnum = pgEnum("report_reason", [
   "wrong_info", "closed", "inappropriate", "not_public_restroom", "harassment", "spam",
 ]);
+export const entitlementSourceEnum = pgEnum("entitlement_source", ["purchase", "grant", "pass"]);
 export const notificationCategoryEnum = pgEnum("notification_category", [
   "contested", "banner_fallen", "season_start",
 ]);
@@ -64,6 +65,7 @@ export const users = pgTable("users", {
   suspendedUntil: timestamp("suspended_until", { withTimezone: true }),
   bannedAt: timestamp("banned_at", { withTimezone: true }),
   cohort: text("cohort"), // closed-beta launch city; NULL when open signup
+  equipped: jsonb("equipped").$type<Record<string, string>>().notNull().default({}),
 });
 
 export const invites = pgTable(
@@ -78,6 +80,29 @@ export const invites = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [index("invites_redeemed_idx").on(t.redeemedBy)]
+);
+
+export const entitlements = pgTable(
+  "entitlements",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    sku: text("sku").notNull(),
+    source: entitlementSourceEnum("source").notNull(),
+    platform: text("platform"), // "ios" | "android" | "admin" | null
+    // Store transaction id. Nullable (admin grants have none), unique so
+    // duplicate webhook deliveries are idempotent.
+    storeTxnId: text("store_txn_id").unique(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    revokedAt: timestamp("revoked_at", { withTimezone: true }),
+  },
+  (t) => [
+    index("entitlements_user_idx").on(t.userId),
+    // A user owns a given sku at most once while it is not revoked.
+    uniqueIndex("entitlements_user_sku_active")
+      .on(t.userId, t.sku)
+      .where(sql`${t.revokedAt} is null`),
+  ]
 );
 
 export const thrones = pgTable(
