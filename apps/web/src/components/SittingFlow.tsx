@@ -8,7 +8,9 @@ import { haversineMeters } from "@sot/core";
 import { RATING_TAGS } from "@sot/core";
 import { useStore } from "@/lib/store";
 import type { Throne } from "@sot/core";
+import { equippedFor, HOUSE_BY_ID } from "@sot/core";
 import { SignInGate } from "./SignInGate";
+import { BannerCrest } from "./BannerCrest";
 
 type ProximityState = "checking" | "verified" | "hearsay" | "denied";
 
@@ -24,6 +26,8 @@ export function SittingFlow({
   const { state, submitRating } = useStore();
   const t = useCopy();
   const { plain } = usePlainSpeech();
+  const myHouse = state.profile ? HOUSE_BY_ID[state.profile.houseId] : undefined;
+  const myBanner = state.cosmetics ? equippedFor(state.cosmetics.equipped, "banner_style") : undefined;
   const [verdict, setVerdict] = useState<1 | 2 | 3 | 4 | 5 | null>(null);
   const [tags, setTags] = useState<string[]>([]);
   const [testimony, setTestimony] = useState("");
@@ -191,6 +195,11 @@ export function SittingFlow({
       {error && <p className="mt-4 font-mono text-[14px] text-crimson">{error}</p>}
       {influenceClaimed && (
         <>
+          {myHouse && (
+            <div className="mt-4 flex justify-center">
+              <BannerCrest colorVar={myHouse.colorVar} style={myBanner} className="h-10 w-16 animate-bounce" />
+            </div>
+          )}
           <p className="pixel-chip mt-4 animate-bounce bg-brass px-3 py-2 text-center font-mono text-[14px] text-on-brass">
             Influence claimed!
           </p>

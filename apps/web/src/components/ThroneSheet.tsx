@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { api, ApiError, type ThroneDTO } from "@/lib/api";
-import { HOUSE_BY_ID, THRONE_CATEGORY_LABEL } from "@sot/core";
+import { HOUSE_BY_ID, THRONE_CATEGORY_LABEL, cosmeticBySku } from "@sot/core";
+import { BannerCrest } from "./BannerCrest";
 import { useCopy, usePlainSpeech } from "@/lib/copy";
 import { displayTier } from "@sot/core";
 import { useStore } from "@/lib/store";
@@ -207,7 +208,10 @@ export function ThroneSheet({
                     <li key={r.id} className="pixel-chip bg-vellum p-2.5 text-[14px]">
                       <div className="flex items-center justify-between font-mono text-[13px] text-ink-faint">
                         <span>
-                          {r.authorName} ·{" "}
+                          <span className="inline-flex items-center gap-1.5">
+                            <BannerCrest colorVar={HOUSE_BY_ID[r.houseId].colorVar} style={r.bannerStyle ? cosmeticBySku(r.bannerStyle) : undefined} className="h-3.5 w-5" />
+                            {r.authorName}
+                          </span>{" "}·{" "}
                           <span style={{ color: HOUSE_BY_ID[r.houseId].colorVar }}>
                             {HOUSE_BY_ID[r.houseId].name}
                           </span>

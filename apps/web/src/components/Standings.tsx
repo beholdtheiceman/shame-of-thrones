@@ -3,9 +3,10 @@
 import { useEffect, useState } from "react";
 import { api, type StandingsDTO } from "@/lib/api";
 import { useCopy } from "@/lib/copy";
-import { HOUSE_BY_ID } from "@sot/core";
+import { HOUSE_BY_ID, cosmeticBySku } from "@sot/core";
 import type { WindowKey } from "@sot/core";
 import { useStore } from "@/lib/store";
+import { BannerCrest } from "@/components/BannerCrest";
 
 type Board = "council" | "houses";
 const WINDOW_LABELS: { key: WindowKey; label: string }[] = [
@@ -148,7 +149,7 @@ function CouncilList({
   return (
     <div className="pixel-panel divide-y divide-vellum-line">
       {data.council.rows.map((r) => (
-        <Row key={r.name} pos={r.position} name={r.name} houseId={r.houseId} points={r.points} me={r.name === viewerName} />
+        <Row key={r.name} pos={r.position} name={r.name} houseId={r.houseId} points={r.points} me={r.name === viewerName} bannerStyle={r.bannerStyle} />
       ))}
       {data.council.viewerRow && (
         <Row
@@ -157,6 +158,7 @@ function CouncilList({
           houseId={data.council.viewerRow.houseId}
           points={data.council.viewerRow.points}
           me
+          bannerStyle={data.council.viewerRow.bannerStyle}
         />
       )}
     </div>
@@ -169,12 +171,14 @@ function Row({
   houseId,
   points,
   me,
+  bannerStyle,
 }: {
   pos: number;
   name: string;
   houseId: string;
   points: number;
   me?: boolean;
+  bannerStyle?: string;
 }) {
   return (
     <div
@@ -184,6 +188,11 @@ function Row({
     >
       <span className="w-7 tabular-nums text-ink-faint">{pos}</span>
       <Chip houseId={houseId} />
+      <BannerCrest
+        colorVar={HOUSE_BY_ID[houseId as keyof typeof HOUSE_BY_ID]?.colorVar ?? "var(--house-flush)"}
+        style={bannerStyle ? cosmeticBySku(bannerStyle) : undefined}
+        className="h-4 w-6"
+      />
       <span className="min-w-0 flex-1 truncate">{me ? `${name} (You)` : name}</span>
       <span className="tabular-nums">{points.toLocaleString()}</span>
     </div>
