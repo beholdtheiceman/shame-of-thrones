@@ -232,6 +232,18 @@ export const reviewQueue = pgTable(
   ]
 );
 
+export const metricsEvents = pgTable(
+  "metrics_events",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    name: text("name").notNull(), // "time_to_rate" | "nwt_outcome"
+    userId: uuid("user_id").references(() => users.id), // nullable (anon allowed)
+    meta: jsonb("meta").$type<Record<string, unknown>>().notNull().default({}),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("metrics_events_name_idx").on(t.name)]
+);
+
 export const reports = pgTable(
   "reports",
   {
