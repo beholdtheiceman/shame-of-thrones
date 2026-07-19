@@ -1,3 +1,5 @@
+import { timingSafeEqual } from "node:crypto";
+
 /** RevenueCat product_id -> our internal cosmetic sku. Keys are the product
  * identifiers created in App Store Connect / Play Console (spec §9). */
 export const PRODUCT_ID_TO_SKU: Record<string, string> = {
@@ -20,8 +22,12 @@ export const GRANT_EVENTS = new Set(["INITIAL_PURCHASE", "NON_RENEWING_PURCHASE"
 export const REVOKE_EVENTS = new Set(["CANCELLATION", "REFUND", "EXPIRATION"]);
 
 /** Bearer-token check against the shared secret configured in the RevenueCat
- * dashboard. Fails closed when the secret is unset. */
+ * dashboard. Constant-time compare; fails closed when the secret is unset. */
 export function verifyWebhookAuth(header: string | null): boolean {
   const secret = process.env.REVENUECAT_WEBHOOK_AUTH;
-  return !!secret && header === `Bearer ${secret}`;
+  if (!secret || !header) return false;
+  const expected = Buffer.from(`Bearer ${secret}`);
+  const actual = Buffer.from(header);
+  // timingSafeEqual throws on length mismatch — guard first (length is not secret).
+  return expected.length === actual.length && timingSafeEqual(expected, actual);
 }

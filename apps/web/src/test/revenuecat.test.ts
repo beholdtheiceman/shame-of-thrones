@@ -42,4 +42,10 @@ describe("verifyWebhookAuth", () => {
     delete process.env.REVENUECAT_WEBHOOK_AUTH;
     expect(verifyWebhookAuth("Bearer anything")).toBe(false);
   });
+
+  it("rejects a token of a different length without throwing", () => {
+    process.env.REVENUECAT_WEBHOOK_AUTH = "s3cret";
+    expect(verifyWebhookAuth("Bearer s3")).toBe(false);
+    expect(verifyWebhookAuth("Bearer s3cret-extra")).toBe(false);
+  });
 });
