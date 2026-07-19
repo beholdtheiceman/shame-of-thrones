@@ -40,7 +40,7 @@ export interface RealmDTO {
 
 export interface MeDTO {
   profile: {
-    name: string; houseId: HouseId; joinedAt: number;
+    id: string; name: string; houseId: HouseId; joinedAt: number;
     badges: string[]; notifyPrefs: NotifyPrefsDTO; lastHouseSwitchAt: number | null;
   } | null;
   rank?: RankInfo;

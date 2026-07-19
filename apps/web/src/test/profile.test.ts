@@ -41,4 +41,10 @@ describe("profiles", () => {
     me = await mePayload(user.id);
     expect(me.cosmetics).toEqual({ owned: ["banner.gilded"], equipped: { banner_style: "banner.gilded" } });
   });
+
+  it("mePayload includes the user's own id (for RevenueCat appUserID)", async () => {
+    const user = await makeUser();
+    const me = await mePayload(user.id);
+    expect(me.profile?.id).toBe(user.id);
+  });
 });

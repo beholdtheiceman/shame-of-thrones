@@ -111,6 +111,7 @@ export async function mePayload(userId: string) {
   const equipped = normalizeEquipped((user.equipped ?? {}) as Equipped, owned);
   return {
     profile: {
+      id: user.id,
       name: user.displayName,
       houseId: user.houseId,
       joinedAt: user.joinedAt.getTime(),
